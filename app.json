@@ -1,0 +1,100 @@
+{
+  "id": "63899a2e-608d-451b-a439-5f6618912133",
+  "name": "Godolphin  - PMS",
+  "publisher": "Godolphin Mgt Co. Ltd",
+  "version": "1.0.0.1",
+  "brief": "Amendments to BC made by Godolphin IT Team",
+  "description": "Godolphin Personalisation of BC",
+  "privacyStatement": "",
+  "EULA": "",
+  "help": "",
+  "url": "",
+  "logo": "Godolphin G symbol_RGB.jpg",
+  "dependencies": [
+    {
+      "id": "96f2e3e5-4b70-4443-9ce3-2a85642e2a44",
+      "name": "Godolphin Core",
+      "publisher": "Creative Computing Solutions",
+      "version": "1.0.0.37"
+    },
+    {
+      "id": "bbb72c8a-3abf-478f-9239-a34dbc252d07",
+      "name": "Continia Business Foundation",
+      "publisher": "Continia Software",
+      "version": "25.1.0.257868"
+    },
+    {
+      "id": "2b9992c2-5eaf-4cdc-b33b-592d917780d2",
+      "name": "Continia Connector App",
+      "publisher": "Continia Software",
+      "version": "25.1.0.258450"
+    },
+    {
+      "id": "4b915d7e-c02a-435f-85ab-649086c1e002",
+      "name": "Continia Core",
+      "publisher": "Continia Software",
+      "version": "25.1.1.272912"
+    },
+    {
+      "id": "0745e76d-0b72-4641-87c2-ee45db5d2c32",
+      "name": "Continia Delivery Network",
+      "publisher": "Continia Software",
+      "version": "25.1.3.309428"
+    },
+    {
+      "id": "6da8dd2f-e698-461f-9147-8e404244dd85",
+      "name": "Continia Document Capture",
+      "publisher": "Continia Software",
+      "version": "25.1.0.257881"
+    },
+    {
+      "id": "424886e9-d07d-47b1-848a-cf87921a2b2b",
+      "name": "Continia Document Capture OnPremise",
+      "publisher": "Continia Software",
+      "version": "25.1.0.257881"
+    },
+    {
+      "id": "f4b69b55-c90d-4937-8f53-2742898fa948",
+      "name": "Continia Document Output",
+      "publisher": "Continia Software",
+      "version": "25.2.3.319615"
+    },
+    {
+      "id": "f3e5b4ca-0ad8-4793-ba43-f52a38a8bee3",
+      "name": "Continia Document Output OnPremise",
+      "publisher": "Continia Software",
+      "version": "25.2.3.319615"
+    },
+    {
+      "id": "16fa682f-ea7d-46c1-94b4-8472c933d6e5",
+      "name": "Godolphin Customisation of BC",
+      "publisher": "Godolphin Mgt Co. Ltd",
+      "version": "1.0.0.1"
+    },
+    {
+      "id": "c363c7ad-76c8-4fc1-bfbe-dd24cafd4515",
+      "name": "Godolphin App",
+      "publisher": "Creative Computing Solutions",
+      "version": "1.0.0.1"
+    }
+  ],
+  "screenshots": [],
+  "platform": "1.0.0.1",
+  "application": "23.0.0.0",
+  "idRanges": [
+    {
+      "from": 80700,
+      "to": 80899
+    }    
+  ],
+  "resourceExposurePolicy": {
+    "allowDebugging": true,
+    "allowDownloadingSource": true,
+    "includeSourceInSymbolFile": true
+  },
+  "runtime": "11.0",
+  "target": "OnPrem",
+  "features": [
+    "NoImplicitWith"
+  ]
+}

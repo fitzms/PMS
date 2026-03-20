@@ -1,0 +1,121 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        
+    //    {
+    //         "name": "Server",
+    //         "request": "launch",
+    //         "type": "al",
+    //         "environmentType": "OnPrem",
+    //         "server": "http://uk-dh-svr-bcst:8080/BC230",
+    //         "serverInstance": "BC230",
+    //         "port": 7049,
+    //         "authentication": "Windows",
+    //         //"startupObjectId": 50113,
+    //         //"startupObjectType": "Page",
+    //         "schemaUpdateMode": "ForceSync",
+    //         "breakOnError": "All",
+    //         "launchBrowser": true,
+    //         "enableLongRunningSqlStatements": true,
+    //         "enableSqlInformationDebugger": true,
+    //         "tenant": "default"
+
+    //     },
+        // {
+        //     "name": "ServerBC25",
+        //     "request": "launch",
+        //     "type": "al",
+        //     "environmentType": "OnPrem",
+        //     "server": "http://uk-dh-svr-bcdb",
+        //     "serverInstance": "BC252",
+        //     "port": 7049,
+        //     "authentication": "Windows",
+        //     //"startupObjectId": 50113,
+        //     //"startupObjectType": "Page",
+        //     "schemaUpdateMode": "ForceSync",
+        //     "breakOnError": "All",
+        //     "launchBrowser": true,
+        //     "enableLongRunningSqlStatements": true,
+        //     "enableSqlInformationDebugger": true,
+        //     "tenant": "default"
+        // },
+        // {
+        //     "name": "Attach: ServerBC25",
+        //     "type": "al",
+        //     "request": "attach",            
+        //    "environmentType": "OnPrem",
+        //     "server": "http://uk-dh-svr-bcdb",
+        //     "serverInstance": "BC252",
+        //     "port": 7049,
+        //     "authentication": "Windows",
+        //     "breakOnError": "All",
+        //     "breakOnRecordWrite": "None",
+        //     "enableSqlInformationDebugger": true,
+        //     "enableLongRunningSqlStatements": true,
+        //     "longRunningSqlStatementsThreshold": 500,
+        //     "numberOfSqlStatements": 10,
+        //     "breakOnNext": "WebClient",
+        //     "tenant": "default",
+        //     "sessionId": 385 
+        // },
+
+// {
+//         "name": "BC252 UAT 20250510",
+//         "request": "launch",
+//         "type": "al",
+//         "environmentType": "OnPrem",
+//         "server": "http://uk-dh-svr-bcdb/",
+//         "serverInstance": "BCUAT252_20250510",
+//         "port": 7549,
+//         "authentication": "Windows",
+//         "breakOnError": "All",
+//         "launchBrowser": true,
+//         "enableLongRunningSqlStatements": true,
+//         "enableSqlInformationDebugger": true,
+//         "tenant": "default",
+//         "schemaUpdateMode": "Synchronize"
+//     },
+
+
+// {
+//             "name": "Attach: ServerBC25_UAT",
+//             "type": "al",
+//             "request": "attach",            
+//            "environmentType": "OnPrem",
+//             "server": "http://uk-dh-svr-bcdb",
+//             "serverInstance": "BC252UAT_250510",
+//             "port": 7249,
+//             "authentication": "Windows",
+//             "breakOnError": "All",
+//             "breakOnRecordWrite": "None",
+//             "enableSqlInformationDebugger": true,
+//             "enableLongRunningSqlStatements": true,
+//             "longRunningSqlStatementsThreshold": 500,
+//             "numberOfSqlStatements": 10,
+//             "breakOnNext": "WebClient",
+//             "tenant": "default",
+//             "sessionId": 837      
+//         },
+
+          {
+            "name": "ServerBCUAT_PMS",
+            "request": "launch",
+            "type": "al",
+            "environmentType": "OnPrem",
+            "server": "http://uk-dh-svr-bcdb",
+            "serverInstance": "BCUAT252_PMS",
+            "port": 7949,
+            "authentication": "Windows",
+            //"startupObjectId": 50113,
+            //"startupObjectType": "Page",
+            "schemaUpdateMode": "ForceSync",
+            "breakOnError": "All",
+            "launchBrowser": true,
+            "enableLongRunningSqlStatements": true,
+            "enableSqlInformationDebugger": true,
+            "tenant": "default"
+        },
+
+
+    ]
+}
