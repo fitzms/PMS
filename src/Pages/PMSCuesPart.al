@@ -18,24 +18,48 @@ page 80801 "PMS Cues Part"
                 {
                     ApplicationArea = All;
                     Caption = 'Total';
-                    // TODO (Sam): Wire DrillDown to the Property list page
-                    DrillDownPageId = "Chart of Accounts";    // placeholder - swap out
+                    DrillDownPageId = "PMS Property List";
                 }
                 field("Active Properties"; Rec."Active Properties")
                 {
                     ApplicationArea = All;
                     Caption = 'Active';
                     StyleExpr = ActivePropertiesStyle;
-                    // TODO (Sam): Wire DrillDown to active Properties list
-                    DrillDownPageId = "Chart of Accounts";    // placeholder - swap out
+                    DrillDownPageId = "PMS Property List";
                 }
                 field("Vacant Properties"; Rec."Vacant Properties")
                 {
                     ApplicationArea = All;
                     Caption = 'Vacant';
                     StyleExpr = VacantPropertiesStyle;
-                    // TODO (Sam): Wire DrillDown to vacant Properties list
-                    DrillDownPageId = "Chart of Accounts";    // placeholder - swap out
+                    DrillDownPageId = "PMS Property List";
+                }
+            }
+
+            // ── Staff Houses ───────────────────────────────────────────────────
+            cuegroup("Staff Houses")
+            {
+                Caption = 'Staff Houses';
+
+                field("Total Staff Houses"; Rec."Total Staff Houses")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Total';
+                    DrillDownPageId = "PMS Property List";
+                }
+                field("Active Staff Houses"; Rec."Active Staff Houses")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Active';
+                    StyleExpr = ActiveStaffHousesStyle;
+                    DrillDownPageId = "PMS Property List";
+                }
+                field("Vacant Staff Houses"; Rec."Vacant Staff Houses")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Vacant';
+                    StyleExpr = VacantStaffHousesStyle;
+                    DrillDownPageId = "PMS Property List";
                 }
             }
 
@@ -103,6 +127,8 @@ page 80801 "PMS Cues Part"
     var
         ActivePropertiesStyle: Text;
         VacantPropertiesStyle: Text;
+        ActiveStaffHousesStyle: Text;
+        VacantStaffHousesStyle: Text;
         OccupiedUnitsStyle: Text;
         AvailableUnitsStyle: Text;
         OverdueRentStyle: Text;
@@ -113,6 +139,9 @@ page 80801 "PMS Cues Part"
             "Total Properties",
             "Active Properties",
             "Vacant Properties",
+            "Total Staff Houses",
+            "Active Staff Houses",
+            "Vacant Staff Houses",
             "Total Units",
             "Occupied Units",
             "Available Units",
@@ -125,6 +154,13 @@ page 80801 "PMS Cues Part"
             VacantPropertiesStyle := 'Ambiguous'
         else
             VacantPropertiesStyle := 'Favorable';
+
+        if Rec."Vacant Staff Houses" > 0 then
+            VacantStaffHousesStyle := 'Ambiguous'
+        else
+            VacantStaffHousesStyle := 'Favorable';
+
+        ActiveStaffHousesStyle := 'Favorable';
 
         if Rec."Available Units" > 0 then
             AvailableUnitsStyle := 'Ambiguous'

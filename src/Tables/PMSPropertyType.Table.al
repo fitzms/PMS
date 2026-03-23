@@ -1,9 +1,9 @@
-table 80809 "PMS Cat. Posting Group"
+table 80814 "PMS Property Type"
 {
-    Caption = 'PMS Category Posting Group';
+    Caption = 'Property Type';
     DataClassification = CustomerContent;
-    LookupPageId = "PMS Cat. Posting Group List";
-    DrillDownPageId = "PMS Cat. Posting Group List";
+    LookupPageId = "PMS Property Type List";
+    DrillDownPageId = "PMS Property Type List";
 
     fields
     {

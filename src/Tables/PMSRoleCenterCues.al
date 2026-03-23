@@ -15,22 +15,39 @@ table 80800 "PMS Role Center Cues"
         {
             Caption = 'Total Properties';
             FieldClass = FlowField;
-            // TODO (Sam): Replace with CalcFormula sum/count over the real Property table
-            CalcFormula = count("G/L Account");    // placeholder table - swap out
+            CalcFormula = count("PMS Property");
         }
         field(11; "Active Properties"; Integer)
         {
             Caption = 'Active Properties';
             FieldClass = FlowField;
-            // TODO (Sam): Filter by Status = Active on the real Property table
-            CalcFormula = count("G/L Account");    // placeholder table - swap out
+            CalcFormula = count("PMS Property" where(Status = const(Active)));
         }
         field(12; "Vacant Properties"; Integer)
         {
             Caption = 'Vacant Properties';
             FieldClass = FlowField;
-            // TODO (Sam): Filter by Status = Vacant on the real Property table
-            CalcFormula = count("G/L Account");    // placeholder table - swap out
+            CalcFormula = count("PMS Property" where(Status = const(Inactive)));
+        }
+
+        // ── Staff Houses ──────────────────────────────────────────────────────
+        field(16; "Total Staff Houses"; Integer)
+        {
+            Caption = 'Total Staff Houses';
+            FieldClass = FlowField;
+            CalcFormula = count("PMS Property" where("Property Type Code" = const('STAFFHOUSE')));
+        }
+        field(17; "Active Staff Houses"; Integer)
+        {
+            Caption = 'Active Staff Houses';
+            FieldClass = FlowField;
+            CalcFormula = count("PMS Property" where("Property Type Code" = const('STAFFHOUSE'), Status = const(Active)));
+        }
+        field(18; "Vacant Staff Houses"; Integer)
+        {
+            Caption = 'Vacant Staff Houses';
+            FieldClass = FlowField;
+            CalcFormula = count("PMS Property" where("Property Type Code" = const('STAFFHOUSE'), Status = const(Inactive)));
         }
 
         // ── Units ────────────────────────────────────────────────────────────

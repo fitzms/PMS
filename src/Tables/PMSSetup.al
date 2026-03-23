@@ -14,6 +14,16 @@ table 80807 "PMS Setup"
             Caption = 'Contract Nos.';
             TableRelation = "No. Series";
         }
+        field(11; "Property Nos."; Code[20])
+        {
+            Caption = 'Property Nos.';
+            TableRelation = "No. Series";
+        }
+        field(12; "Unit Nos."; Code[20])
+        {
+            Caption = 'Unit Nos.';
+            TableRelation = "No. Series";
+        }
         field(20; "Default Job Type"; Option)
         {
             Caption = 'Default Job Type';

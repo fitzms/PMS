@@ -34,10 +34,10 @@ page 80806 "PMS Contract"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the date the contract ends.';
                 }
-                field("Cat. Posting Group"; Rec."Cat. Posting Group")
+                field("PMS Cat. Posting Group"; Rec."PMSCat. Posting Group")
                 {
                     ApplicationArea = All;
-                    ToolTip = 'Specifies the category posting group for this contract.';
+                    ToolTip = 'Specifies the PMS category posting group for this contract.';
                 }
             }
         }

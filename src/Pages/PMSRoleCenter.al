@@ -36,7 +36,7 @@ page 80802 "PMS Role Center"
                 {
                     ApplicationArea = All;
                     Caption = 'Properties';
-                    RunObject = page "Chart of Accounts";    // TODO (Sam): Swap for the real Property List page
+                    RunObject = page "PMS Property List";
                     Image = ResourcePlanning;
                     ToolTip = 'View and manage all properties.';
                 }
@@ -46,8 +46,8 @@ page 80802 "PMS Role Center"
                     Caption = 'New Property';
                     Image = New;
                     ToolTip = 'Create a new property record.';
-                    // TODO (Sam): Replace RunObject with the real Property Card page
-                    RunObject = page "G/L Account Card";    // placeholder - swap out
+                    RunObject = page "PMS Property";
+                    RunPageMode = Create;
                 }
             }
 
@@ -134,12 +134,20 @@ page 80802 "PMS Role Center"
                 action(PMSSetup)
                 {
                     ApplicationArea = All;
-                    Caption = 'Property Management Setup';
+                    Caption = 'PMS Setup';
                     RunObject = page "PMS Setup";
                     Image = Setup;
-                    ToolTip = 'Configure property management settings such as number series.';
+                    ToolTip = 'Configure property management settings.';
                 }
 
+                action(PMSCategoryPostingGroupList)
+                {
+                    ApplicationArea = All;
+                    Caption = 'PMS Cat. Posting Groups';
+                    RunObject = page "PMS Cat. Posting Group List";
+                    Image = Setup;
+                    ToolTip = 'View and manage PMS category posting groups.';
+                }
             }
         }
 
@@ -150,7 +158,7 @@ page 80802 "PMS Role Center"
             {
                 ApplicationArea = All;
                 Caption = 'Properties';
-                RunObject = page "Chart of Accounts";    // TODO (Sam): Swap for real Property List page
+                RunObject = page "PMS Property List";
                 Image = ResourcePlanning;
                 ToolTip = 'Open the Properties list.';
             }
@@ -181,8 +189,8 @@ page 80802 "PMS Role Center"
                 Caption = 'New Property';
                 Image = New;
                 ToolTip = 'Quickly create a new property.';
-                // TODO (Sam): Replace RunObject with the real Property Card page
-                RunObject = page "G/L Account Card";    // placeholder - swap out
+                RunObject = page "PMS Property";
+                RunPageMode = Create;
             }
 
             action(QuickNewUnit)

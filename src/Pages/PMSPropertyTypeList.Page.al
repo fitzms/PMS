@@ -1,8 +1,8 @@
-page 80810 "PMS Cat. Posting Group List"
+page 80815 "PMS Property Type List"
 {
-    Caption = 'PMS Cat. Posting Groups';
+    Caption = 'Property Types';
     PageType = List;
-    SourceTable = "PMS Cat. Posting Group";
+    SourceTable = "PMS Property Type";
     ApplicationArea = All;
     UsageCategory = Administration;
 
@@ -15,12 +15,12 @@ page 80810 "PMS Cat. Posting Group List"
                 field("Code"; Rec."Code")
                 {
                     ApplicationArea = All;
-                    ToolTip = 'Specifies the code for the PMS category posting group.';
+                    ToolTip = 'Specifies the code for the property type.';
                 }
                 field(Description; Rec.Description)
                 {
                     ApplicationArea = All;
-                    ToolTip = 'Specifies a description of the category posting group.';
+                    ToolTip = 'Specifies a description of the property type.';
                 }
             }
         }

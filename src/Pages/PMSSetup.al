@@ -36,6 +36,16 @@ page 80808 "PMS Setup"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the number series used to assign IDs to new contracts.';
                 }
+                field("Property Nos."; Rec."Property Nos.")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the number series used to assign IDs to new properties.';
+                }
+                field("Unit Nos."; Rec."Unit Nos.")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the number series used to assign IDs to new units.';
+                }
             }
         }
     }

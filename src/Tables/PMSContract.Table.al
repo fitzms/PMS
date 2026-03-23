@@ -32,9 +32,9 @@ table 80804 "PMS Contract"
         {
             Caption = 'End Date';
         }
-        field(5; "Cat. Posting Group"; Code[20])
+        field(5; "PMSCat. Posting Group"; Code[20])
         {
-            Caption = 'Cat. Posting Group';
+            Caption = 'PMS Cat. Posting Group';
             TableRelation = "PMS Cat. Posting Group";
         }
     }
