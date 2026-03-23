@@ -38,8 +38,13 @@ table 80816 "PMS Unit"
         field(5; Status; Option)
         {
             Caption = 'Status';
-            OptionCaption = ' ,Active,Inactive,Sold,Under Development';
-            OptionMembers = " ",Active,Inactive,Sold,"Under Development";
+            OptionCaption = ' ,Allocated,In Construction,Non Operational,Operational,Rehoming,Relocated,Sold,Tenancy Occupied,Vacant';
+            OptionMembers = " ",Allocated,"In Construction","Non Operational",Operational,Rehoming,Relocated,Sold,"Tenancy Occupied",Vacant;
+        }
+        field(6; "Property ID"; Code[20])
+        {
+            Caption = 'Property ID';
+            TableRelation = "PMS Property";
         }
     }
 

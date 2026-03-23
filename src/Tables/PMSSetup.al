@@ -24,6 +24,11 @@ table 80807 "PMS Setup"
             Caption = 'Unit Nos.';
             TableRelation = "No. Series";
         }
+        field(13; "Tenant Nos."; Code[20])
+        {
+            Caption = 'Tenant Nos.';
+            TableRelation = "No. Series";
+        }
         field(20; "Default Job Type"; Option)
         {
             Caption = 'Default Job Type';

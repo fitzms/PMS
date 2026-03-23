@@ -17,17 +17,17 @@ table 80800 "PMS Role Center Cues"
             FieldClass = FlowField;
             CalcFormula = count("PMS Property");
         }
-        field(11; "Active Properties"; Integer)
+        field(11; "Operational Properties"; Integer)
         {
-            Caption = 'Active Properties';
+            Caption = 'Operational Properties';
             FieldClass = FlowField;
-            CalcFormula = count("PMS Property" where(Status = const(Active)));
+            CalcFormula = count("PMS Property" where(Status = const(Operational)));
         }
         field(12; "Vacant Properties"; Integer)
         {
             Caption = 'Vacant Properties';
             FieldClass = FlowField;
-            CalcFormula = count("PMS Property" where(Status = const(Inactive)));
+            CalcFormula = count("PMS Property" where(Status = const(Vacant)));
         }
 
         // ── Staff Houses ──────────────────────────────────────────────────────
@@ -37,17 +37,17 @@ table 80800 "PMS Role Center Cues"
             FieldClass = FlowField;
             CalcFormula = count("PMS Property" where("Property Type Code" = const('STAFFHOUSE')));
         }
-        field(17; "Active Staff Houses"; Integer)
+        field(17; "Operational Staff Houses"; Integer)
         {
-            Caption = 'Active Staff Houses';
+            Caption = 'Operational Staff Houses';
             FieldClass = FlowField;
-            CalcFormula = count("PMS Property" where("Property Type Code" = const('STAFFHOUSE'), Status = const(Active)));
+            CalcFormula = count("PMS Property" where("Property Type Code" = const('STAFFHOUSE'), Status = const(Operational)));
         }
         field(18; "Vacant Staff Houses"; Integer)
         {
             Caption = 'Vacant Staff Houses';
             FieldClass = FlowField;
-            CalcFormula = count("PMS Property" where("Property Type Code" = const('STAFFHOUSE'), Status = const(Inactive)));
+            CalcFormula = count("PMS Property" where("Property Type Code" = const('STAFFHOUSE'), Status = const(Vacant)));
         }
 
         // ── Units ────────────────────────────────────────────────────────────
@@ -55,22 +55,32 @@ table 80800 "PMS Role Center Cues"
         {
             Caption = 'Total Units';
             FieldClass = FlowField;
-            // TODO (Sam): Replace with count over the real Unit table
-            CalcFormula = count("G/L Account");    // placeholder table - swap out
+            CalcFormula = count("PMS Unit");
         }
-        field(14; "Occupied Units"; Integer)
-        {
-            Caption = 'Occupied Units';
-            FieldClass = FlowField;
-            // TODO (Sam): Filter Unit table by Status = Occupied
-            CalcFormula = count("G/L Account");    // placeholder table - swap out
-        }
+
         field(15; "Available Units"; Integer)
         {
             Caption = 'Available Units';
             FieldClass = FlowField;
-            // TODO (Sam): Filter Unit table by Status = Available
-            CalcFormula = count("G/L Account");    // placeholder table - swap out
+            CalcFormula = count("PMS Unit" where(Status = const(Vacant)));
+        }
+        field(19; "Tenancy Occupied Units"; Integer)
+        {
+            Caption = 'Tenancy Occupied Units';
+            FieldClass = FlowField;
+            CalcFormula = count("PMS Unit" where(Status = const("Tenancy Occupied")));
+        }
+        field(23; "Non Operational Units"; Integer)
+        {
+            Caption = 'Non Operational Units';
+            FieldClass = FlowField;
+            CalcFormula = count("PMS Unit" where(Status = const("Non Operational")));
+        }
+        field(24; "Operational Units"; Integer)
+        {
+            Caption = 'Operational Units';
+            FieldClass = FlowField;
+            CalcFormula = count("PMS Unit" where(Status = const(Operational)));
         }
 
         // ── Contracts ─────────────────────────────────────────────────────────

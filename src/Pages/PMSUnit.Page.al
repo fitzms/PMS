@@ -19,6 +19,12 @@ page 80818 "PMS Unit"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the unique identifier for the unit.';
                 }
+                field("Property ID"; Rec."Property ID")
+                {
+                    ApplicationArea = All;
+                    Importance = Promoted;
+                    ToolTip = 'Specifies the property this unit belongs to.';
+                }
                 field(Description; Rec.Description)
                 {
                     ApplicationArea = All;

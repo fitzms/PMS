@@ -84,7 +84,7 @@ page 80802 "PMS Role Center"
                 {
                     ApplicationArea = All;
                     Caption = 'Units';
-                    RunObject = page "Chart of Accounts";    // TODO (Sam): Swap for real Unit List page
+                    RunObject = page "PMS Unit List";
                     Image = ContactPerson;
                     ToolTip = 'View and manage all units.';
                 }
@@ -94,8 +94,8 @@ page 80802 "PMS Role Center"
                     Caption = 'New Unit';
                     Image = NewCustomer;
                     ToolTip = 'Create a new Unit record.';
-                    // TODO (Sam): Replace RunObject with the real Unit Card page
-                    RunObject = page "G/L Account Card";    // placeholder - swap out
+                    RunObject = page "PMS Unit";
+                    RunPageMode = Create;
                 }
             }
 

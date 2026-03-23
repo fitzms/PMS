@@ -20,11 +20,11 @@ page 80801 "PMS Cues Part"
                     Caption = 'Total';
                     DrillDownPageId = "PMS Property List";
                 }
-                field("Active Properties"; Rec."Active Properties")
+                field("Operational Properties"; Rec."Operational Properties")
                 {
                     ApplicationArea = All;
-                    Caption = 'Active';
-                    StyleExpr = ActivePropertiesStyle;
+                    Caption = 'Operational';
+
                     DrillDownPageId = "PMS Property List";
                 }
                 field("Vacant Properties"; Rec."Vacant Properties")
@@ -47,11 +47,11 @@ page 80801 "PMS Cues Part"
                     Caption = 'Total';
                     DrillDownPageId = "PMS Property List";
                 }
-                field("Active Staff Houses"; Rec."Active Staff Houses")
+                field("Operational Staff Houses"; Rec."Operational Staff Houses")
                 {
                     ApplicationArea = All;
-                    Caption = 'Active';
-                    StyleExpr = ActiveStaffHousesStyle;
+                    Caption = 'Operational';
+
                     DrillDownPageId = "PMS Property List";
                 }
                 field("Vacant Staff Houses"; Rec."Vacant Staff Houses")
@@ -63,7 +63,8 @@ page 80801 "PMS Cues Part"
                 }
             }
 
-            // ── Units ─────────────────────────────────────────────────────────
+
+            // ── Units ───────────────────────────────────────────────────────
             cuegroup("Units")
             {
                 Caption = 'Units';
@@ -72,24 +73,31 @@ page 80801 "PMS Cues Part"
                 {
                     ApplicationArea = All;
                     Caption = 'Total';
-                    // TODO (Sam): Wire DrillDown to the Unit list page
-                    DrillDownPageId = "Chart of Accounts";    // placeholder - swap out
+                    DrillDownPageId = "PMS Unit List";
                 }
-                field("Occupied Units"; Rec."Occupied Units")
+
+
+
+
+                field("Tenancy Occupied Units"; Rec."Tenancy Occupied Units")
                 {
                     ApplicationArea = All;
-                    Caption = 'Occupied';
-                    StyleExpr = OccupiedUnitsStyle;
-                    // TODO (Sam): Wire DrillDown to occupied Units list
-                    DrillDownPageId = "Chart of Accounts";    // placeholder - swap out
+                    Caption = 'Tenancy Occupied';
+                    StyleExpr = TenancyOccupiedStyle;
+                    DrillDownPageId = "PMS Unit List";
                 }
-                field("Available Units"; Rec."Available Units")
+                field("Non Operational Units"; Rec."Non Operational Units")
                 {
                     ApplicationArea = All;
-                    Caption = 'Available';
-                    StyleExpr = AvailableUnitsStyle;
-                    // TODO (Sam): Wire DrillDown to available Units list
-                    DrillDownPageId = "Chart of Accounts";    // placeholder - swap out
+                    Caption = 'Non Operational';
+                    StyleExpr = NonOperationalStyle;
+                    DrillDownPageId = "PMS Unit List";
+                }
+                field("Operational Units"; Rec."Operational Units")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Operational';
+                    DrillDownPageId = "PMS Unit List";
                 }
             }
 
@@ -131,20 +139,24 @@ page 80801 "PMS Cues Part"
         VacantStaffHousesStyle: Text;
         OccupiedUnitsStyle: Text;
         AvailableUnitsStyle: Text;
+        TenancyOccupiedStyle: Text;
+        NonOperationalStyle: Text;
         OverdueRentStyle: Text;
 
     trigger OnAfterGetRecord()
     begin
         Rec.CalcFields(
             "Total Properties",
-            "Active Properties",
+            "Operational Properties",
             "Vacant Properties",
             "Total Staff Houses",
-            "Active Staff Houses",
+            "Operational Staff Houses",
             "Vacant Staff Houses",
             "Total Units",
-            "Occupied Units",
             "Available Units",
+            "Tenancy Occupied Units",
+            "Non Operational Units",
+            "Operational Units",
             "Total Tenants",
             "New Tenants This Month",
             "Overdue Rent");
@@ -168,6 +180,13 @@ page 80801 "PMS Cues Part"
             AvailableUnitsStyle := 'Favorable';
 
         OccupiedUnitsStyle := 'Favorable';
+
+        TenancyOccupiedStyle := 'Favorable';
+
+        if Rec."Non Operational Units" > 0 then
+            NonOperationalStyle := 'Unfavorable'
+        else
+            NonOperationalStyle := 'Favorable';
 
         if Rec."Overdue Rent" > 0 then
             OverdueRentStyle := 'Unfavorable'

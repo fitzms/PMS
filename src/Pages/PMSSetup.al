@@ -46,6 +46,11 @@ page 80808 "PMS Setup"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the number series used to assign IDs to new units.';
                 }
+                field("Tenant Nos."; Rec."Tenant Nos.")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the number series used to assign IDs to new tenants.';
+                }
             }
         }
     }

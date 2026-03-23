@@ -65,8 +65,8 @@ table 80811 "PMS Property"
         field(6; Status; Option)
         {
             Caption = 'Status';
-            OptionCaption = ' ,Active,Inactive,Sold,Under Development';
-            OptionMembers = " ",Active,Inactive,Sold,"Under Development";
+            OptionCaption = ' ,Allocated,In Construction,Non Operational,Operational,Rehoming,Relocated,Sold,Tenancy Occupied,Vacant';
+            OptionMembers = " ",Allocated,"In Construction","Non Operational",Operational,Rehoming,Relocated,Sold,"Tenancy Occupied",Vacant;
         }
         field(7; "VAT Elected"; Boolean)
         {
@@ -84,6 +84,30 @@ table 80811 "PMS Property"
         {
             Caption = 'Sewerage';
         }
+
+        // ── Unit counts (FlowFields) ──────────────────────────────────────────
+        field(30; "Total Units"; Integer)
+        {
+            Caption = 'Total Units';
+            FieldClass = FlowField;
+            CalcFormula = count("PMS Unit" where("Property ID" = field("Property ID")));
+            Editable = false;
+        }
+        field(32; "Operational Units"; Integer)
+        {
+            Caption = 'Operational';
+            FieldClass = FlowField;
+            CalcFormula = count("PMS Unit" where("Property ID" = field("Property ID"), Status = const(Operational)));
+            Editable = false;
+        }
+        field(33; "Non Operational Units"; Integer)
+        {
+            Caption = 'Non Operational';
+            FieldClass = FlowField;
+            CalcFormula = count("PMS Unit" where("Property ID" = field("Property ID"), Status = const("Non Operational")));
+            Editable = false;
+        }
+
     }
 
     keys

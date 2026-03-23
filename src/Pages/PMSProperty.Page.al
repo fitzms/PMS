@@ -60,14 +60,6 @@ page 80813 "PMS Property"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the type of property.';
                 }
-                field("Property Type Description"; PropertyTypeDescription)
-                {
-                    ApplicationArea = All;
-                    Caption = 'Property Type Description';
-                    Editable = false;
-                    Importance = Promoted;
-                    ToolTip = 'Specifies the description of the property type.';
-                }
                 field(Tenure; Rec.Tenure)
                 {
                     ApplicationArea = All;
@@ -102,20 +94,16 @@ page 80813 "PMS Property"
                 }
             }
         }
+
+        area(FactBoxes)
+        {
+            part("Property Stats"; "PMS Property Stats Part")
+            {
+                ApplicationArea = All;
+                SubPageLink = "Property ID" = field("Property ID");
+            }
+        }
     }
 
-    trigger OnAfterGetRecord()
-    begin
-        if Rec."Property Type Code" <> '' then begin
-            if PropertyType.Get(Rec."Property Type Code") then
-                PropertyTypeDescription := PropertyType.Description
-            else
-                PropertyTypeDescription := '';
-        end else
-            PropertyTypeDescription := '';
-    end;
-
-    var
-        PropertyType: Record "PMS Property Type";
-        PropertyTypeDescription: Text[100];
 }
+
