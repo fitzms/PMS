@@ -88,22 +88,36 @@ table 80800 "PMS Role Center Cues"
         {
             Caption = 'Active Contracts';
             FieldClass = FlowField;
-            // TODO (Sam): Add filter where contract is active (e.g. Start Date <= Today <= End Date)
-            CalcFormula = count("PMS Contract");
+            CalcFormula = count("PMS Contract Header" where(Status = const(Active)));
         }
         field(21; "Expiring This Month"; Integer)
         {
             Caption = 'Expiring This Month';
             FieldClass = FlowField;
             // TODO (Sam): Add filter where End Date is within current month
-            CalcFormula = count("PMS Contract");
+            CalcFormula = count("PMS Contract Header");
         }
-        field(22; "Contracts Pending Approval"; Integer)
+        field(22; "Open Contracts"; Integer)
         {
-            Caption = 'Pending Approval';
+            Caption = 'Open Contracts';
             FieldClass = FlowField;
-            // TODO (Sam): Add filter by approval status field once added to the Contract table
-            CalcFormula = count("PMS Contract");
+            CalcFormula = count("PMS Contract Header" where(Status = const(Open)));
+        }
+        field(25; "Closed Contracts"; Integer)
+        {
+            Caption = 'Closed Contracts';
+            FieldClass = FlowField;
+            CalcFormula = count("PMS Contract Header" where(Status = const(Closed)));
+        }
+        field(26; "Start in 30 Days"; Integer)
+        {
+            Caption = 'Start in 30 Days';
+            DataClassification = CustomerContent;
+        }
+        field(27; "End in 30 Days"; Integer)
+        {
+            Caption = 'Ends in 30 Days';
+            DataClassification = CustomerContent;
         }
 
         // ── Tenants ───────────────────────────────────────────────────────────

@@ -40,16 +40,27 @@ page 80802 "PMS Role Center"
                     Image = ResourcePlanning;
                     ToolTip = 'View and manage all properties.';
                 }
-                action(NewProperty)
+
+                action(UnitList)
                 {
                     ApplicationArea = All;
-                    Caption = 'New Property';
-                    Image = New;
-                    ToolTip = 'Create a new property record.';
-                    RunObject = page "PMS Property";
-                    RunPageMode = Create;
+                    Caption = 'Units';
+                    RunObject = page "PMS Unit List";
+                    Image = ContactPerson;
+                    ToolTip = 'View and manage all units.';
                 }
+
+                action(TenantList)
+                {
+                    ApplicationArea = All;
+                    Caption = 'Tenants';
+                    RunObject = page "PMS Tenant List";
+                    Image = ContactPerson;
+                    ToolTip = 'View and manage all tenants.';
+                }
+
             }
+
 
             // ── Contracts section ──────────────────────────────────────────────
             group("Contracts")
@@ -64,66 +75,9 @@ page 80802 "PMS Role Center"
                     Image = Document;
                     ToolTip = 'View and manage all contracts.';
                 }
-                action(CopyContract)
-                {
-                    ApplicationArea = All;
-                    Caption = 'Copy Contract';
-                    Image = Copy;
-                    ToolTip = 'Copy an existing contract to use as a starting point for a new one.';
-                    // TODO (Sam): Replace RunObject with a dedicated Copy Contract report/page
-                    RunObject = page "PMS Contract List";
-                }
-            }
-
-            // ── Units section ────────────────────────────────────────────────
-            group("Units")
-            {
-                Caption = 'Units';
-
-                action(UnitList)
-                {
-                    ApplicationArea = All;
-                    Caption = 'Units';
-                    RunObject = page "PMS Unit List";
-                    Image = ContactPerson;
-                    ToolTip = 'View and manage all units.';
-                }
-                action(NewUUnit)
-                {
-                    ApplicationArea = All;
-                    Caption = 'New Unit';
-                    Image = NewCustomer;
-                    ToolTip = 'Create a new Unit record.';
-                    RunObject = page "PMS Unit";
-                    RunPageMode = Create;
-                }
-            }
-
-
-            // ── Tenants section ────────────────────────────────────────────────
-            group("Tenants")
-            {
-                Caption = 'Tenants';
-
-                action(TenantList)
-                {
-                    ApplicationArea = All;
-                    Caption = 'Tenants';
-                    RunObject = page "PMS Tenant List";
-                    Image = ContactPerson;
-                    ToolTip = 'View and manage all tenants.';
-                }
-                action(NewTenant)
-                {
-                    ApplicationArea = All;
-                    Caption = 'New Tenant';
-                    Image = NewCustomer;
-                    ToolTip = 'Create a new tenant record.';
-                    RunObject = page "PMS Tenant";
-                    RunPageMode = Create;
-                }
 
             }
+
 
             // ── Administration ─────────────────────────────────────────────────
             group("Administration")
@@ -174,10 +128,11 @@ page 80802 "PMS Role Center"
             {
                 ApplicationArea = All;
                 Caption = 'Tenants';
-                RunObject = page "Chart of Accounts";    // TODO (Sam): Swap for real Tenant List page
+                RunObject = page "PMS Tenant List";
                 Image = ContactPerson;
                 ToolTip = 'Open the Tenants list.';
             }
+
         }
 
         area(Processing)
@@ -199,8 +154,8 @@ page 80802 "PMS Role Center"
                 Caption = 'New Unit';
                 Image = NewCustomer;
                 ToolTip = 'Quickly create a new unit.';
-                // TODO (Sam): Replace RunObject with the real Unit Card page
-                RunObject = page "G/L Account Card";    // placeholder - swap out
+                RunObject = page "PMS Unit";
+                RunPageMode = Create;
             }
 
             action(QuickNewTenant)
@@ -209,17 +164,8 @@ page 80802 "PMS Role Center"
                 Caption = 'New Tenant';
                 Image = NewCustomer;
                 ToolTip = 'Quickly create a new tenant.';
-                // TODO (Sam): Replace RunObject with the real Tenant Card page
-                RunObject = page "G/L Account Card";    // placeholder - swap out
-            }
-            action(QuickCopyContract)
-            {
-                ApplicationArea = All;
-                Caption = 'Copy Contract';
-                Image = Copy;
-                ToolTip = 'Copy an existing contract.';
-                // TODO (Sam): Replace RunObject with a dedicated Copy Contract report/page
-                RunObject = page "Chart of Accounts";    // placeholder - swap out
+                RunObject = page "PMS Tenant";
+                RunPageMode = Create;
             }
         }
     }

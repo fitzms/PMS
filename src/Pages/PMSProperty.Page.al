@@ -77,6 +77,11 @@ page 80813 "PMS Property"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the current status of the property.';
                 }
+                field("Global Dimension 1 Code"; Rec."Global Dimension 1 Code")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the global dimension 1 code (e.g. cost centre) for this property.';
+                }
                 field("VAT Elected"; Rec."VAT Elected")
                 {
                     ApplicationArea = All;

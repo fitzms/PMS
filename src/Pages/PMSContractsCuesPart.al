@@ -12,29 +12,65 @@ page 80803 "PMS Contracts Cues Part"
             // ── Contracts ─────────────────────────────────────────────────────
             cuegroup("Contracts")
             {
-                Caption = 'Contracts';
+                Caption = '';
 
                 field("Active Contracts"; Rec."Active Contracts")
                 {
                     ApplicationArea = All;
                     Caption = 'Active';
-                    // TODO (Sam): Filter to active contracts
                     DrillDownPageId = "PMS Contract List";
+                    trigger OnDrillDown()
+                    var
+                        ContractHdr: Record "PMS Contract Header";
+                        ContractList: Page "PMS Contract List";
+                    begin
+                        ContractHdr.SetRange(Status, ContractHdr.Status::Active);
+                        ContractList.SetTableView(ContractHdr);
+                        ContractList.Run();
+                    end;
                 }
-                field("Expiring This Month"; Rec."Expiring This Month")
+                field("Open Contracts"; Rec."Open Contracts")
                 {
                     ApplicationArea = All;
-                    Caption = 'Expiring This Month';
-                    StyleExpr = ExpiringContractsStyle;
-                    // TODO (Sam): Filter to contracts expiring this month
+                    Caption = 'Open';
                     DrillDownPageId = "PMS Contract List";
+                    trigger OnDrillDown()
+                    var
+                        ContractHdr: Record "PMS Contract Header";
+                        ContractList: Page "PMS Contract List";
+                    begin
+                        ContractHdr.SetRange(Status, ContractHdr.Status::Open);
+                        ContractList.SetTableView(ContractHdr);
+                        ContractList.Run();
+                    end;
                 }
-                field("Contracts Pending Approval"; Rec."Contracts Pending Approval")
+                field("Closed Contracts"; Rec."Closed Contracts")
                 {
                     ApplicationArea = All;
-                    Caption = 'Pending Approval';
-                    StyleExpr = PendingContractsStyle;
-                    // TODO (Sam): Filter to contracts pending approval
+                    Caption = 'Closed';
+                    DrillDownPageId = "PMS Contract List";
+                    trigger OnDrillDown()
+                    var
+                        ContractHdr: Record "PMS Contract Header";
+                        ContractList: Page "PMS Contract List";
+                    begin
+                        ContractHdr.SetRange(Status, ContractHdr.Status::Closed);
+                        ContractList.SetTableView(ContractHdr);
+                        ContractList.Run();
+                    end;
+                }
+                field("Start in 30 Days"; Rec."Start in 30 Days")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Start in <30 Days';
+                    StyleExpr = StartIn30Style;
+                    DrillDownPageId = "PMS Contract List";
+                }
+                field("Ends in 30 Days"; Rec."End in 30 Days")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Ends in <30 Days';
+                    StyleExpr = EndsIn30Style;
                     DrillDownPageId = "PMS Contract List";
                 }
             }
@@ -42,25 +78,32 @@ page 80803 "PMS Contracts Cues Part"
     }
 
     var
-        ExpiringContractsStyle: Text;
-        PendingContractsStyle: Text;
+        StartIn30Style: Text;
+        EndsIn30Style: Text;
 
     trigger OnAfterGetRecord()
+    var
+        ContractHdr: Record "PMS Contract Header";
     begin
         Rec.CalcFields(
             "Active Contracts",
-            "Expiring This Month",
-            "Contracts Pending Approval");
+            "Open Contracts",
+            "Closed Contracts");
 
-        if Rec."Expiring This Month" > 0 then
-            ExpiringContractsStyle := 'Unfavorable'
+        ContractHdr.SetRange("Start Date", Today, CalcDate('<+30D>', Today));
+        Rec."Start in 30 Days" := ContractHdr.Count();
+        if Rec."Start in 30 Days" > 0 then
+            StartIn30Style := 'Unfavorable'
         else
-            ExpiringContractsStyle := 'Favorable';
+            StartIn30Style := 'Favorable';
 
-        if Rec."Contracts Pending Approval" > 0 then
-            PendingContractsStyle := 'Ambiguous'
+        ContractHdr.Reset();
+        ContractHdr.SetRange("End Date", Today, CalcDate('<+30D>', Today));
+        Rec."End in 30 Days" := ContractHdr.Count();
+        if Rec."End in 30 Days" > 0 then
+            EndsIn30Style := 'Unfavorable'
         else
-            PendingContractsStyle := 'Favorable';
+            EndsIn30Style := 'Favorable';
     end;
 
     trigger OnOpenPage()

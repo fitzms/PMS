@@ -106,12 +106,6 @@ page 80801 "PMS Cues Part"
             {
                 Caption = 'Tenants';
 
-                field("Total Tenants"; Rec."Total Tenants")
-                {
-                    ApplicationArea = All;
-                    Caption = 'Total';
-                    DrillDownPageId = "PMS Tenant List";
-                }
                 field("Active Tenants"; Rec."Active Tenants")
                 {
                     ApplicationArea = All;
@@ -134,7 +128,6 @@ page 80801 "PMS Cues Part"
         ActiveStaffHousesStyle: Text;
         VacantStaffHousesStyle: Text;
         OccupiedUnitsStyle: Text;
-        AvailableUnitsStyle: Text;
         TenancyOccupiedStyle: Text;
         NonOperationalStyle: Text;
 
@@ -148,11 +141,9 @@ page 80801 "PMS Cues Part"
             "Operational Staff Houses",
             "Vacant Staff Houses",
             "Total Units",
-            "Available Units",
             "Tenancy Occupied Units",
             "Non Operational Units",
             "Operational Units",
-            "Total Tenants",
             "Active Tenants",
             "Previous Tenants");
 
@@ -168,11 +159,6 @@ page 80801 "PMS Cues Part"
             VacantStaffHousesStyle := 'Favorable';
 
         ActiveStaffHousesStyle := 'Favorable';
-
-        if Rec."Available Units" > 0 then
-            AvailableUnitsStyle := 'Ambiguous'
-        else
-            AvailableUnitsStyle := 'Favorable';
 
         OccupiedUnitsStyle := 'Favorable';
 

@@ -25,6 +25,13 @@ page 80818 "PMS Unit"
                     Importance = Promoted;
                     ToolTip = 'Specifies the property this unit belongs to.';
                 }
+                field(PropertyKnownAs; PropertyKnownAs)
+                {
+                    ApplicationArea = All;
+                    Caption = 'Known As';
+                    Editable = false;
+                    ToolTip = 'Specifies the known-as name of the linked property.';
+                }
                 field(Description; Rec.Description)
                 {
                     ApplicationArea = All;
@@ -68,9 +75,19 @@ page 80818 "PMS Unit"
                 UnitTypeDescription := '';
         end else
             UnitTypeDescription := '';
+
+        if Rec."Property ID" <> '' then begin
+            if PMSProperty.Get(Rec."Property ID") then
+                PropertyKnownAs := PMSProperty."Known As"
+            else
+                PropertyKnownAs := '';
+        end else
+            PropertyKnownAs := '';
     end;
 
     var
         PropertyType: Record "PMS Property Type";
+        PMSProperty: Record "PMS Property";
         UnitTypeDescription: Text[100];
+        PropertyKnownAs: Text[100];
 }

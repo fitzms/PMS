@@ -23,12 +23,12 @@ page 80822 "PMS Tenant"
                     trigger OnAssistEdit()
                     var
                         PMSSetup: Record "PMS Setup";
-                        NoSeriesMgt: Codeunit NoSeriesManagement;
+                        NoSeries: Codeunit "No. Series";
                     begin
                         PMSSetup.GetRecordOnce();
                         PMSSetup.TestField("Tenant Nos.");
-                        if NoSeriesMgt.SelectSeries(PMSSetup."Tenant Nos.", xRec."No. Series", Rec."No. Series") then begin
-                            NoSeriesMgt.SetSeries(Rec."Tenant ID");
+                        if NoSeries.LookupRelatedNoSeries(PMSSetup."Tenant Nos.", Rec."No. Series") then begin
+                            Rec."Tenant ID" := NoSeries.GetNextNo(Rec."No. Series");
                             CurrPage.Update();
                         end;
                     end;

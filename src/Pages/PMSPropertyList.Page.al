@@ -52,23 +52,5 @@ page 80812 "PMS Property List"
         }
     }
 
-    actions
-    {
-        area(Processing)
-        {
-            action(NewProperty)
-            {
-                ApplicationArea = All;
-                Caption = 'New';
-                Image = New;
-                RunObject = page "PMS Property";
-                RunPageMode = Create;
-                ToolTip = 'Create a new property.';
-            }
-        }
-        area(Promoted)
-        {
-            actionref(NewProperty_Promoted; NewProperty) { }
-        }
-    }
+
 }

@@ -42,23 +42,5 @@ page 80821 "PMS Tenant List"
         }
     }
 
-    actions
-    {
-        area(Processing)
-        {
-            action(NewTenant)
-            {
-                ApplicationArea = All;
-                Caption = 'New';
-                Image = New;
-                RunObject = page "PMS Tenant";
-                RunPageMode = Create;
-                ToolTip = 'Create a new tenant.';
-            }
-        }
-        area(Promoted)
-        {
-            actionref(NewTenant_Promoted; NewTenant) { }
-        }
-    }
+
 }

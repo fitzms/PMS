@@ -53,6 +53,24 @@ table 80811 "PMS Property"
         {
             Caption = 'Postcode';
             TableRelation = "Post Code";
+
+            trigger OnValidate()
+            var
+                PostCodeRec: Record "Post Code";
+            begin
+                if Postcode = '' then begin
+                    City := '';
+                    County := '';
+                    "Country/Region Code" := '';
+                end else begin
+                    PostCodeRec.SetRange(Code, Postcode);
+                    if PostCodeRec.FindFirst() then begin
+                        City := PostCodeRec.City;
+                        County := PostCodeRec.County;
+                        "Country/Region Code" := PostCodeRec."Country/Region Code";
+                    end;
+                end;
+            end;
         }
         field(4; "Property Type Code"; Code[20])
         {
@@ -71,6 +89,12 @@ table 80811 "PMS Property"
             Caption = 'Status';
             OptionCaption = ' ,Allocated,In Construction,Non Operational,Operational,Rehoming,Relocated,Sold,Tenancy Occupied,Vacant';
             OptionMembers = " ",Allocated,"In Construction","Non Operational",Operational,Rehoming,Relocated,Sold,"Tenancy Occupied",Vacant;
+        }
+        field(34; "Global Dimension 1 Code"; Code[20])
+        {
+            Caption = 'Global Dimension 1 Code';
+            CaptionClass = '1,1,1';
+            TableRelation = "Dimension Value".Code where("Global Dimension No." = const(1), Blocked = const(false));
         }
         field(7; "VAT Elected"; Boolean)
         {
@@ -120,6 +144,12 @@ table 80811 "PMS Property"
         {
             Clustered = true;
         }
+    }
+
+    fieldgroups
+    {
+        fieldgroup(DropDown; "Property ID", "Known As", Postcode) { }
+        fieldgroup(Brick; "Property ID", "Known As", Postcode) { }
     }
 
     var
