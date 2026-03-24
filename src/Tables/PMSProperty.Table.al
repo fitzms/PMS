@@ -20,6 +20,10 @@ table 80811 "PMS Property"
                 end;
             end;
         }
+        field(11; "Known As"; Text[100])
+        {
+            Caption = 'Known As';
+        }
         field(2; Address; Text[100])
         {
             Caption = 'Address';

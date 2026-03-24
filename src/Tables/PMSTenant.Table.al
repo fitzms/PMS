@@ -27,8 +27,27 @@ table 80820 "PMS Tenant"
         field(3; Status; Option)
         {
             Caption = 'Status';
-            OptionCaption = ' ,Active,Inactive,Terminated';
-            OptionMembers = " ",Active,Inactive,Terminated;
+            OptionCaption = ' ,Current,Previous';
+            OptionMembers = " ",Current,Previous;
+        }
+        field(4; "Unit ID"; Code[20])
+        {
+            Caption = 'Unit ID';
+            TableRelation = "PMS Unit";
+        }
+        field(5; "Start Date"; Date)
+        {
+            Caption = 'Start Date';
+        }
+        field(6; "End Date"; Date)
+        {
+            Caption = 'End Date';
+        }
+        field(7; "No. Series"; Code[20])
+        {
+            Caption = 'No. Series';
+            Editable = false;
+            TableRelation = "No. Series";
         }
     }
 
@@ -49,6 +68,7 @@ table 80820 "PMS Tenant"
         if "Tenant ID" = '' then begin
             PMSSetup.GetRecordOnce();
             PMSSetup.TestField("Tenant Nos.");
+            "No. Series" := PMSSetup."Tenant Nos.";
             "Tenant ID" := NoSeries.GetNextNo(PMSSetup."Tenant Nos.", WorkDate(), true);
         end;
     end;

@@ -109,7 +109,7 @@ page 80802 "PMS Role Center"
                 {
                     ApplicationArea = All;
                     Caption = 'Tenants';
-                    RunObject = page "Chart of Accounts";    // TODO (Sam): Swap for real Tenant List page
+                    RunObject = page "PMS Tenant List";
                     Image = ContactPerson;
                     ToolTip = 'View and manage all tenants.';
                 }
@@ -119,8 +119,8 @@ page 80802 "PMS Role Center"
                     Caption = 'New Tenant';
                     Image = NewCustomer;
                     ToolTip = 'Create a new tenant record.';
-                    // TODO (Sam): Replace RunObject with the real Tenant Card page
-                    RunObject = page "G/L Account Card";    // placeholder - swap out
+                    RunObject = page "PMS Tenant";
+                    RunPageMode = Create;
                 }
 
             }

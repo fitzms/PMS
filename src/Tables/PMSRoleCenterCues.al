@@ -111,22 +111,19 @@ table 80800 "PMS Role Center Cues"
         {
             Caption = 'Total Tenants';
             FieldClass = FlowField;
-            // TODO (Sam): Replace with count over the real Tenant table
-            CalcFormula = count("G/L Account");    // placeholder table - swap out
+            CalcFormula = count("PMS Tenant");
         }
-        field(31; "New Tenants This Month"; Integer)
+        field(31; "Active Tenants"; Integer)
         {
-            Caption = 'New This Month';
+            Caption = 'Active Tenants';
             FieldClass = FlowField;
-            // TODO (Sam): Filter Tenant table where Created Date is within current month
-            CalcFormula = count("G/L Account");    // placeholder table - swap out
+            CalcFormula = count("PMS Tenant" where(Status = const(Current)));
         }
-        field(32; "Overdue Rent"; Integer)
+        field(32; "Previous Tenants"; Integer)
         {
-            Caption = 'Overdue Rent';
+            Caption = 'Previous Tenants';
             FieldClass = FlowField;
-            // TODO (Sam): Derive from ledger entries or outstanding rent records
-            CalcFormula = count("G/L Account");    // placeholder table - swap out
+            CalcFormula = count("PMS Tenant" where(Status = const(Previous)));
         }
     }
 

@@ -110,23 +110,19 @@ page 80801 "PMS Cues Part"
                 {
                     ApplicationArea = All;
                     Caption = 'Total';
-                    // TODO (Sam): Wire DrillDown to Tenant list
-                    DrillDownPageId = "Chart of Accounts";    // placeholder - swap out
+                    DrillDownPageId = "PMS Tenant List";
                 }
-                field("New Tenants This Month"; Rec."New Tenants This Month")
+                field("Active Tenants"; Rec."Active Tenants")
                 {
                     ApplicationArea = All;
-                    Caption = 'New This Month';
-                    // TODO (Sam): Wire DrillDown to new Tenants list filtered by month
-                    DrillDownPageId = "Chart of Accounts";    // placeholder - swap out
+                    Caption = 'Current';
+                    DrillDownPageId = "PMS Tenant List";
                 }
-                field("Overdue Rent"; Rec."Overdue Rent")
+                field("Previous Tenants"; Rec."Previous Tenants")
                 {
                     ApplicationArea = All;
-                    Caption = 'Overdue Rent';
-                    StyleExpr = OverdueRentStyle;
-                    // TODO (Sam): Wire DrillDown to overdue rent entries
-                    DrillDownPageId = "Chart of Accounts";    // placeholder - swap out
+                    Caption = 'Previous';
+                    DrillDownPageId = "PMS Tenant List";
                 }
             }
         }
@@ -141,7 +137,6 @@ page 80801 "PMS Cues Part"
         AvailableUnitsStyle: Text;
         TenancyOccupiedStyle: Text;
         NonOperationalStyle: Text;
-        OverdueRentStyle: Text;
 
     trigger OnAfterGetRecord()
     begin
@@ -158,8 +153,8 @@ page 80801 "PMS Cues Part"
             "Non Operational Units",
             "Operational Units",
             "Total Tenants",
-            "New Tenants This Month",
-            "Overdue Rent");
+            "Active Tenants",
+            "Previous Tenants");
 
         // Style: vacant properties amber, overdue & expiring red
         if Rec."Vacant Properties" > 0 then
@@ -187,11 +182,6 @@ page 80801 "PMS Cues Part"
             NonOperationalStyle := 'Unfavorable'
         else
             NonOperationalStyle := 'Favorable';
-
-        if Rec."Overdue Rent" > 0 then
-            OverdueRentStyle := 'Unfavorable'
-        else
-            OverdueRentStyle := 'Favorable';
 
         ActivePropertiesStyle := 'Favorable';
     end;

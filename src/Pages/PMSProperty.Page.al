@@ -19,6 +19,12 @@ page 80813 "PMS Property"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the unique identifier for the property.';
                 }
+                field("Known As"; Rec."Known As")
+                {
+                    ApplicationArea = All;
+                    Importance = Promoted;
+                    ToolTip = 'Specifies the commonly used name for the property.';
+                }
                 field(Address; Rec.Address)
                 {
                     ApplicationArea = All;

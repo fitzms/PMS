@@ -28,6 +28,16 @@ page 80821 "PMS Tenant List"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the current status of the tenant.';
                 }
+                field("Start Date"; Rec."Start Date")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the date the tenancy started.';
+                }
+                field("End Date"; Rec."End Date")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the date the tenancy ended or is due to end.';
+                }
             }
         }
     }
