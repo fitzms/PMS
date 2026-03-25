@@ -18,15 +18,22 @@ page 80805 "PMS Contract List"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the unique identifier for the contract.';
                 }
+                field("Contract Type"; Rec."Contract Type")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies whether this is an external supplier or internal employee contract.';
+                }
                 field(Description; Rec.Description)
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies a description of the contract.';
                 }
-                field("Vendor Name"; Rec."Vendor Name")
+                field(PartyName; PartyName)
                 {
                     ApplicationArea = All;
-                    ToolTip = 'Specifies the name of the vendor for this contract.';
+                    Caption = 'Party Name';
+                    Editable = false;
+                    ToolTip = 'Specifies the name of the vendor or employee for this contract.';
                 }
                 field("Start Date"; Rec."Start Date")
                 {
@@ -77,9 +84,16 @@ page 80805 "PMS Contract List"
         }
     }
 
+    var
+        PartyName: Text[100];
+
     trigger OnAfterGetRecord()
     begin
         Rec.CalcFields("Contract Value");
+        if Rec."Contract Type" = Rec."Contract Type"::Internal then
+            PartyName := Rec."Employee Name"
+        else
+            PartyName := Rec."Vendor Name";
     end;
 
     trigger OnOpenPage()

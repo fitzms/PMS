@@ -72,4 +72,9 @@ page 80824 "PMS Contract Line Subform"
             }
         }
     }
+
+    trigger OnAfterGetCurrRecord()
+    begin
+        CurrPage.Update(false);
+    end;
 }

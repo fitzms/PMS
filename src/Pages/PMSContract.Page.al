@@ -43,11 +43,19 @@ page 80806 "PMS Contract Header"
                 field(Status; Rec.Status)
                 {
                     ApplicationArea = All;
+                    Editable = false;
                     ToolTip = 'Specifies the current status of the contract.';
+                }
+                field("Contract Type"; Rec."Contract Type")
+                {
+                    ApplicationArea = All;
+                    Importance = Promoted;
+                    ToolTip = 'Specifies whether this is an external supplier contract or an internal employee contract.';
                 }
                 group(VendorGroup)
                 {
                     ShowCaption = false;
+                    Visible = Rec."Contract Type" = Rec."Contract Type"::External;
                     field("Vendor No."; Rec."Vendor No.")
                     {
                         ApplicationArea = All;
@@ -59,6 +67,23 @@ page 80806 "PMS Contract Header"
                         ApplicationArea = All;
                         Editable = false;
                         ToolTip = 'Specifies the name of the vendor for this contract.';
+                    }
+                }
+                group(EmployeeGroup)
+                {
+                    ShowCaption = false;
+                    Visible = Rec."Contract Type" = Rec."Contract Type"::Internal;
+                    field("Employee No."; Rec."Employee No.")
+                    {
+                        ApplicationArea = All;
+                        Importance = Promoted;
+                        ToolTip = 'Specifies the employee for this internal contract.';
+                    }
+                    field("Employee Name"; Rec."Employee Name")
+                    {
+                        ApplicationArea = All;
+                        Editable = false;
+                        ToolTip = 'Specifies the name of the employee for this contract.';
                     }
                 }
                 field("Start Date"; Rec."Start Date")
@@ -82,6 +107,15 @@ page 80806 "PMS Contract Header"
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies how frequently the contract job recurs.';
+
+                    // trigger OnValidate()
+                    // begin
+                    //     if Rec."Contract ID" <> '' then begin
+                    //         Rec.CalcFields("Contract Value");
+                    //         NoOfJobs := Rec.CalcNoOfJobs();
+                    //         CurrPage.Update(false);
+                    //     end;
+                    // end;
                 }
                 field("Contract Value"; Rec."Contract Value")
                 {
@@ -94,6 +128,13 @@ page 80806 "PMS Contract Header"
                     ApplicationArea = All;
                     Editable = false;
                     ToolTip = 'Specifies the number of lines on this contract.';
+                }
+                field(NoOfJobs; NoOfJobs)
+                {
+                    ApplicationArea = All;
+                    Caption = 'No. of Jobs';
+                    Editable = false;
+                    ToolTip = 'Specifies the total number of job visits across all contract lines, based on each line''s frequency and the contract start and end dates.';
                 }
             }
             part(Lines; "PMS Contract Line Subform")
@@ -199,11 +240,28 @@ page 80806 "PMS Contract Header"
     var
         LockContractEnabled: Boolean;
         IsContractEditable: Boolean;
+        NoOfJobs: Integer;
+
+    trigger OnNewRecord(BelowxRec: Boolean)
+    var
+        PMSSetup: Record "PMS Setup";
+        NoSeries: Codeunit "No. Series";
+    begin
+        Rec.Status := Rec.Status::Open;
+        IsContractEditable := true;
+        LockContractEnabled := true;
+        PMSSetup.GetRecordOnce();
+        if PMSSetup."Contract Nos." <> '' then begin
+            Rec."No. Series" := PMSSetup."Contract Nos.";
+            Rec."Contract ID" := NoSeries.GetNextNo(Rec."No. Series");
+        end;
+    end;
 
     trigger OnAfterGetRecord()
     begin
         Rec.CalcFields("Contract Value", "No. of Contract Lines");
         LockContractEnabled := Rec.Status in [Rec.Status::Open, Rec.Status::Active];
         IsContractEditable := Rec.Status in [Rec.Status::Open, Rec.Status::Active];
+        NoOfJobs := Rec.CalcNoOfJobs();
     end;
 }
