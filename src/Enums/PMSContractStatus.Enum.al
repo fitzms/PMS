@@ -19,4 +19,8 @@ enum 80804 "PMS Contract Status"
     {
         Caption = 'Archived';
     }
+    value(4; Locked)
+    {
+        Caption = 'Locked';
+    }
 }

@@ -84,11 +84,9 @@ table 80811 "PMS Property"
             OptionCaption = ' ,Freehold,Leasehold';
             OptionMembers = " ",Freehold,Leasehold;
         }
-        field(6; Status; Option)
+        field(6; Status; Enum "PMS Property Status")
         {
             Caption = 'Status';
-            OptionCaption = ' ,Allocated,In Construction,Non Operational,Operational,Rehoming,Relocated,Sold,Tenancy Occupied,Vacant';
-            OptionMembers = " ",Allocated,"In Construction","Non Operational",Operational,Rehoming,Relocated,Sold,"Tenancy Occupied",Vacant;
         }
         field(34; "Global Dimension 1 Code"; Code[20])
         {

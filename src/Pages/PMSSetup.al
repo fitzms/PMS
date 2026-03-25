@@ -51,6 +51,11 @@ page 80808 "PMS Setup"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the number series used to assign IDs to new tenants.';
                 }
+                field("Helpdesk Nos."; Rec."Helpdesk Nos.")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the number series used to assign IDs to new helpdesk calls.';
+                }
             }
         }
     }

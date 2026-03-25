@@ -94,11 +94,9 @@ table 80823 "PMS Contract Line"
             CaptionClass = '1,1,1';
             TableRelation = "Dimension Value".Code where("Global Dimension No." = const(1), Blocked = const(false));
         }
-        field(9; "Job Frequency"; Option)
+        field(9; "Job Frequency"; Enum "PMS Job Frequency")
         {
             Caption = 'Job Frequency';
-            OptionCaption = ' ,Daily,Weekly,Fortnightly,Monthly,Quarterly,Bi-Annually,Yearly';
-            OptionMembers = " ",Daily,Weekly,Fortnightly,Monthly,Quarterly,"Bi-Annually",Yearly;
 
             trigger OnValidate()
             begin
@@ -136,22 +134,16 @@ table 80823 "PMS Contract Line"
         if Quantity = 0 then
             Quantity := 1;
 
-        if "G/L Account No." = '' then
-            if ContractHeader.Get("Contract ID") then
+        if ContractHeader.Get("Contract ID") then begin
+            if "G/L Account No." = '' then
                 if ContractHeader."PMSCat. Posting Group" <> '' then
                     if PostingGroup.Get(ContractHeader."PMSCat. Posting Group") then
                         "G/L Account No." := PostingGroup."G/L Account No.";
 
-        if "Job Frequency" = 0 then
-            if ContractHeader.Get("Contract ID") then
+            if "Job Frequency" = "Job Frequency"::" " then
                 "Job Frequency" := ContractHeader."Job Frequency";
+        end;
     end;
-
-    // trigger OnValidate()
-    // begin
-    //     if (Quantity <> xRec.Quantity) or ("Unit Price" <> xRec."Unit Price") then
-    //         "Line Amount" := Quantity * "Unit Price";
-    // end;
 
     local procedure GetNextLineNo(): Integer
     var
@@ -166,21 +158,26 @@ table 80823 "PMS Contract Line"
     var
         ConfirmChangeQst: Label 'Changing the %1 will update the Description, G/L Account, and Dimension fields and clear the Special Instructions on this line. Do you want to continue?';
 
-    local procedure CalcTotalLineCost()
+    internal procedure CalcTotalLineCost()
     var
         ContractHeader: Record "PMS Contract Header";
+    begin
+        if ContractHeader.Get("Contract ID") then
+            CalcTotalLineCostWithDates(ContractHeader."Start Date", ContractHeader."End Date")
+        else
+            CalcTotalLineCostWithDates(0D, 0D);
+    end;
+
+    internal procedure CalcTotalLineCostWithDates(StartDate: Date; EndDate: Date)
+    var
         Multiplier: Integer;
         TotalMonths: Integer;
         TotalDays: Integer;
     begin
-        if ContractHeader.Get("Contract ID") and
-           (ContractHeader."Start Date" <> 0D) and
-           (ContractHeader."End Date" <> 0D) and
-           (ContractHeader."End Date" >= ContractHeader."Start Date")
-        then begin
-            TotalDays := ContractHeader."End Date" - ContractHeader."Start Date" + 1;
-            TotalMonths := (Date2DMY(ContractHeader."End Date", 3) - Date2DMY(ContractHeader."Start Date", 3)) * 12
-                         + Date2DMY(ContractHeader."End Date", 2) - Date2DMY(ContractHeader."Start Date", 2) + 1;
+        if (StartDate <> 0D) and (EndDate <> 0D) and (EndDate >= StartDate) then begin
+            TotalDays := EndDate - StartDate + 1;
+            TotalMonths := (Date2DMY(EndDate, 3) - Date2DMY(StartDate, 3)) * 12
+                         + Date2DMY(EndDate, 2) - Date2DMY(StartDate, 2) + 1;
             case "Job Frequency" of
                 "Job Frequency"::Daily:
                     Multiplier := TotalDays;

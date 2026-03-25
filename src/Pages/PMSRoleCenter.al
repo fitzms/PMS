@@ -79,6 +79,23 @@ page 80802 "PMS Role Center"
             }
 
 
+            // ── Helpdesk section ──────────────────────────────────────────────
+            group("Helpdesk")
+            {
+                Caption = 'Helpdesk';
+
+                action(HelpdeskCallList)
+                {
+                    ApplicationArea = All;
+                    Caption = 'Helpdesk Calls';
+                    RunObject = page "PMS Helpdesk Call List";
+                    Image = ServiceLedger;
+                    ToolTip = 'View and manage reactive helpdesk calls for property issues.';
+                }
+
+            }
+
+
             // ── Administration ─────────────────────────────────────────────────
             group("Administration")
             {
@@ -132,6 +149,14 @@ page 80802 "PMS Role Center"
                 Image = ContactPerson;
                 ToolTip = 'Open the Tenants list.';
             }
+            action(NavHelpdesk)
+            {
+                ApplicationArea = All;
+                Caption = 'Helpdesk';
+                RunObject = page "PMS Helpdesk Call List";
+                Image = ServiceLedger;
+                ToolTip = 'Open the Helpdesk Calls list.';
+            }
 
         }
 
@@ -165,6 +190,15 @@ page 80802 "PMS Role Center"
                 Image = NewCustomer;
                 ToolTip = 'Quickly create a new tenant.';
                 RunObject = page "PMS Tenant";
+                RunPageMode = Create;
+            }
+            action(QuickNewHelpdeskCall)
+            {
+                ApplicationArea = All;
+                Caption = 'New Call';
+                Image = NewDocument;
+                ToolTip = 'Quickly log a new helpdesk call.';
+                RunObject = page "PMS Helpdesk Call";
                 RunPageMode = Create;
             }
         }

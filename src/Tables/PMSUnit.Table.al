@@ -35,16 +35,21 @@ table 80816 "PMS Unit"
             OptionCaption = ' ,Freehold,Leasehold';
             OptionMembers = " ",Freehold,Leasehold;
         }
-        field(5; Status; Option)
+        field(5; Status; Enum "PMS Property Status")
         {
             Caption = 'Status';
-            OptionCaption = ' ,Allocated,In Construction,Non Operational,Operational,Rehoming,Relocated,Sold,Tenancy Occupied,Vacant';
-            OptionMembers = " ",Allocated,"In Construction","Non Operational",Operational,Rehoming,Relocated,Sold,"Tenancy Occupied",Vacant;
         }
         field(6; "Property ID"; Code[20])
         {
             Caption = 'Property ID';
             TableRelation = "PMS Property";
+        }
+        field(7; "Current Tenant"; Text[100])
+        {
+            Caption = 'Current Tenant';
+            FieldClass = FlowField;
+            CalcFormula = lookup("PMS Tenant".Name where("Unit ID" = field("Unit ID"), Status = const(Current)));
+            Editable = false;
         }
     }
 

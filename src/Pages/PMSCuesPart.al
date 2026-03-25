@@ -119,6 +119,47 @@ page 80801 "PMS Cues Part"
                     DrillDownPageId = "PMS Tenant List";
                 }
             }
+
+            // ── Helpdesk ──────────────────────────────────────────────────────
+            cuegroup("Helpdesk")
+            {
+                Caption = 'Helpdesk';
+
+                field("New Helpdesk Calls"; Rec."New Helpdesk Calls")
+                {
+                    ApplicationArea = All;
+                    Caption = 'New Calls';
+                    StyleExpr = NewCallsStyle;
+                    DrillDownPageId = "PMS Helpdesk Call List";
+
+                    trigger OnDrillDown()
+                    var
+                        HelpdeskCall: Record "PMS Helpdesk Call";
+                        HelpdeskList: Page "PMS Helpdesk Call List";
+                    begin
+                        HelpdeskCall.SetRange(Status, HelpdeskCall.Status::New);
+                        HelpdeskList.SetTableView(HelpdeskCall);
+                        HelpdeskList.Run();
+                    end;
+                }
+                field("Critical Calls"; Rec."Critical Calls")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Critical';
+                    StyleExpr = CriticalCallsStyle;
+                    DrillDownPageId = "PMS Helpdesk Call List";
+
+                    trigger OnDrillDown()
+                    var
+                        HelpdeskCall: Record "PMS Helpdesk Call";
+                        HelpdeskList: Page "PMS Helpdesk Call List";
+                    begin
+                        HelpdeskCall.SetRange(Priority, HelpdeskCall.Priority::Critical);
+                        HelpdeskList.SetTableView(HelpdeskCall);
+                        HelpdeskList.Run();
+                    end;
+                }
+            }
         }
     }
 
@@ -130,6 +171,8 @@ page 80801 "PMS Cues Part"
         OccupiedUnitsStyle: Text;
         TenancyOccupiedStyle: Text;
         NonOperationalStyle: Text;
+        NewCallsStyle: Text;
+        CriticalCallsStyle: Text;
 
     trigger OnAfterGetRecord()
     begin
@@ -145,7 +188,9 @@ page 80801 "PMS Cues Part"
             "Non Operational Units",
             "Operational Units",
             "Active Tenants",
-            "Previous Tenants");
+            "Previous Tenants",
+            "New Helpdesk Calls",
+            "Critical Calls");
 
         // Style: vacant properties amber, overdue & expiring red
         if Rec."Vacant Properties" > 0 then
@@ -170,6 +215,16 @@ page 80801 "PMS Cues Part"
             NonOperationalStyle := 'Favorable';
 
         ActivePropertiesStyle := 'Favorable';
+
+        if Rec."New Helpdesk Calls" > 0 then
+            NewCallsStyle := 'Unfavorable'
+        else
+            NewCallsStyle := 'Favorable';
+
+        if Rec."Critical Calls" > 0 then
+            CriticalCallsStyle := 'Unfavorable'
+        else
+            CriticalCallsStyle := 'Favorable';
     end;
 
     trigger OnOpenPage()

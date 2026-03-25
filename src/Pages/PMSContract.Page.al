@@ -13,6 +13,7 @@ page 80806 "PMS Contract Header"
             group(General)
             {
                 Caption = 'General';
+                Editable = IsContractEditable;
 
                 field("Contract ID"; Rec."Contract ID")
                 {
@@ -100,6 +101,7 @@ page 80806 "PMS Contract Header"
                 ApplicationArea = All;
                 Caption = 'Lines';
                 SubPageLink = "Contract ID" = field("Contract ID");
+                Editable = IsContractEditable;
             }
         }
     }
@@ -128,21 +130,23 @@ page 80806 "PMS Contract Header"
                 ToolTip = 'Re-open this contract to allow editing.';
                 trigger OnAction()
                 begin
-                    // TODO: Implement open contract logic
-                    Message('Open Contract - to be implemented.');
+                    Rec.Status := Rec.Status::Open;
+                    Rec.Modify(true);
+                    CurrPage.Update(false);
                 end;
             }
             action(LockContract)
             {
                 ApplicationArea = All;
                 Caption = 'Lock Contract';
-                Enabled = Rec.Status <> Rec.Status::Closed;
+                Enabled = LockContractEnabled;
                 Image = Lock;
                 ToolTip = 'Lock this contract to prevent further changes.';
                 trigger OnAction()
                 begin
-                    // TODO: Implement lock contract logic
-                    Message('Lock Contract - to be implemented.');
+                    Rec.Status := Rec.Status::Locked;
+                    Rec.Modify(true);
+                    CurrPage.Update(false);
                 end;
             }
             action(CopyContract)
@@ -192,8 +196,14 @@ page 80806 "PMS Contract Header"
         }
     }
 
+    var
+        LockContractEnabled: Boolean;
+        IsContractEditable: Boolean;
+
     trigger OnAfterGetRecord()
     begin
         Rec.CalcFields("Contract Value", "No. of Contract Lines");
+        LockContractEnabled := Rec.Status in [Rec.Status::Open, Rec.Status::Active];
+        IsContractEditable := Rec.Status in [Rec.Status::Open, Rec.Status::Active];
     end;
 }

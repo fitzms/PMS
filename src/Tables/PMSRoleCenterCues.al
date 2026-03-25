@@ -90,13 +90,6 @@ table 80800 "PMS Role Center Cues"
             FieldClass = FlowField;
             CalcFormula = count("PMS Contract Header" where(Status = const(Active)));
         }
-        field(21; "Expiring This Month"; Integer)
-        {
-            Caption = 'Expiring This Month';
-            FieldClass = FlowField;
-            // TODO (Sam): Add filter where End Date is within current month
-            CalcFormula = count("PMS Contract Header");
-        }
         field(22; "Open Contracts"; Integer)
         {
             Caption = 'Open Contracts';
@@ -138,6 +131,20 @@ table 80800 "PMS Role Center Cues"
             Caption = 'Previous Tenants';
             FieldClass = FlowField;
             CalcFormula = count("PMS Tenant" where(Status = const(Previous)));
+        }
+
+        // ── Helpdesk ──────────────────────────────────────────────────────────
+        field(40; "New Helpdesk Calls"; Integer)
+        {
+            Caption = 'New Helpdesk Calls';
+            FieldClass = FlowField;
+            CalcFormula = count("PMS Helpdesk Call" where(Status = const(New)));
+        }
+        field(41; "Critical Calls"; Integer)
+        {
+            Caption = 'Critical Calls';
+            FieldClass = FlowField;
+            CalcFormula = count("PMS Helpdesk Call" where(Priority = const(Critical)));
         }
     }
 

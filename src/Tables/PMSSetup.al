@@ -29,17 +29,20 @@ table 80807 "PMS Setup"
             Caption = 'Tenant Nos.';
             TableRelation = "No. Series";
         }
+        field(14; "Helpdesk Nos."; Code[20])
+        {
+            Caption = 'Helpdesk Nos.';
+            TableRelation = "No. Series";
+        }
         field(20; "Default Job Type"; Option)
         {
             Caption = 'Default Job Type';
             OptionCaption = ' ,Planned Maintenance,Reactive Maintenance,Internal';
             OptionMembers = " ","Planned Maintenance","Reactive Maintenance",Internal;
         }
-        field(30; "Job Frequency"; Option)
+        field(30; "Job Frequency"; Enum "PMS Job Frequency")
         {
             Caption = 'Job Frequency';
-            OptionCaption = ' ,Weekly,Fortnightly,Monthly,Quarterly,Half Yearly,Yearly,Single Charge';
-            OptionMembers = " ",Weekly,Fortnightly,Monthly,Quarterly,"Half Yearly",Yearly,"Single Charge";
         }
 
     }

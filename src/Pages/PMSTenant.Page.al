@@ -42,6 +42,7 @@ page 80822 "PMS Tenant"
                 field(Status; Rec.Status)
                 {
                     ApplicationArea = All;
+                    Editable = false;
                     Importance = Promoted;
                     ToolTip = 'Specifies the current status of the tenant.';
                 }
@@ -63,6 +64,16 @@ page 80822 "PMS Tenant"
                     Importance = Promoted;
                     ToolTip = 'Specifies the date the tenancy ended or is due to end.';
                 }
+            }
+            group(Property)
+            {
+                Caption = 'Property';
+
+                field("Property ID"; Rec."Property ID")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the property this tenant is linked to.';
+                }
                 field(PropertyAddress; PropertyAddress)
                 {
                     ApplicationArea = All;
@@ -77,6 +88,34 @@ page 80822 "PMS Tenant"
                     Editable = false;
                     ToolTip = 'Specifies the second address line of the property linked to the unit.';
                 }
+                field(PropertyAddress3; PropertyAddress3)
+                {
+                    ApplicationArea = All;
+                    Caption = 'Address 3';
+                    Editable = false;
+                    ToolTip = 'Specifies the third address line of the property linked to the unit.';
+                }
+                field(PropertyCity; PropertyCity)
+                {
+                    ApplicationArea = All;
+                    Caption = 'City';
+                    Editable = false;
+                    ToolTip = 'Specifies the city of the property linked to the unit.';
+                }
+                field(PropertyCounty; PropertyCounty)
+                {
+                    ApplicationArea = All;
+                    Caption = 'County';
+                    Editable = false;
+                    ToolTip = 'Specifies the county of the property linked to the unit.';
+                }
+                field(PropertyCountryRegionCode; PropertyCountryRegionCode)
+                {
+                    ApplicationArea = All;
+                    Caption = 'Country/Region';
+                    Editable = false;
+                    ToolTip = 'Specifies the country or region of the property linked to the unit.';
+                }
             }
         }
     }
@@ -88,16 +127,28 @@ page 80822 "PMS Tenant"
     begin
         PropertyAddress := '';
         PropertyAddress2 := '';
+        PropertyAddress3 := '';
+        PropertyCity := '';
+        PropertyCounty := '';
+        PropertyCountryRegionCode := '';
         if Rec."Unit ID" <> '' then
             if PMSUnit.Get(Rec."Unit ID") then
                 if PMSUnit."Property ID" <> '' then
                     if PMSProperty.Get(PMSUnit."Property ID") then begin
                         PropertyAddress := PMSProperty.Address;
                         PropertyAddress2 := PMSProperty."Address 2";
+                        PropertyAddress3 := PMSProperty."Address 3";
+                        PropertyCity := PMSProperty.City;
+                        PropertyCounty := PMSProperty.County;
+                        PropertyCountryRegionCode := PMSProperty."Country/Region Code";
                     end;
     end;
 
     var
         PropertyAddress: Text[100];
         PropertyAddress2: Text[50];
+        PropertyAddress3: Text[50];
+        PropertyCity: Text[30];
+        PropertyCounty: Text[50];
+        PropertyCountryRegionCode: Code[10];
 }

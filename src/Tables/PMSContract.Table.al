@@ -80,11 +80,9 @@ table 80804 "PMS Contract Header"
             Editable = false;
             TableRelation = "No. Series";
         }
-        field(7; "Job Frequency"; Option)
+        field(7; "Job Frequency"; Enum "PMS Job Frequency")
         {
             Caption = 'Job Frequency';
-            OptionCaption = ' ,Daily,Weekly,Fortnightly,Monthly,Quarterly,Bi-Annually,Yearly';
-            OptionMembers = " ",Daily,Weekly,Fortnightly,Monthly,Quarterly,"Bi-Annually",Yearly;
         }
         field(8; "Contract Value"; Decimal)
         {
@@ -124,6 +122,14 @@ table 80804 "PMS Contract Header"
         end;
     end;
 
+    trigger OnDelete()
+    var
+        ContractLine: Record "PMS Contract Line";
+    begin
+        ContractLine.SetRange("Contract ID", "Contract ID");
+        ContractLine.DeleteAll(true);
+    end;
+
     local procedure RecalcContractLines()
     var
         ContractLine: Record "PMS Contract Line";
@@ -131,7 +137,7 @@ table 80804 "PMS Contract Header"
         ContractLine.SetRange("Contract ID", "Contract ID");
         if ContractLine.FindSet(true) then
             repeat
-                ContractLine.Validate("Job Frequency", ContractLine."Job Frequency");
+                ContractLine.CalcTotalLineCostWithDates("Start Date", "End Date");
                 ContractLine.Modify();
             until ContractLine.Next() = 0;
     end;

@@ -90,6 +90,7 @@ page 80803 "PMS Contracts Cues Part"
             "Open Contracts",
             "Closed Contracts");
 
+        ContractHdr.SetFilter(Status, '%1|%2', ContractHdr.Status::Open, ContractHdr.Status::Active);
         ContractHdr.SetRange("Start Date", Today, CalcDate('<+30D>', Today));
         Rec."Start in 30 Days" := ContractHdr.Count();
         if Rec."Start in 30 Days" > 0 then
@@ -98,6 +99,7 @@ page 80803 "PMS Contracts Cues Part"
             StartIn30Style := 'Favorable';
 
         ContractHdr.Reset();
+        ContractHdr.SetFilter(Status, '%1|%2', ContractHdr.Status::Open, ContractHdr.Status::Active);
         ContractHdr.SetRange("End Date", Today, CalcDate('<+30D>', Today));
         Rec."End in 30 Days" := ContractHdr.Count();
         if Rec."End in 30 Days" > 0 then

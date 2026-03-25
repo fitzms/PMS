@@ -24,16 +24,31 @@ table 80820 "PMS Tenant"
         {
             Caption = 'Name';
         }
-        field(3; Status; Option)
+        field(3; Status; Enum "PMS Tenant Status")
         {
             Caption = 'Status';
-            OptionCaption = ' ,Current,Previous';
-            OptionMembers = " ",Current,Previous;
         }
         field(4; "Unit ID"; Code[20])
         {
             Caption = 'Unit ID';
             TableRelation = "PMS Unit";
+
+            trigger OnValidate()
+            var
+                Unit: Record "PMS Unit";
+            begin
+                if "Unit ID" = '' then
+                    "Property ID" := ''
+                else
+                    if Unit.Get("Unit ID") then
+                        "Property ID" := Unit."Property ID";
+            end;
+        }
+        field(8; "Property ID"; Code[20])
+        {
+            Caption = 'Property ID';
+            TableRelation = "PMS Property";
+            Editable = false;
         }
         field(5; "Start Date"; Date)
         {
@@ -42,6 +57,15 @@ table 80820 "PMS Tenant"
         field(6; "End Date"; Date)
         {
             Caption = 'End Date';
+
+            trigger OnValidate()
+            begin
+                if "End Date" <> 0D then
+                    Status := Status::Previous
+                else
+                    if Status = Status::Previous then
+                        Status := Status::Current;
+            end;
         }
         field(7; "No. Series"; Code[20])
         {
