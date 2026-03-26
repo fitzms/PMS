@@ -9,6 +9,11 @@ page 80802 "PMS Role Center"
     {
         area(RoleCenter)
         {
+            // Headline
+            part(HeadlinePart; "PMS Headline Part")
+            {
+                ApplicationArea = All;
+            }
             // Properties & Tenants KPI cues
             part(CuesPart; "PMS Cues Part")
             {
@@ -16,6 +21,11 @@ page 80802 "PMS Role Center"
             }
             // Contracts KPI cues
             part(ContractsCuesPart; "PMS Contracts Cues Part")
+            {
+                ApplicationArea = All;
+            }
+            // Top 10 contracts by value chart
+            part(TopContractsChart; "PMS Top Contracts Chart")
             {
                 ApplicationArea = All;
             }

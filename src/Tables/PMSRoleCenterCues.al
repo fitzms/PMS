@@ -33,7 +33,7 @@ table 80800 "PMS Role Center Cues"
         // ── Staff Houses ──────────────────────────────────────────────────────
         field(16; "Total Staff Houses"; Integer)
         {
-            Caption = 'Total Staff Houses';
+            Caption = 'Staff Houses';
             FieldClass = FlowField;
             CalcFormula = count("PMS Property" where("Property Type Code" = const('STAFFHOUSE')));
         }

@@ -23,6 +23,12 @@ page 80821 "PMS Tenant List"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the name of the tenant.';
                 }
+                field("Property Known As"; Rec."Property Known As")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Known As';
+                    ToolTip = 'Specifies the property the tenant is assigned to.';
+                }
                 field(Status; Rec.Status)
                 {
                     ApplicationArea = All;

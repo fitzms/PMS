@@ -9,95 +9,29 @@ page 80801 "PMS Cues Part"
     {
         area(Content)
         {
-            // ── Properties ────────────────────────────────────────────────────
-            cuegroup("Properties")
-            {
-                Caption = 'Properties';
-
-                field("Total Properties"; Rec."Total Properties")
-                {
-                    ApplicationArea = All;
-                    Caption = 'Total';
-                    DrillDownPageId = "PMS Property List";
-                }
-                field("Operational Properties"; Rec."Operational Properties")
-                {
-                    ApplicationArea = All;
-                    Caption = 'Operational';
-
-                    DrillDownPageId = "PMS Property List";
-                }
-            }
-
-            // ── Staff Houses ───────────────────────────────────────────────────
-            cuegroup("Staff Houses")
-            {
-                Caption = 'Staff Houses';
-
-                field("Total Staff Houses"; Rec."Total Staff Houses")
-                {
-                    ApplicationArea = All;
-                    Caption = 'Total';
-                    DrillDownPageId = "PMS Property List";
-                }
-            }
-
-
-            // ── Units ───────────────────────────────────────────────────────
-            cuegroup("Units")
-            {
-                Caption = 'Units';
-
-                field("Total Units"; Rec."Total Units")
-                {
-                    ApplicationArea = All;
-                    Caption = 'Total';
-                    DrillDownPageId = "PMS Unit List";
-                }
-
-
-
-
-                field("Tenancy Occupied Units"; Rec."Tenancy Occupied Units")
-                {
-                    ApplicationArea = All;
-                    Caption = 'Tenancy Occupied';
-                    StyleExpr = TenancyOccupiedStyle;
-                    DrillDownPageId = "PMS Unit List";
-                }
-                field("Non Operational Units"; Rec."Non Operational Units")
-                {
-                    ApplicationArea = All;
-                    Caption = 'Non Operational';
-                    StyleExpr = NonOperationalStyle;
-                    DrillDownPageId = "PMS Unit List";
-                }
-                field("Operational Units"; Rec."Operational Units")
-                {
-                    ApplicationArea = All;
-                    Caption = 'Operational';
-                    DrillDownPageId = "PMS Unit List";
-                }
-            }
-
-            // ── Tenants ────────────────────────────────────────────────────────
-            cuegroup("Tenants")
-            {
-                Caption = 'Tenants';
-
-                field("Active Tenants"; Rec."Active Tenants")
-                {
-                    ApplicationArea = All;
-                    Caption = 'Current';
-                    DrillDownPageId = "PMS Tenant List";
-                }
-            }
-
             // ── Helpdesk ──────────────────────────────────────────────────────
             cuegroup("Helpdesk")
             {
                 Caption = 'Helpdesk';
 
+                field("My Calls"; Rec."My Calls")
+                {
+                    ApplicationArea = All;
+                    Caption = 'My Calls';
+                    StyleExpr = MyCallsStyle;
+
+                    trigger OnDrillDown()
+                    var
+                        HelpdeskCall: Record "PMS Helpdesk Call";
+                        HelpdeskList: Page "PMS Helpdesk Call List";
+                    begin
+                        HelpdeskCall.SetRange("Call Type", HelpdeskCall."Call Type"::Internal);
+                        HelpdeskCall.SetRange("Employee No.", UserId());
+                        HelpdeskCall.SetFilter(Status, '<>%1', HelpdeskCall.Status::Closed);
+                        HelpdeskList.SetTableView(HelpdeskCall);
+                        HelpdeskList.Run();
+                    end;
+                }
                 field("Open Calls"; Rec."Open Calls")
                 {
                     ApplicationArea = All;
@@ -148,23 +82,79 @@ page 80801 "PMS Cues Part"
                         HelpdeskList.Run();
                     end;
                 }
-                field("My Calls"; Rec."My Calls")
+            }
+
+            // ── Properties ────────────────────────────────────────────────────
+            cuegroup("Properties")
+            {
+                Caption = 'Properties';
+
+                field("Total Properties"; Rec."Total Properties")
                 {
                     ApplicationArea = All;
-                    Caption = 'My Calls';
-                    StyleExpr = MyCallsStyle;
+                    Caption = 'Total';
+                    DrillDownPageId = "PMS Property List";
+                }
+                field("Operational Properties"; Rec."Operational Properties")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Operational';
 
-                    trigger OnDrillDown()
-                    var
-                        HelpdeskCall: Record "PMS Helpdesk Call";
-                        HelpdeskList: Page "PMS Helpdesk Call List";
-                    begin
-                        HelpdeskCall.SetRange("Call Type", HelpdeskCall."Call Type"::Internal);
-                        HelpdeskCall.SetRange("Employee No.", UserId());
-                        HelpdeskCall.SetFilter(Status, '<>%1', HelpdeskCall.Status::Closed);
-                        HelpdeskList.SetTableView(HelpdeskCall);
-                        HelpdeskList.Run();
-                    end;
+                    DrillDownPageId = "PMS Property List";
+                }
+
+                field("Total Staff Houses"; Rec."Total Staff Houses")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Staff Houses';
+                    DrillDownPageId = "PMS Property List";
+                }
+            }
+
+            // ── Units ───────────────────────────────────────────────────────
+            cuegroup("Units")
+            {
+                Caption = 'Units';
+
+                field("Total Units"; Rec."Total Units")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Total';
+                    DrillDownPageId = "PMS Unit List";
+                }
+
+                field("Tenancy Occupied Units"; Rec."Tenancy Occupied Units")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Tenancy Occupied';
+                    StyleExpr = TenancyOccupiedStyle;
+                    DrillDownPageId = "PMS Unit List";
+                }
+                field("Non Operational Units"; Rec."Non Operational Units")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Non Operational';
+                    StyleExpr = NonOperationalStyle;
+                    DrillDownPageId = "PMS Unit List";
+                }
+                field("Operational Units"; Rec."Operational Units")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Operational';
+                    DrillDownPageId = "PMS Unit List";
+                }
+            }
+
+            // ── Tenants ────────────────────────────────────────────────────────
+            cuegroup("Tenants")
+            {
+                Caption = 'Tenants';
+
+                field("Active Tenants"; Rec."Active Tenants")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Current';
+                    DrillDownPageId = "PMS Tenant List";
                 }
             }
         }

@@ -61,6 +61,13 @@ table 80820 "PMS Tenant"
             TableRelation = "PMS Property";
             Editable = false;
         }
+        field(9; "Property Known As"; Text[100])
+        {
+            Caption = 'Known As';
+            FieldClass = FlowField;
+            CalcFormula = lookup("PMS Property"."Known As" where("Property ID" = field("Property ID")));
+            Editable = false;
+        }
         field(5; "Start Date"; Date)
         {
             Caption = 'Start Date';

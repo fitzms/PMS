@@ -92,7 +92,7 @@
     "allowDownloadingSource": true,
     "includeSourceInSymbolFile": true
   },
-  "runtime": "11.0",
+  "runtime": "12.0",
   "target": "OnPrem",
   "features": [
     "NoImplicitWith"
