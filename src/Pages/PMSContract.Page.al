@@ -136,6 +136,12 @@ page 80806 "PMS Contract Header"
                     Editable = false;
                     ToolTip = 'Specifies the total number of job visits across all contract lines, based on each line''s frequency and the contract start and end dates.';
                 }
+                field("Purchase Order No."; Rec."Purchase Order No.")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                    ToolTip = 'Specifies the purchase order created when jobs were generated for this contract.';
+                }
             }
             part(Lines; "PMS Contract Line Subform")
             {
@@ -143,6 +149,12 @@ page 80806 "PMS Contract Header"
                 Caption = 'Lines';
                 SubPageLink = "Contract ID" = field("Contract ID");
                 Editable = IsContractEditable;
+            }
+            part(Jobs; "PMS Jobs Part")
+            {
+                ApplicationArea = All;
+                Caption = 'Jobs';
+                SubPageLink = "Source Type" = const(Contract), "Source No." = field("Contract ID");
             }
         }
     }
@@ -158,6 +170,22 @@ page 80806 "PMS Contract Header"
                 Image = List;
                 RunObject = page "PMS Contract List";
                 ToolTip = 'View the list of all contracts.';
+            }
+            action(ViewJobs)
+            {
+                ApplicationArea = All;
+                Caption = 'View Jobs';
+                Image = ViewWorksheet;
+                ToolTip = 'Open the list of all jobs generated for this contract.';
+
+                trigger OnAction()
+                var
+                    PMSJob: Record "PMS Job";
+                begin
+                    PMSJob.SetRange("Source Type", PMSJob."Source Type"::Contract);
+                    PMSJob.SetRange("Source No.", Rec."Contract ID");
+                    Page.Run(Page::"PMS Job List", PMSJob);
+                end;
             }
         }
         area(Processing)
@@ -207,11 +235,13 @@ page 80806 "PMS Contract Header"
                 ApplicationArea = All;
                 Caption = 'Create Contract Jobs';
                 Image = NewDocument;
-                ToolTip = 'Create jobs from this contract.';
+                ToolTip = 'Generate PMS jobs for every contract line occurrence. For external contracts this also creates a purchase order with one line per job.';
                 trigger OnAction()
+                var
+                    PMSJobMgt: Codeunit "PMS Job Management";
                 begin
-                    // TODO: Implement create contract job logic
-                    Message('Create Contract Job - to be implemented.');
+                    PMSJobMgt.CreateJobsFromContract(Rec);
+                    CurrPage.Update(false);
                 end;
             }
         }
@@ -233,6 +263,7 @@ page 80806 "PMS Contract Header"
             {
                 Caption = 'Navigate';
                 actionref(ContractList_Promoted; ContractList) { }
+                actionref(ViewJobs_Promoted; ViewJobs) { }
             }
         }
     }

@@ -170,20 +170,25 @@ table 80804 "PMS Contract Header"
                 end;
             end;
         }
-        field(14; "Employee No."; Code[20])
+        field(14; "Employee No."; Code[50])
         {
             Caption = 'Employee No.';
-            TableRelation = Employee;
+            TableRelation = "User Setup";
 
             trigger OnValidate()
             var
-                Emp: Record Employee;
+                UserSetup: Record "User Setup";
+                BCUser: Record User;
             begin
                 if "Employee No." = '' then
                     "Employee Name" := ''
                 else begin
-                    Emp.Get("Employee No.");
-                    "Employee Name" := CopyStr(Emp."First Name" + ' ' + Emp."Last Name", 1, MaxStrLen("Employee Name"));
+                    UserSetup.Get("Employee No.");
+                    BCUser.SetRange("User Name", "Employee No.");
+                    if BCUser.FindFirst() then
+                        "Employee Name" := CopyStr(BCUser."Full Name", 1, MaxStrLen("Employee Name"))
+                    else
+                        "Employee Name" := CopyStr("Employee No.", 1, MaxStrLen("Employee Name"));
                 end;
             end;
         }
@@ -191,6 +196,12 @@ table 80804 "PMS Contract Header"
         {
             Caption = 'Employee Name';
             Editable = false;
+        }
+        field(16; "Purchase Order No."; Code[20])
+        {
+            Caption = 'Purchase Order No.';
+            Editable = false;
+            TableRelation = "Purchase Header"."No." where("Document Type" = const(Order));
         }
     }
 

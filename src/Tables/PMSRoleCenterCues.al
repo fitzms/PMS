@@ -134,6 +134,12 @@ table 80800 "PMS Role Center Cues"
         }
 
         // ── Helpdesk ──────────────────────────────────────────────────────────
+        field(44; "Open Calls"; Integer)
+        {
+            Caption = 'Open Calls';
+            FieldClass = FlowField;
+            CalcFormula = count("PMS Helpdesk Call" where(Status = filter(<> Closed)));
+        }
         field(40; "New Helpdesk Calls"; Integer)
         {
             Caption = 'New Helpdesk Calls';
@@ -145,6 +151,17 @@ table 80800 "PMS Role Center Cues"
             Caption = 'Critical Calls';
             FieldClass = FlowField;
             CalcFormula = count("PMS Helpdesk Call" where(Priority = const(Critical)));
+        }
+        field(42; "My Calls"; Integer)
+        {
+            Caption = 'My Calls';
+            FieldClass = FlowField;
+            CalcFormula = count("PMS Helpdesk Call" where("Call Type" = const(Internal), "Employee No." = field("Employee No. Filter"), Status = filter(<> Closed)));
+        }
+        field(43; "Employee No. Filter"; Code[50])
+        {
+            Caption = 'Employee No. Filter';
+            FieldClass = FlowFilter;
         }
     }
 

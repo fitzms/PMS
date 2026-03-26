@@ -53,7 +53,7 @@ table 80808 "PMS Helpdesk Call"
         {
             Caption = 'Details';
         }
-        field(9; "Reported Date"; Date)
+        field(9; "Reported Date"; DateTime)
         {
             Caption = 'Reported Date';
         }
@@ -64,6 +64,8 @@ table 80808 "PMS Helpdesk Call"
         field(11; "Assigned To"; Text[100])
         {
             Caption = 'Assigned To';
+            ObsoleteState = Removed;
+            ObsoleteReason = 'Use Employee No./Vendor No. instead.';
         }
         field(12; "Target Resolution Date"; Date)
         {
@@ -76,6 +78,101 @@ table 80808 "PMS Helpdesk Call"
         field(14; "Closed Date"; Date)
         {
             Caption = 'Closed Date';
+            Editable = false;
+        }
+        field(15; "Employee No."; Code[50])
+        {
+            Caption = 'Employee No.';
+            TableRelation = "User Setup";
+
+            trigger OnValidate()
+            var
+                UserSetup: Record "User Setup";
+                BCUser: Record User;
+            begin
+                if "Employee No." = '' then begin
+                    "Employee Name" := '';
+                end else begin
+                    UserSetup.Get("Employee No.");
+                    BCUser.SetRange("User Name", "Employee No.");
+                    if BCUser.FindFirst() then
+                        "Employee Name" := CopyStr(BCUser."Full Name", 1, MaxStrLen("Employee Name"))
+                    else
+                        "Employee Name" := CopyStr("Employee No.", 1, MaxStrLen("Employee Name"));
+                end;
+            end;
+        }
+        field(16; "Employee Name"; Text[100])
+        {
+            Caption = 'Employee Name';
+            Editable = false;
+        }
+        field(17; "Property ID"; Code[20])
+        {
+            Caption = 'Property ID';
+            TableRelation = "PMS Property";
+
+            trigger OnValidate()
+            var
+                Unit: Record "PMS Unit";
+            begin
+                if ("Unit ID" <> '') and ("Property ID" <> '') then begin
+                    if Unit.Get("Unit ID") then
+                        if Unit."Property ID" <> "Property ID" then
+                            Validate("Unit ID", '');
+                end else
+                    if "Property ID" = '' then
+                        Validate("Unit ID", '');
+            end;
+        }
+        field(18; "Unit ID"; Code[20])
+        {
+            Caption = 'Unit ID';
+            TableRelation = "PMS Unit"."Unit ID" where("Property ID" = field("Property ID"));
+
+            trigger OnValidate()
+            var
+                Unit: Record "PMS Unit";
+            begin
+                if "Unit ID" = '' then
+                    exit;
+                if Unit.Get("Unit ID") then
+                    "Property ID" := Unit."Property ID";
+            end;
+        }
+        field(19; "Call Type"; Enum "PMS Contract Type")
+        {
+            Caption = 'Call Type';
+
+            trigger OnValidate()
+            begin
+                if "Call Type" = "Call Type"::Internal then begin
+                    Validate("Vendor No.", '');
+                end else begin
+                    Validate("Employee No.", '');
+                end;
+            end;
+        }
+        field(20; "Vendor No."; Code[20])
+        {
+            Caption = 'Vendor No.';
+            TableRelation = Vendor;
+
+            trigger OnValidate()
+            var
+                Vend: Record Vendor;
+            begin
+                if "Vendor No." = '' then
+                    "Vendor Name" := ''
+                else begin
+                    Vend.Get("Vendor No.");
+                    "Vendor Name" := Vend.Name;
+                end;
+            end;
+        }
+        field(21; "Vendor Name"; Text[100])
+        {
+            Caption = 'Vendor Name';
             Editable = false;
         }
     }
@@ -101,8 +198,8 @@ table 80808 "PMS Helpdesk Call"
             "No. Series" := PMSSetup."Helpdesk Nos.";
             "Call No." := NoSeries.GetNextNo(PMSSetup."Helpdesk Nos.", WorkDate(), true);
         end;
-        if "Reported Date" = 0D then
-            "Reported Date" := WorkDate();
+        if "Reported Date" = 0DT then
+            "Reported Date" := CurrentDateTime;
         if "Created By" = '' then
             "Created By" := CopyStr(UserId(), 1, MaxStrLen("Created By"));
         if Priority = Priority::Low then

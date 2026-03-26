@@ -56,6 +56,11 @@ page 80808 "PMS Setup"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the number series used to assign IDs to new helpdesk calls.';
                 }
+                field("Job Nos."; Rec."Job Nos.")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the number series used to assign IDs to new PMS jobs.';
+                }
             }
         }
     }

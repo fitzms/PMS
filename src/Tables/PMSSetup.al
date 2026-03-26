@@ -34,6 +34,11 @@ table 80807 "PMS Setup"
             Caption = 'Helpdesk Nos.';
             TableRelation = "No. Series";
         }
+        field(16; "Job Nos."; Code[20])
+        {
+            Caption = 'Job Nos.';
+            TableRelation = "No. Series";
+        }
         field(20; "Default Job Type"; Option)
         {
             Caption = 'Default Job Type';

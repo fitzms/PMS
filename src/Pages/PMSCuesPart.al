@@ -27,13 +27,6 @@ page 80801 "PMS Cues Part"
 
                     DrillDownPageId = "PMS Property List";
                 }
-                field("Vacant Properties"; Rec."Vacant Properties")
-                {
-                    ApplicationArea = All;
-                    Caption = 'Vacant';
-                    StyleExpr = VacantPropertiesStyle;
-                    DrillDownPageId = "PMS Property List";
-                }
             }
 
             // ── Staff Houses ───────────────────────────────────────────────────
@@ -45,20 +38,6 @@ page 80801 "PMS Cues Part"
                 {
                     ApplicationArea = All;
                     Caption = 'Total';
-                    DrillDownPageId = "PMS Property List";
-                }
-                field("Operational Staff Houses"; Rec."Operational Staff Houses")
-                {
-                    ApplicationArea = All;
-                    Caption = 'Operational';
-
-                    DrillDownPageId = "PMS Property List";
-                }
-                field("Vacant Staff Houses"; Rec."Vacant Staff Houses")
-                {
-                    ApplicationArea = All;
-                    Caption = 'Vacant';
-                    StyleExpr = VacantStaffHousesStyle;
                     DrillDownPageId = "PMS Property List";
                 }
             }
@@ -112,12 +91,6 @@ page 80801 "PMS Cues Part"
                     Caption = 'Current';
                     DrillDownPageId = "PMS Tenant List";
                 }
-                field("Previous Tenants"; Rec."Previous Tenants")
-                {
-                    ApplicationArea = All;
-                    Caption = 'Previous';
-                    DrillDownPageId = "PMS Tenant List";
-                }
             }
 
             // ── Helpdesk ──────────────────────────────────────────────────────
@@ -125,6 +98,22 @@ page 80801 "PMS Cues Part"
             {
                 Caption = 'Helpdesk';
 
+                field("Open Calls"; Rec."Open Calls")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Open Calls';
+                    StyleExpr = OpenCallsStyle;
+
+                    trigger OnDrillDown()
+                    var
+                        HelpdeskCall: Record "PMS Helpdesk Call";
+                        HelpdeskList: Page "PMS Helpdesk Call List";
+                    begin
+                        HelpdeskCall.SetFilter(Status, '<>%1', HelpdeskCall.Status::Closed);
+                        HelpdeskList.SetTableView(HelpdeskCall);
+                        HelpdeskList.Run();
+                    end;
+                }
                 field("New Helpdesk Calls"; Rec."New Helpdesk Calls")
                 {
                     ApplicationArea = All;
@@ -159,51 +148,52 @@ page 80801 "PMS Cues Part"
                         HelpdeskList.Run();
                     end;
                 }
+                field("My Calls"; Rec."My Calls")
+                {
+                    ApplicationArea = All;
+                    Caption = 'My Calls';
+                    StyleExpr = MyCallsStyle;
+
+                    trigger OnDrillDown()
+                    var
+                        HelpdeskCall: Record "PMS Helpdesk Call";
+                        HelpdeskList: Page "PMS Helpdesk Call List";
+                    begin
+                        HelpdeskCall.SetRange("Call Type", HelpdeskCall."Call Type"::Internal);
+                        HelpdeskCall.SetRange("Employee No.", UserId());
+                        HelpdeskCall.SetFilter(Status, '<>%1', HelpdeskCall.Status::Closed);
+                        HelpdeskList.SetTableView(HelpdeskCall);
+                        HelpdeskList.Run();
+                    end;
+                }
             }
         }
     }
 
     var
         ActivePropertiesStyle: Text;
-        VacantPropertiesStyle: Text;
-        ActiveStaffHousesStyle: Text;
-        VacantStaffHousesStyle: Text;
         OccupiedUnitsStyle: Text;
         TenancyOccupiedStyle: Text;
         NonOperationalStyle: Text;
+        OpenCallsStyle: Text;
         NewCallsStyle: Text;
         CriticalCallsStyle: Text;
+        MyCallsStyle: Text;
 
     trigger OnAfterGetRecord()
     begin
         Rec.CalcFields(
             "Total Properties",
             "Operational Properties",
-            "Vacant Properties",
             "Total Staff Houses",
-            "Operational Staff Houses",
-            "Vacant Staff Houses",
             "Total Units",
             "Tenancy Occupied Units",
             "Non Operational Units",
             "Operational Units",
             "Active Tenants",
-            "Previous Tenants",
             "New Helpdesk Calls",
-            "Critical Calls");
-
-        // Style: vacant properties amber, overdue & expiring red
-        if Rec."Vacant Properties" > 0 then
-            VacantPropertiesStyle := 'Ambiguous'
-        else
-            VacantPropertiesStyle := 'Favorable';
-
-        if Rec."Vacant Staff Houses" > 0 then
-            VacantStaffHousesStyle := 'Ambiguous'
-        else
-            VacantStaffHousesStyle := 'Favorable';
-
-        ActiveStaffHousesStyle := 'Favorable';
+            "Critical Calls",
+            "Open Calls");
 
         OccupiedUnitsStyle := 'Favorable';
 
@@ -216,6 +206,11 @@ page 80801 "PMS Cues Part"
 
         ActivePropertiesStyle := 'Favorable';
 
+        if Rec."Open Calls" > 0 then
+            OpenCallsStyle := 'Attention'
+        else
+            OpenCallsStyle := 'Favorable';
+
         if Rec."New Helpdesk Calls" > 0 then
             NewCallsStyle := 'Unfavorable'
         else
@@ -225,6 +220,14 @@ page 80801 "PMS Cues Part"
             CriticalCallsStyle := 'Unfavorable'
         else
             CriticalCallsStyle := 'Favorable';
+
+        Rec.SetRange("Employee No. Filter", UserId());
+        Rec.CalcFields("My Calls");
+        Rec.SetRange("Employee No. Filter");
+        if Rec."My Calls" > 0 then
+            MyCallsStyle := 'Attention'
+        else
+            MyCallsStyle := 'Favorable';
     end;
 
     trigger OnOpenPage()

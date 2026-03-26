@@ -163,35 +163,6 @@ page 80802 "PMS Role Center"
         area(Processing)
         {
             // Quick-create actions shown in the top action bar
-            action(QuickNewProperty)
-            {
-                ApplicationArea = All;
-                Caption = 'New Property';
-                Image = New;
-                ToolTip = 'Quickly create a new property.';
-                RunObject = page "PMS Property";
-                RunPageMode = Create;
-            }
-
-            action(QuickNewUnit)
-            {
-                ApplicationArea = All;
-                Caption = 'New Unit';
-                Image = NewCustomer;
-                ToolTip = 'Quickly create a new unit.';
-                RunObject = page "PMS Unit";
-                RunPageMode = Create;
-            }
-
-            action(QuickNewTenant)
-            {
-                ApplicationArea = All;
-                Caption = 'New Tenant';
-                Image = NewCustomer;
-                ToolTip = 'Quickly create a new tenant.';
-                RunObject = page "PMS Tenant";
-                RunPageMode = Create;
-            }
             action(QuickNewHelpdeskCall)
             {
                 ApplicationArea = All;
@@ -200,6 +171,37 @@ page 80802 "PMS Role Center"
                 ToolTip = 'Quickly log a new helpdesk call.';
                 RunObject = page "PMS Helpdesk Call";
                 RunPageMode = Create;
+            }
+            group(QuickNewGroup)
+            {
+                Caption = 'New';
+                action(QuickNewTenant)
+                {
+                    ApplicationArea = All;
+                    Caption = 'New Tenant';
+                    Image = NewCustomer;
+                    ToolTip = 'Quickly create a new tenant.';
+                    RunObject = page "PMS Tenant";
+                    RunPageMode = Create;
+                }
+                action(QuickNewProperty)
+                {
+                    ApplicationArea = All;
+                    Caption = 'New Property';
+                    Image = New;
+                    ToolTip = 'Quickly create a new property.';
+                    RunObject = page "PMS Property";
+                    RunPageMode = Create;
+                }
+                action(QuickNewUnit)
+                {
+                    ApplicationArea = All;
+                    Caption = 'New Unit';
+                    Image = NewCustomer;
+                    ToolTip = 'Quickly create a new unit.';
+                    RunObject = page "PMS Unit";
+                    RunPageMode = Create;
+                }
             }
         }
     }

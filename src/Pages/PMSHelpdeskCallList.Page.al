@@ -23,6 +23,11 @@ page 80809 "PMS Helpdesk Call List"
                     ApplicationArea = All;
                     ToolTip = 'Specifies a short description of the issue.';
                 }
+                field("Call Type"; Rec."Call Type")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies whether this call is handled internally or externally.';
+                }
                 field(Priority; Rec.Priority)
                 {
                     ApplicationArea = All;
@@ -38,11 +43,6 @@ page 80809 "PMS Helpdesk Call List"
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies the date the issue was reported.';
-                }
-                field("Assigned To"; Rec."Assigned To")
-                {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies who the call is assigned to.';
                 }
                 field("Target Resolution Date"; Rec."Target Resolution Date")
                 {
