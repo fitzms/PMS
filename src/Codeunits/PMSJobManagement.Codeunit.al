@@ -179,6 +179,55 @@ codeunit 80800 "PMS Job Management"
     end;
 
     /// <summary>
+    /// Completes an internal helpdesk job and spawns a new External (supplier) job
+    /// linked to the same helpdesk call. The call remains In Progress.
+    /// </summary>
+    procedure CompleteAndSpawnExternalJob(var CurrentJob: Record "PMS Job"): Code[20]
+    var
+        NewJob: Record "PMS Job";
+        PMSSetup: Record "PMS Setup";
+        NoSeries: Codeunit "No. Series";
+    begin
+        CurrentJob.TestField("Resolution Notes");
+        CurrentJob.TestField("Source Type", CurrentJob."Source Type"::"Helpdesk Call");
+        CurrentJob.TestField("Source No.");
+
+        PMSSetup.GetRecordOnce();
+        PMSSetup.TestField("Job Nos.");
+
+        // Mark the current job as Spawned (not Completed)
+        CurrentJob.Validate(Status, CurrentJob.Status::Spawned);
+        if CurrentJob."Completed Date" = 0DT then
+            CurrentJob."Completed Date" := CurrentDateTime;
+        CurrentJob.Modify(true);
+
+        // Spawn new External job linked to the same call
+        NewJob.Init();
+        NewJob."Job No." := NoSeries.GetNextNo(PMSSetup."Job Nos.", WorkDate(), true);
+        NewJob."No. Series" := PMSSetup."Job Nos.";
+        NewJob.Description := CurrentJob.Description;
+        NewJob."Source Type" := CurrentJob."Source Type"::"Helpdesk Call";
+        NewJob."Source No." := CurrentJob."Source No.";
+        NewJob."Property ID" := CurrentJob."Property ID";
+        NewJob."Unit ID" := CurrentJob."Unit ID";
+        NewJob.Priority := CurrentJob.Priority;
+        NewJob."Job Type" := NewJob."Job Type"::External;
+        NewJob."Scheduled Date" := CurrentJob."Scheduled Date";
+        NewJob."Estimated Cost" := CurrentJob."Estimated Cost";
+        NewJob."G/L Account No." := CurrentJob."G/L Account No.";
+        NewJob."Global Dimension 1 Code" := CurrentJob."Global Dimension 1 Code";
+        NewJob.Status := NewJob.Status::Open;
+        NewJob."Related Job No." := CurrentJob."Job No.";
+        NewJob.Insert(false);
+
+        // Link back from original job to new job
+        CurrentJob."Related Job No." := NewJob."Job No.";
+        CurrentJob.Modify(true);
+
+        exit(NewJob."Job No.");
+    end;
+
+    /// <summary>
     /// Creates a standalone Purchase Order for a call-based External job.
     /// Called from the Job Card when the user has set Vendor No. and G/L Account.
     /// </summary>

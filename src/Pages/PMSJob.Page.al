@@ -53,7 +53,14 @@ page 80826 "PMS Job"
                 field("Completed Date"; Rec."Completed Date")
                 {
                     ApplicationArea = All;
-                    ToolTip = 'Specifies the date the job was completed.';
+                    Caption = 'Completed/Spawned Date';
+                    Editable = false;
+                    ToolTip = 'Specifies the date the job was completed or spawned.';
+                }
+                field("Related Job No."; Rec."Related Job No.")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the related job created when this job was spawned, or the original job this was spawned from.';
                 }
                 field("Occurrence No."; Rec."Occurrence No.")
                 {
@@ -153,7 +160,7 @@ page 80826 "PMS Job"
                 field("Source No."; Rec."Source No.")
                 {
                     ApplicationArea = All;
-                    Editable = false;
+                    Editable = IsSourceNoEditable;
                     ToolTip = 'Specifies the source document number (contract ID or call number).';
                 }
                 field("Source Line No."; Rec."Source Line No.")
@@ -173,6 +180,17 @@ page 80826 "PMS Job"
                     ApplicationArea = All;
                     MultiLine = true;
                     ToolTip = 'Specifies any additional notes for this job.';
+                }
+            }
+            group(ResolutionGroup)
+            {
+                Caption = 'Resolution';
+
+                field("Resolution Notes"; Rec."Resolution Notes")
+                {
+                    ApplicationArea = All;
+                    MultiLine = true;
+                    ToolTip = 'Specifies notes on how the job was resolved. Required for internal jobs before completing.';
                 }
             }
         }
@@ -239,12 +257,50 @@ page 80826 "PMS Job"
                 ToolTip = 'Mark this job as completed and record the completion date.';
 
                 trigger OnAction()
+                var
+                    HelpdeskCall: Record "PMS Helpdesk Call";
                 begin
+                    if Rec."Job Type" = Rec."Job Type"::Internal then
+                        Rec.TestField("Resolution Notes");
                     Rec.Validate(Status, Rec.Status::Completed);
-                    if Rec."Completed Date" = 0D then
-                        Rec."Completed Date" := WorkDate();
+                    if Rec."Completed Date" = 0DT then
+                        Rec."Completed Date" := CurrentDateTime;
                     Rec.Modify(true);
+
+                    if (Rec."Job Type" = Rec."Job Type"::Internal) and
+                       (Rec."Source Type" = Rec."Source Type"::"Helpdesk Call") and
+                       (Rec."Source No." <> '') then begin
+                        if HelpdeskCall.Get(Rec."Source No.") then
+                            if HelpdeskCall.Status <> HelpdeskCall.Status::Closed then begin
+                                HelpdeskCall.Validate(Status, HelpdeskCall.Status::Closed);
+                                HelpdeskCall.Modify(true);
+                            end;
+                    end;
+
                     CurrPage.Update(false);
+                end;
+            }
+            action(CompleteAndSpawn)
+            {
+                ApplicationArea = All;
+                Caption = 'Complete and Spawn';
+                Enabled = (Rec.Status = Rec.Status::"In Progress") and (Rec."Job Type" = Rec."Job Type"::Internal) and (Rec."Source Type" = Rec."Source Type"::"Helpdesk Call");
+                Image = CreateDocument;
+                ToolTip = 'Complete this internal job and create a new external (supplier) job linked to the same helpdesk call. The call remains In Progress.';
+
+                trigger OnAction()
+                var
+                    PMSJobMgt: Codeunit "PMS Job Management";
+                    NewJob: Record "PMS Job";
+                    NewJobNo: Code[20];
+                begin
+                    if not Confirm('Are you sure that you want to spawn a new job?', false) then
+                        exit;
+                    CurrPage.SaveRecord();
+                    NewJobNo := PMSJobMgt.CompleteAndSpawnExternalJob(Rec);
+                    CurrPage.Update(false);
+                    NewJob.Get(NewJobNo);
+                    Page.Run(Page::"PMS Job", NewJob);
                 end;
             }
         }
@@ -264,10 +320,16 @@ page 80826 "PMS Job"
             group(Category_Process)
             {
                 Caption = 'Process';
+                group(CompleteGroup)
+                {
+                    Caption = 'Complete';
+                    ShowAs = SplitButton;
+                    actionref(MarkCompleted_Promoted; MarkCompleted) { }
+                    actionref(CompleteAndSpawn_Promoted; CompleteAndSpawn) { }
+                }
+                actionref(MarkInProgress_Promoted; MarkInProgress) { }
                 actionref(CreatePurchaseOrder_Promoted; CreatePurchaseOrder) { }
                 actionref(OpenPurchaseOrder_Promoted; OpenPurchaseOrder) { }
-                actionref(MarkInProgress_Promoted; MarkInProgress) { }
-                actionref(MarkCompleted_Promoted; MarkCompleted) { }
             }
             group(Category_Navigate)
             {
@@ -277,14 +339,21 @@ page 80826 "PMS Job"
         }
     }
 
+
     var
         StatusStyle: Text;
+        IsHelpdeskCallClosed: Boolean;
+        IsSourceNoEditable: Boolean;
 
     trigger OnAfterGetRecord()
+    var
+        HelpdeskCall: Record "PMS Helpdesk Call";
     begin
         case Rec.Status of
             Rec.Status::Completed:
                 StatusStyle := 'Favorable';
+            Rec.Status::Spawned:
+                StatusStyle := 'Subordinate';
             Rec.Status::Cancelled:
                 StatusStyle := 'Unfavorable';
             Rec.Status::"In Progress":
@@ -292,5 +361,17 @@ page 80826 "PMS Job"
             else
                 StatusStyle := 'Standard';
         end;
+
+        // Determine if related helpdesk call is closed
+        IsHelpdeskCallClosed := false;
+        if (Rec."Source Type" = Rec."Source Type"::"Helpdesk Call") and (Rec."Source No." <> '') then
+            if HelpdeskCall.Get(Rec."Source No.") then
+                IsHelpdeskCallClosed := (HelpdeskCall.Status = HelpdeskCall.Status::Closed);
+
+        // Set Source No. field editability
+        if (Rec."Source Type" = Rec."Source Type"::"Helpdesk Call") and IsHelpdeskCallClosed then
+            IsSourceNoEditable := false
+        else
+            IsSourceNoEditable := true;
     end;
 }

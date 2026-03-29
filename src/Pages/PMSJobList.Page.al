@@ -83,11 +83,37 @@ page 80827 "PMS Job List"
         }
     }
 
+    actions
+    {
+        area(Processing)
+        {
+            action(DeleteAll)
+            {
+                ApplicationArea = All;
+                Caption = 'Delete All';
+                Image = Delete;
+                ToolTip = 'Delete all job records. Use for test data cleanup only.';
+
+                trigger OnAction()
+                var
+                    PMSJob: Record "PMS Job";
+                begin
+                    if not Confirm('Are you sure you want to delete ALL job records? This cannot be undone.', false) then
+                        exit;
+                    PMSJob.DeleteAll(true);
+                    Message('All job records have been deleted.');
+                end;
+            }
+        }
+    }
+
     trigger OnAfterGetRecord()
     begin
         case Rec.Status of
             Rec.Status::Completed:
                 StatusStyle := 'Favorable';
+            Rec.Status::Spawned:
+                StatusStyle := 'Subordinate';
             Rec.Status::Cancelled:
                 StatusStyle := 'Unfavorable';
             Rec.Status::"In Progress":

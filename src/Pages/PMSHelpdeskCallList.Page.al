@@ -6,6 +6,7 @@ page 80809 "PMS Helpdesk Call List"
     CardPageId = "PMS Helpdesk Call";
     ApplicationArea = All;
     UsageCategory = Lists;
+    SourceTableView = sorting("Call No.") order(descending);
 
     layout
     {
@@ -13,9 +14,10 @@ page 80809 "PMS Helpdesk Call List"
         {
             repeater(Lines)
             {
-                field("Call No."; Rec."Call No.")
+                field("Call ID"; Rec."Call No.")
                 {
                     ApplicationArea = All;
+                    Caption = 'Call ID';
                     ToolTip = 'Specifies the unique identifier for the helpdesk call.';
                 }
                 field(Description; Rec.Description)
@@ -27,6 +29,13 @@ page 80809 "PMS Helpdesk Call List"
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies whether this call is handled internally or externally.';
+                }
+                field(AssignedTo; AssignedTo)
+                {
+                    ApplicationArea = All;
+                    Caption = 'Assigned To';
+                    Editable = false;
+                    ToolTip = 'Specifies the employee or vendor assigned to this call.';
                 }
                 field(Priority; Rec.Priority)
                 {
@@ -66,6 +75,23 @@ page 80809 "PMS Helpdesk Call List"
                 RunPageMode = Create;
                 ToolTip = 'Log a new helpdesk call.';
             }
+            action(DeleteAll)
+            {
+                ApplicationArea = All;
+                Caption = 'Delete All';
+                Image = Delete;
+                ToolTip = 'Delete all helpdesk call records. Use for test data cleanup only.';
+
+                trigger OnAction()
+                var
+                    HelpdeskCall: Record "PMS Helpdesk Call";
+                begin
+                    if not Confirm('Are you sure you want to delete ALL helpdesk call records? This cannot be undone.', false) then
+                        exit;
+                    HelpdeskCall.DeleteAll(true);
+                    Message('All helpdesk call records have been deleted.');
+                end;
+            }
         }
         area(Promoted)
         {
@@ -79,6 +105,7 @@ page 80809 "PMS Helpdesk Call List"
 
     var
         PriorityStyle: Text;
+        AssignedTo: Text[100];
 
     trigger OnAfterGetRecord()
     begin
@@ -90,5 +117,9 @@ page 80809 "PMS Helpdesk Call List"
             else
                 PriorityStyle := 'Standard';
         end;
+        if Rec."Call Type" = Rec."Call Type"::External then
+            AssignedTo := Rec."Vendor Name"
+        else
+            AssignedTo := Rec."Employee Name";
     end;
 }

@@ -27,4 +27,8 @@ enum 80811 "PMS Job Status"
     {
         Caption = 'Cancelled';
     }
+    value(6; Spawned)
+    {
+        Caption = 'Spawned';
+    }
 }

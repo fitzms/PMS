@@ -33,10 +33,16 @@ table 80808 "PMS Helpdesk Call"
 
             trigger OnValidate()
             begin
-                if Status = Status::Closed then
-                    "Closed Date" := WorkDate()
-                else
-                    "Closed Date" := 0D;
+                if Status = Status::Closed then begin
+                    "Closed Date" := CurrentDateTime;
+                    if "Reported Date" <> 0DT then
+                        "Resolution Time" := "Closed Date" - "Reported Date"
+                    else
+                        "Resolution Time" := 0;
+                end else begin
+                    "Closed Date" := 0DT;
+                    "Resolution Time" := 0;
+                end;
             end;
         }
         field(4; Priority; Enum "PMS Helpdesk Priority")
@@ -71,11 +77,7 @@ table 80808 "PMS Helpdesk Call"
         {
             Caption = 'Target Resolution Date';
         }
-        field(13; "Resolution Notes"; Text[2048])
-        {
-            Caption = 'Resolution Notes';
-        }
-        field(14; "Closed Date"; Date)
+        field(14; "Closed Date"; DateTime)
         {
             Caption = 'Closed Date';
             Editable = false;
@@ -110,6 +112,7 @@ table 80808 "PMS Helpdesk Call"
         field(17; "Property ID"; Code[20])
         {
             Caption = 'Property ID';
+            NotBlank = true;
             TableRelation = "PMS Property";
 
             trigger OnValidate()
@@ -173,6 +176,16 @@ table 80808 "PMS Helpdesk Call"
         field(21; "Vendor Name"; Text[100])
         {
             Caption = 'Vendor Name';
+            Editable = false;
+        }
+        field(22; "Acknowledged Date"; DateTime)
+        {
+            Caption = 'Acknowledged Date';
+            Editable = false;
+        }
+        field(23; "Resolution Time"; Duration)
+        {
+            Caption = 'Resolution Time';
             Editable = false;
         }
     }

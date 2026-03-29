@@ -134,9 +134,9 @@ table 80824 "PMS Job"
         {
             Caption = 'Scheduled Date';
         }
-        field(18; "Completed Date"; Date)
+        field(18; "Completed Date"; DateTime)
         {
-            Caption = 'Completed Date';
+            Caption = 'Completed/Spawned Date';
         }
         field(19; "Estimated Cost"; Decimal)
         {
@@ -173,6 +173,16 @@ table 80824 "PMS Job"
         field(25; Notes; Text[2048])
         {
             Caption = 'Notes';
+        }
+        field(26; "Resolution Notes"; Text[2048])
+        {
+            Caption = 'Resolution Notes';
+        }
+        field(27; "Related Job No."; Code[20])
+        {
+            Caption = 'Related Job No.';
+            Editable = false;
+            TableRelation = "PMS Job";
         }
     }
 

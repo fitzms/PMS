@@ -17,11 +17,12 @@ page 80825 "PMS Helpdesk Call"
                 group(LeftCol)
                 {
                     ShowCaption = false;
-                    field("Call No."; Rec."Call No.")
+                    field("Call ID"; Rec."Call No.")
                     {
                         ApplicationArea = All;
                         AssistEdit = true;
                         Importance = Promoted;
+                        Caption = 'Call ID';
                         ToolTip = 'Specifies the unique identifier for the helpdesk call.';
 
                         trigger OnAssistEdit()
@@ -47,6 +48,7 @@ page 80825 "PMS Helpdesk Call"
                     {
                         ApplicationArea = All;
                         Importance = Promoted;
+                        QuickEntry = true;
                         ToolTip = 'Specifies the property this call relates to.';
                     }
                     field(PropertyKnownAs; PropertyKnownAs)
@@ -59,6 +61,7 @@ page 80825 "PMS Helpdesk Call"
                     field("Unit ID"; Rec."Unit ID")
                     {
                         ApplicationArea = All;
+                        QuickEntry = true;
                         ToolTip = 'Specifies the unit within the property this call relates to.';
                     }
                     field(CurrentTenant; CurrentTenant)
@@ -77,12 +80,14 @@ page 80825 "PMS Helpdesk Call"
                         ApplicationArea = All;
                         Importance = Promoted;
                         StyleExpr = PriorityStyle;
+                        Editable = false;
                         ToolTip = 'Specifies the priority of this helpdesk call.';
                     }
                     field("Call Type"; Rec."Call Type")
                     {
                         ApplicationArea = All;
                         Importance = Promoted;
+                        QuickEntry = true;
                         ToolTip = 'Specifies whether this call is handled internally by an employee or externally by a supplier.';
                     }
                     group(VendorGroup)
@@ -138,35 +143,46 @@ page 80825 "PMS Helpdesk Call"
                     }
                 }
             }
-            group(Reporter)
+            group(TicketTimeline)
             {
-                Caption = 'Reporter';
+                Caption = 'Ticket Timeline';
 
                 field("Reported Date"; Rec."Reported Date")
                 {
                     ApplicationArea = All;
+                    Editable = false;
                     Importance = Promoted;
                     ToolTip = 'Specifies the date the issue was reported.';
                 }
                 field("Created By"; Rec."Created By")
                 {
                     ApplicationArea = All;
+                    Editable = false;
                     ToolTip = 'Specifies who logged the call.';
                 }
-            }
-            group(Resolution)
-            {
-                Caption = 'Resolution';
-
-                field("Resolution Notes"; Rec."Resolution Notes")
+                field("Acknowledged Date"; Rec."Acknowledged Date")
                 {
                     ApplicationArea = All;
-                    ToolTip = 'Specifies notes on how the issue was resolved.';
+                    ToolTip = 'Specifies the date the call was acknowledged.';
                 }
                 field("Closed Date"; Rec."Closed Date")
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies the date the call was closed.';
+                }
+                field("Resolution Time"; Rec."Resolution Time")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                    ToolTip = 'Specifies the time elapsed from when the call was reported to when it was closed.';
+                }
+                field(ResolvedOnTime; ResolvedOnTime)
+                {
+                    ApplicationArea = All;
+                    Caption = 'Resolved On Time';
+                    Editable = false;
+                    StyleExpr = ResolvedStyle;
+                    ToolTip = 'Specifies whether the call was closed before the target resolution date.';
                 }
             }
             part(Jobs; "PMS Jobs Part")
@@ -212,23 +228,38 @@ page 80825 "PMS Helpdesk Call"
             action(AcknowledgeCall)
             {
                 ApplicationArea = All;
-                Caption = 'Acknowledge';
-                Enabled = Rec.Status = Rec.Status::New;
+                Caption = 'Acknowledge and Create Job';
+                Enabled = (Rec.Status = Rec.Status::New) and (Rec."Call Type" = Rec."Call Type"::Internal);
                 Image = Approve;
-                ToolTip = 'Acknowledge this call and mark it as In Progress.';
+                ToolTip = 'Acknowledge this call, mark it as In Progress, and create a job.';
 
                 trigger OnAction()
+                var
+                    PMSJobMgt: Codeunit "PMS Job Management";
+                    PMSJob: Record "PMS Job";
+                    JobNo: Code[20];
                 begin
+                    CurrPage.SaveRecord();
+                    Rec.TestField(Description);
+                    Rec.TestField(Details);
+                    Rec.TestField("Property ID");
+                    Rec.TestField("Target Resolution Date");
                     Rec.Validate(Status, Rec.Status::"In Progress");
+                    Rec."Acknowledged Date" := CurrentDateTime;
                     Rec.Modify(true);
+                    JobNo := PMSJobMgt.CreateJobFromCall(Rec);
+                    PMSJob.Get(JobNo);
+                    PMSJob.Validate(Status, PMSJob.Status::"In Progress");
+                    PMSJob.Modify(true);
                     CurrPage.Update(false);
+                    Page.Run(Page::"PMS Job", PMSJob);
                 end;
             }
             action(PutOnHold)
             {
                 ApplicationArea = All;
                 Caption = 'Put On Hold';
-                Enabled = Rec.Status = Rec.Status::"In Progress";
+                Enabled = (Rec.Status = Rec.Status::"In Progress") and not HasJobInProgress;
                 Image = Stop;
                 ToolTip = 'Put this call on hold pending further information.';
 
@@ -258,7 +289,7 @@ page 80825 "PMS Helpdesk Call"
             {
                 ApplicationArea = All;
                 Caption = 'Resolve';
-                Enabled = Rec.Status = Rec.Status::"In Progress";
+                Enabled = (Rec.Status = Rec.Status::"In Progress") and not HasJobInProgress;
                 Image = Completed;
                 ToolTip = 'Mark this call as Resolved.';
 
@@ -303,7 +334,7 @@ page 80825 "PMS Helpdesk Call"
             {
                 ApplicationArea = All;
                 Caption = 'Create Job';
-                Enabled = not HasJob;
+                Enabled = (not HasJob) and not ((Rec.Status = Rec.Status::New) and (Rec."Call Type" = Rec."Call Type"::Internal));
                 Image = NewDocument;
                 ToolTip = 'Create a PMS job from this helpdesk call. The job defaults to Internal type; change it on the job card and use Create Purchase Order if a supplier is involved.';
 
@@ -345,8 +376,11 @@ page 80825 "PMS Helpdesk Call"
     var
         PriorityStyle: Text;
         HasJob: Boolean;
+        HasJobInProgress: Boolean;
         PropertyKnownAs: Text[100];
         CurrentTenant: Text[100];
+        ResolvedOnTime: Boolean;
+        ResolvedStyle: Text;
 
     trigger OnNewRecord(BelowRec: Boolean)
     var
@@ -361,6 +395,13 @@ page 80825 "PMS Helpdesk Call"
         Rec."Created By" := CopyStr(UserId(), 1, MaxStrLen(Rec."Created By"));
         Rec."Reported Date" := CurrentDateTime;
         Rec.Priority := Rec.Priority::Normal;
+    end;
+
+    trigger OnModifyRecord(): Boolean
+    begin
+        if Rec.Status = Rec.Status::Closed then
+            Error('Helpdesk call %1 is closed and cannot be modified.', Rec."Call No.");
+        exit(true);
     end;
 
     trigger OnAfterGetRecord()
@@ -382,6 +423,10 @@ page 80825 "PMS Helpdesk Call"
         PMSJob.SetRange("Source No.", Rec."Call No.");
         HasJob := not PMSJob.IsEmpty();
 
+        PMSJob.SetRange(Status, PMSJob.Status::"In Progress");
+        HasJobInProgress := not PMSJob.IsEmpty();
+        PMSJob.SetRange(Status);
+
         if Prop.Get(Rec."Property ID") then
             PropertyKnownAs := Prop."Known As"
         else
@@ -392,5 +437,23 @@ page 80825 "PMS Helpdesk Call"
             CurrentTenant := Unit."Current Tenant";
         end else
             CurrentTenant := '';
+
+        CurrPage.Editable := Rec.Status <> Rec.Status::Closed;
+
+        if (Rec.Status = Rec.Status::Closed) and (Rec."Closed Date" <> 0DT) and (Rec."Target Resolution Date" <> 0D) then begin
+            ResolvedOnTime := DT2Date(Rec."Closed Date") <= Rec."Target Resolution Date";
+            if ResolvedOnTime then
+                ResolvedStyle := 'Favorable'
+            else
+                ResolvedStyle := 'Unfavorable';
+        end else begin
+            ResolvedOnTime := false;
+            ResolvedStyle := 'Standard';
+        end;
+    end;
+
+    trigger OnAfterGetCurrRecord()
+    begin
+        CurrPage.Editable := Rec.Status <> Rec.Status::Closed;
     end;
 }
