@@ -157,21 +157,21 @@ table 80811 "PMS Property"
         {
             Caption = 'Total Units';
             FieldClass = FlowField;
-            CalcFormula = count("PMS Unit" where("Property ID" = field("Property ID")));
+            CalcFormula = count("PMS Unit" where("Property ID" = field("Property ID"), "Single Unit" = const(false)));
             Editable = false;
         }
         field(32; "Operational Units"; Integer)
         {
             Caption = 'Operational';
             FieldClass = FlowField;
-            CalcFormula = count("PMS Unit" where("Property ID" = field("Property ID"), Status = const(Operational)));
+            CalcFormula = count("PMS Unit" where("Property ID" = field("Property ID"), Status = const(Operational), "Single Unit" = const(false)));
             Editable = false;
         }
         field(33; "Non Operational Units"; Integer)
         {
             Caption = 'Non Operational';
             FieldClass = FlowField;
-            CalcFormula = count("PMS Unit" where("Property ID" = field("Property ID"), Status = const("Non Operational")));
+            CalcFormula = count("PMS Unit" where("Property ID" = field("Property ID"), Status = const("Non Operational"), "Single Unit" = const(false)));
             Editable = false;
         }
 

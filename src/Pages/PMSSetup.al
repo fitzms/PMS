@@ -26,6 +26,11 @@ page 80808 "PMS Setup"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the dimension code used for tenant employee dimensions.';
                 }
+                field("Cost Centre Dimension Code"; Rec."Cost Centre Dimension Code")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the dimension code used for cost centres (e.g. COSTCENTRE).';
+                }
                 field("Default Job Type"; Rec."Default Job Type")
                 {
                     ApplicationArea = All;

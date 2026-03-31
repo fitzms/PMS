@@ -55,32 +55,32 @@ table 80800 "PMS Role Center Cues"
         {
             Caption = 'Total Units';
             FieldClass = FlowField;
-            CalcFormula = count("PMS Unit");
+            CalcFormula = count("PMS Unit" where("Single Unit" = const(false)));
         }
 
         field(15; "Available Units"; Integer)
         {
             Caption = 'Available Units';
             FieldClass = FlowField;
-            CalcFormula = count("PMS Unit" where(Status = const(Vacant)));
+            CalcFormula = count("PMS Unit" where(Status = const(Vacant), "Single Unit" = const(false)));
         }
         field(19; "Tenancy Occupied Units"; Integer)
         {
             Caption = 'Tenancy Occupied Units';
             FieldClass = FlowField;
-            CalcFormula = count("PMS Unit" where(Status = const("Tenancy Occupied")));
+            CalcFormula = count("PMS Unit" where(Status = const("Tenancy Occupied"), "Single Unit" = const(false)));
         }
         field(23; "Non Operational Units"; Integer)
         {
             Caption = 'Non Operational Units';
             FieldClass = FlowField;
-            CalcFormula = count("PMS Unit" where(Status = const("Non Operational")));
+            CalcFormula = count("PMS Unit" where(Status = const("Non Operational"), "Single Unit" = const(false)));
         }
         field(24; "Operational Units"; Integer)
         {
             Caption = 'Operational Units';
             FieldClass = FlowField;
-            CalcFormula = count("PMS Unit" where(Status = const(Operational)));
+            CalcFormula = count("PMS Unit" where(Status = const(Operational), "Single Unit" = const(false)));
         }
 
         // ── Contracts ─────────────────────────────────────────────────────────

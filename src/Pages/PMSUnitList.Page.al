@@ -3,6 +3,7 @@ page 80817 "PMS Unit List"
     Caption = 'Units';
     PageType = List;
     SourceTable = "PMS Unit";
+    SourceTableView = where("Single Unit" = const(false));
     ApplicationArea = All;
     UsageCategory = Lists;
     CardPageId = "PMS Unit";
@@ -41,6 +42,7 @@ page 80817 "PMS Unit List"
                 field("Single Unit"; Rec."Single Unit")
                 {
                     ApplicationArea = All;
+                    Visible = false;
                     ToolTip = 'Specifies whether this unit is the sole unit of a single-unit property.';
                 }
             }

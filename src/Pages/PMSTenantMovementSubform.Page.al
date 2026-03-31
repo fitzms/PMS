@@ -3,7 +3,6 @@ page 80831 "PMS Tenant Movement Subform"
     Caption = 'Tenant Movement';
     PageType = ListPart;
     SourceTable = "PMS Tenant Movement";
-    SourceTableView = where("Tenant ID" = filter(<> ''));
     ApplicationArea = All;
     InsertAllowed = false;
     ModifyAllowed = false;
@@ -22,10 +21,11 @@ page 80831 "PMS Tenant Movement Subform"
                     Visible = false;
                     ToolTip = 'Specifies the entry number.';
                 }
-                field("Date"; Rec."Date")
+                field("Status"; Rec."Status")
                 {
                     ApplicationArea = All;
-                    ToolTip = 'Specifies the date of the movement entry.';
+                    Editable = false;
+                    ToolTip = 'Specifies the status of the tenant for this movement.';
                 }
 
                 field("Property ID"; Rec."Property ID")
@@ -46,13 +46,6 @@ page 80831 "PMS Tenant Movement Subform"
                     ToolTip = 'Specifies the unit associated with this movement entry.';
                 }
 
-                field("Status"; Rec."Status")
-                {
-                    ApplicationArea = All;
-                    Editable = false;
-                    ToolTip = 'Specifies the status of the tenant for this movement.';
-                }
-
                 field("Start Date"; Rec."Start Date")
                 {
                     ApplicationArea = All;
@@ -63,9 +56,15 @@ page 80831 "PMS Tenant Movement Subform"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the end date of the tenancy.';
                 }
+                field("Date"; Rec."Date")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the date of the movement entry.';
+                }
                 field("Notes"; Rec."Notes")
                 {
                     ApplicationArea = All;
+                    Visible = false;
                     ToolTip = 'Specifies additional notes for this movement entry.';
                 }
                 field("User ID"; Rec."User ID")
@@ -76,8 +75,4 @@ page 80831 "PMS Tenant Movement Subform"
             }
         }
     }
-
-    trigger OnNewRecord(BelowxRec: Boolean)
-    begin
-    end;
 }

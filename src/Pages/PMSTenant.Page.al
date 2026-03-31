@@ -134,6 +134,11 @@ page 80822 "PMS Tenant"
 
         area(FactBoxes)
         {
+            part(DocAttachList; "Doc. Attachment List Factbox")
+            {
+                ApplicationArea = All;
+                SubPageLink = "Table ID" = const(Database::"PMS Tenant"), "No." = field("Tenant ID");
+            }
             part(CustomerDetails; "Customer Details FactBox")
             {
                 ApplicationArea = All;
@@ -154,7 +159,14 @@ page 80822 "PMS Tenant"
             //     ApplicationArea = All;
             //     SubPageLink = "No." = field("Tenant ID");
             // }
-
+            systempart(Links; Links)
+            {
+                ApplicationArea = All;
+            }
+            systempart(Notes; Notes)
+            {
+                ApplicationArea = All;
+            }
         }
     }
 
@@ -162,6 +174,39 @@ page 80822 "PMS Tenant"
     {
         area(Navigation)
         {
+            action(Comments)
+            {
+                ApplicationArea = All;
+                Caption = 'Comments';
+                Image = ViewComments;
+                ToolTip = 'View or add comments for this tenant.';
+
+                trigger OnAction()
+                var
+                    RecordLink: Record "Record Link";
+                begin
+                    RecordLink.SetRange("Record ID", Rec.RecordId);
+                    RecordLink.SetRange(Type, RecordLink.Type::Note);
+                    Page.RunModal(0, RecordLink);
+                end;
+            }
+            action(Attachments)
+            {
+                ApplicationArea = All;
+                Caption = 'Attachments';
+                Image = Attach;
+                ToolTip = 'View or add attachments for this tenant.';
+
+                trigger OnAction()
+                var
+                    DocAttachDetails: Page "Document Attachment Details";
+                    RecRef: RecordRef;
+                begin
+                    RecRef.GetTable(Rec);
+                    DocAttachDetails.OpenForRecRef(RecRef);
+                    DocAttachDetails.RunModal();
+                end;
+            }
             action(Dimensions)
             {
                 ApplicationArea = All;
@@ -188,10 +233,12 @@ page 80822 "PMS Tenant"
                         else
                             Rec."Employee Dimension Value" := '';
                     end;
-                    if DefaultDim.Get(Database::"PMS Tenant", Rec."Tenant ID", 'COSTCENTRE') then
-                        Rec."Cost Centre Code" := DefaultDim."Dimension Value Code"
-                    else
-                        Rec."Cost Centre Code" := '';
+                    if PMSSetup."Cost Centre Dimension Code" <> '' then begin
+                        if DefaultDim.Get(Database::"PMS Tenant", Rec."Tenant ID", PMSSetup."Cost Centre Dimension Code") then
+                            Rec."Cost Centre Code" := DefaultDim."Dimension Value Code"
+                        else
+                            Rec."Cost Centre Code" := '';
+                    end;
                     Rec.Modify(true);
                     UpdatePageVars();
                     CurrPage.Update(false);
@@ -226,6 +273,27 @@ page 80822 "PMS Tenant"
                     CurrPage.Update(false);
                 end;
             }
+            action(ViewMovement)
+            {
+                ApplicationArea = All;
+                Caption = 'View Movement';
+                Image = View;
+                ToolTip = 'View all movement records for this tenant.';
+
+                trigger OnAction()
+                var
+                    TenantMovement: Record "PMS Tenant Movement";
+                    MovementPage: Page "PMS Tenant Movement";
+                begin
+                    TenantMovement.SetRange("Tenant ID", Rec."Tenant ID");
+                    if TenantMovement.IsEmpty() then
+                        Error('There are no movement records to view.');
+                    CurrPage.TenantMovement.Page.GetRecord(TenantMovement);
+                    MovementPage.SetRecord(TenantMovement);
+                    MovementPage.Editable(false);
+                    MovementPage.RunModal();
+                end;
+            }
             action(EditMovement)
             {
                 ApplicationArea = All;
@@ -238,6 +306,9 @@ page 80822 "PMS Tenant"
                     TenantMovement: Record "PMS Tenant Movement";
                     MovementPage: Page "PMS Tenant Movement";
                 begin
+                    TenantMovement.SetRange("Tenant ID", Rec."Tenant ID");
+                    if TenantMovement.IsEmpty() then
+                        Error('There are no movement records to edit.');
                     CurrPage.TenantMovement.Page.GetRecord(TenantMovement);
                     MovementPage.SetRecord(TenantMovement);
                     MovementPage.RunModal();
@@ -257,6 +328,9 @@ page 80822 "PMS Tenant"
                 var
                     TenantMovement: Record "PMS Tenant Movement";
                 begin
+                    TenantMovement.SetRange("Tenant ID", Rec."Tenant ID");
+                    if TenantMovement.IsEmpty() then
+                        Error('There are no movement records to delete.');
                     CurrPage.TenantMovement.Page.GetRecord(TenantMovement);
                     if not Confirm('Delete movement entry %1?', false, TenantMovement."Entry No.") then
                         exit;
@@ -303,7 +377,9 @@ page 80822 "PMS Tenant"
             group(Category_Process)
             {
                 Caption = 'Movement';
+                ShowAs = SplitButton;
 
+                actionref(ViewMovement_Promoted; ViewMovement) { }
                 actionref(NewMovement_Promoted; NewMovement) { }
                 actionref(EditMovement_Promoted; EditMovement) { }
                 actionref(DeleteMovement_Promoted; DeleteMovement) { }
@@ -313,6 +389,8 @@ page 80822 "PMS Tenant"
                 Caption = 'Tenant';
 
                 actionref(Dimensions_Promoted; Dimensions) { }
+                actionref(Comments_Promoted; Comments) { }
+                actionref(Attachments_Promoted; Attachments) { }
             }
             group(Category_Helpdesk)
             {
@@ -363,17 +441,11 @@ page 80822 "PMS Tenant"
         Movement: Record "PMS Tenant Movement";
         DimValue: Record "Dimension Value";
         ServiceShelf: Record "Service Shelf";
+        PMSSetup: Record "PMS Setup";
     begin
         IsTenantCurrent := (Rec.Status = Rec.Status::Current);
-        CurrentPropertyKnownAs := '';
-        if IsTenantCurrent then begin
-            Movement.SetRange("Tenant ID", Rec."Tenant ID");
-            Movement.SetRange(Status, Movement.Status::Current);
-            if Movement.FindFirst() then begin
-                Movement.CalcFields("Property Known As");
-                CurrentPropertyKnownAs := Movement."Property Known As";
-            end;
-        end;
+        Rec.CalcFields("Current Property Known As");
+        CurrentPropertyKnownAs := Rec."Current Property Known As";
         EmployeeDimName := '';
         HasEmployeeDim := false;
         if (EmployeeDimCode <> '') and (Rec."Employee Dimension Value" <> '') then
@@ -386,9 +458,12 @@ page 80822 "PMS Tenant"
             if ServiceShelf.Get(Rec."Billing Code") then
                 BillingDescription := ServiceShelf.Description;
         CostCentreName := '';
-        if Rec."Cost Centre Code" <> '' then
-            if DimValue.Get('COSTCENTRE', Rec."Cost Centre Code") then
-                CostCentreName := DimValue.Name;
+        if Rec."Cost Centre Code" <> '' then begin
+            PMSSetup.GetRecordOnce();
+            if PMSSetup."Cost Centre Dimension Code" <> '' then
+                if DimValue.Get(PMSSetup."Cost Centre Dimension Code", Rec."Cost Centre Code") then
+                    CostCentreName := DimValue.Name;
+        end;
     end;
 
     var

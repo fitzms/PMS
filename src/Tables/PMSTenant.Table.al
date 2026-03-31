@@ -60,6 +60,19 @@ table 80820 "PMS Tenant"
             Caption = 'Cost Centre';
             Editable = false;
         }
+        field(20; "Current Property ID"; Code[20])
+        {
+            Caption = 'Current Property ID';
+            Editable = false;
+            TableRelation = "PMS Property";
+        }
+        field(21; "Current Property Known As"; Text[100])
+        {
+            Caption = 'Current Property Known As';
+            FieldClass = FlowField;
+            CalcFormula = lookup("PMS Property"."Known As" where("Property ID" = field("Current Property ID")));
+            Editable = false;
+        }
     }
 
     keys
@@ -90,10 +103,13 @@ table 80820 "PMS Tenant"
         DefaultDim: Record "Default Dimension";
         DimValue: Record "Dimension Value";
         CostCentreCode: Code[20];
+        CostCentreDimCode: Code[20];
     begin
         PMSSetup.GetRecordOnce();
         if PMSSetup."Employee Dimension Code" = '' then
             exit;
+
+        CostCentreDimCode := PMSSetup."Cost Centre Dimension Code";
 
         // Handle Employee Dimension
         if "Employee Dimension Value" = '' then begin
@@ -119,18 +135,20 @@ table 80820 "PMS Tenant"
 
         // Handle Cost Centre Dimension
         "Cost Centre Code" := CostCentreCode;
+        if CostCentreDimCode = '' then
+            exit;
         if CostCentreCode = '' then begin
-            if DefaultDim.Get(Database::"PMS Tenant", "Tenant ID", 'COSTCENTRE') then
+            if DefaultDim.Get(Database::"PMS Tenant", "Tenant ID", CostCentreDimCode) then
                 DefaultDim.Delete(true);
         end else begin
-            if DefaultDim.Get(Database::"PMS Tenant", "Tenant ID", 'COSTCENTRE') then begin
+            if DefaultDim.Get(Database::"PMS Tenant", "Tenant ID", CostCentreDimCode) then begin
                 DefaultDim.Validate("Dimension Value Code", CostCentreCode);
                 DefaultDim.Modify(true);
             end else begin
                 DefaultDim.Init();
                 DefaultDim."Table ID" := Database::"PMS Tenant";
                 DefaultDim."No." := "Tenant ID";
-                DefaultDim.Validate("Dimension Code", 'COSTCENTRE');
+                DefaultDim.Validate("Dimension Code", CostCentreDimCode);
                 DefaultDim.Validate("Dimension Value Code", CostCentreCode);
                 DefaultDim.Insert(true);
             end;
@@ -144,12 +162,17 @@ table 80820 "PMS Tenant"
         TenantMovement.SetRange("Tenant ID", "Tenant ID");
         TenantMovement.SetCurrentKey("Tenant ID", "Date");
         if TenantMovement.FindLast() then begin
-            if TenantMovement.Status = TenantMovement.Status::Current then
-                Status := Status::Current
-            else
+            if TenantMovement.Status = TenantMovement.Status::Current then begin
+                Status := Status::Current;
+                "Current Property ID" := TenantMovement."Property ID";
+            end else begin
                 Status := Status::Inactive;
-        end else
+                "Current Property ID" := '';
+            end;
+        end else begin
             Status := Status::Inactive;
+            "Current Property ID" := '';
+        end;
         Modify();
     end;
 }

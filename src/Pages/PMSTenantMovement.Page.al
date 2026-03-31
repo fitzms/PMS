@@ -81,6 +81,11 @@ page 80832 "PMS Tenant Movement"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the end date of the tenancy.';
                 }
+                field("Date"; Rec."Date")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the date of the movement entry.';
+                }
             }
             group(Details)
             {
@@ -97,11 +102,77 @@ page 80832 "PMS Tenant Movement"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the user who created this entry.';
                 }
-                field("Date"; Rec."Date")
+                field("Billing Code"; Rec."Billing Code")
                 {
                     ApplicationArea = All;
-                    ToolTip = 'Specifies the date of the movement entry.';
+                    Editable = false;
+                    ToolTip = 'Specifies the billing code recorded at the time of this movement.';
                 }
+                field("Employee Dimension Value"; Rec."Employee Dimension Value")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Employee Dimension';
+                    Editable = false;
+                    ToolTip = 'Specifies the employee dimension value recorded at the time of this movement.';
+                }
+                field("Cost Centre Code"; Rec."Cost Centre Code")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Cost Centre';
+                    Editable = false;
+                    ToolTip = 'Specifies the cost centre recorded at the time of this movement.';
+                }
+            }
+        }
+    }
+
+    actions
+    {
+        area(Navigation)
+        {
+            action(NavigateToTenant)
+            {
+                ApplicationArea = All;
+                Caption = 'Tenant';
+                Image = Customer;
+                ToolTip = 'Navigate to the tenant card.';
+
+                trigger OnAction()
+                var
+                    TenantRec: Record "PMS Tenant";
+                begin
+                    if Rec."Tenant ID" = '' then
+                        exit;
+                    TenantRec.Get(Rec."Tenant ID");
+                    Page.Run(Page::"PMS Tenant", TenantRec);
+                end;
+            }
+            action(NavigateToProperty)
+            {
+                ApplicationArea = All;
+                Caption = 'Property';
+                Image = Warehouse;
+                ToolTip = 'Navigate to the property card.';
+
+                trigger OnAction()
+                var
+                    PropertyRec: Record "PMS Property";
+                begin
+                    if Rec."Property ID" = '' then
+                        exit;
+                    PropertyRec.Get(Rec."Property ID");
+                    Page.Run(Page::"PMS Property", PropertyRec);
+                end;
+            }
+        }
+        area(Promoted)
+        {
+            group(Category_Navigate)
+            {
+                Caption = 'Navigate';
+
+                actionref(NavigateToTenant_Promoted; NavigateToTenant) { }
+                actionref(NavigateToProperty_Promoted; NavigateToProperty) { }
             }
         }
     }
@@ -115,7 +186,8 @@ page 80832 "PMS Tenant Movement"
 
     trigger OnQueryClosePage(CloseAction: Action): Boolean
     begin
-        CurrPage.SaveRecord();
+        if CloseAction in [Action::OK, Action::LookupOK] then
+            CurrPage.SaveRecord();
         exit(true);
     end;
 

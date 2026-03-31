@@ -59,6 +59,11 @@ table 80807 "PMS Setup"
             Caption = 'Employee Dimension Code';
             TableRelation = Dimension;
         }
+        field(42; "Cost Centre Dimension Code"; Code[20])
+        {
+            Caption = 'Cost Centre Dimension Code';
+            TableRelation = Dimension;
+        }
 
     }
 

@@ -100,6 +100,19 @@ table 80825 "PMS Tenant Movement"
         {
             Caption = 'Notes';
         }
+        field(13; "Billing Code"; Code[10])
+        {
+            Caption = 'Billing Code';
+            TableRelation = "Service Shelf";
+        }
+        field(14; "Employee Dimension Value"; Code[20])
+        {
+            Caption = 'Employee Dimension';
+        }
+        field(15; "Cost Centre Code"; Code[20])
+        {
+            Caption = 'Cost Centre';
+        }
     }
 
     keys
@@ -116,17 +129,25 @@ table 80825 "PMS Tenant Movement"
     trigger OnInsert()
     begin
         CalcStatus();
+        CopyFromTenant();
+        UpdateTenantStatus();
     end;
 
     trigger OnModify()
     begin
         CalcStatus();
+        UpdateTenantStatus();
+    end;
+
+    trigger OnDelete()
+    begin
+        UpdateTenantStatus();
     end;
 
     local procedure CalcStatus()
     begin
-        if ("Start Date" <> 0D) and ("Start Date" <= Today) and
-           (("End Date" = 0D) or ("End Date" >= Today)) then
+        if ("Start Date" <> 0D) and ("Start Date" <= WorkDate()) and
+           (("End Date" = 0D) or ("End Date" >= WorkDate())) then
             Status := Status::Current
         else
             if "Start Date" <> 0D then
@@ -143,5 +164,18 @@ table 80825 "PMS Tenant Movement"
             exit;
         if Tenant.Get("Tenant ID") then
             Tenant.CalcStatusFromMovements();
+    end;
+
+    local procedure CopyFromTenant()
+    var
+        TenantRec: Record "PMS Tenant";
+    begin
+        if "Tenant ID" = '' then
+            exit;
+        if not TenantRec.Get("Tenant ID") then
+            exit;
+        "Billing Code" := TenantRec."Billing Code";
+        "Employee Dimension Value" := TenantRec."Employee Dimension Value";
+        "Cost Centre Code" := TenantRec."Cost Centre Code";
     end;
 }
