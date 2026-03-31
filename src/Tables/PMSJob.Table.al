@@ -50,11 +50,42 @@ table 80824 "PMS Job"
         {
             Caption = 'Property ID';
             TableRelation = "PMS Property";
+
+            trigger OnValidate()
+            var
+                PropertyRec: Record "PMS Property";
+                UnitRec: Record "PMS Unit";
+            begin
+                if "Property ID" = '' then begin
+                    "Unit ID" := '';
+                    exit;
+                end;
+                if PropertyRec.Get("Property ID") then
+                    if PropertyRec."Single Unit" then begin
+                        "Unit ID" := "Property ID";
+                        exit;
+                    end;
+                // Multi-unit: clear unit if it no longer belongs
+                if "Unit ID" <> '' then
+                    if UnitRec.Get("Unit ID") then
+                        if UnitRec."Property ID" <> "Property ID" then
+                            "Unit ID" := '';
+            end;
         }
         field(9; "Unit ID"; Code[20])
         {
             Caption = 'Unit ID';
-            TableRelation = "PMS Unit";
+            TableRelation = "PMS Unit"."Unit ID" where("Property ID" = field("Property ID"));
+
+            trigger OnValidate()
+            var
+                UnitRec: Record "PMS Unit";
+            begin
+                if "Unit ID" = '' then
+                    exit;
+                if UnitRec.Get("Unit ID") then
+                    "Property ID" := UnitRec."Property ID";
+            end;
         }
         field(10; Status; Enum "PMS Job Status")
         {

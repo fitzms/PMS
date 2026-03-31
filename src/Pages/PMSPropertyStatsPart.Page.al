@@ -11,7 +11,7 @@ page 80819 "PMS Property Stats Part"
         {
             group(UnitCounts)
             {
-                Caption = 'Units';
+                Caption = 'Unit(s)';
                 ShowCaption = true;
 
                 field("Total Units"; Rec."Total Units")
@@ -35,17 +35,70 @@ page 80819 "PMS Property Stats Part"
                     DrillDownPageId = "PMS Unit List";
                     ToolTip = 'Specifies the number of non-operational units.';
                 }
-
             }
+
+            group(TenantCounts)
+            {
+                Caption = 'Tenants';
+                ShowCaption = true;
+
+                field(CurrentTenants; CurrentTenantCount)
+                {
+                    ApplicationArea = All;
+                    Caption = 'Current Tenant(s)';
+                    ToolTip = 'Specifies the number of current tenants at this property.';
+                    Editable = false;
+
+                    trigger OnDrillDown()
+                    var
+                        Movement: Record "PMS Tenant Movement";
+                    begin
+                        Movement.SetRange("Property ID", Rec."Property ID");
+                        Movement.SetRange(Status, Movement.Status::Current);
+                        Page.Run(Page::"PMS Tenant Movement", Movement);
+                    end;
+                }
+                field(PreviousTenants; PreviousTenantCount)
+                {
+                    ApplicationArea = All;
+                    Caption = 'Previous Tenant(s)';
+                    ToolTip = 'Specifies the number of previous tenants at this property.';
+                    Editable = false;
+
+                    trigger OnDrillDown()
+                    var
+                        Movement: Record "PMS Tenant Movement";
+                    begin
+                        Movement.SetRange("Property ID", Rec."Property ID");
+                        Movement.SetRange(Status, Movement.Status::Previous);
+                        Page.Run(Page::"PMS Tenant Movement", Movement);
+                    end;
+                }
+            }
+
+
         }
     }
 
     trigger OnAfterGetRecord()
+    var
+        Movement: Record "PMS Tenant Movement";
     begin
         Rec.CalcFields(
             "Total Units",
             "Operational Units",
             "Non Operational Units"
             );
+
+        Movement.SetRange("Property ID", Rec."Property ID");
+        Movement.SetRange(Status, Movement.Status::Current);
+        CurrentTenantCount := Movement.Count();
+
+        Movement.SetRange(Status, Movement.Status::Previous);
+        PreviousTenantCount := Movement.Count();
     end;
+
+    var
+        CurrentTenantCount: Integer;
+        PreviousTenantCount: Integer;
 }

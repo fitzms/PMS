@@ -15,4 +15,8 @@ enum 80807 "PMS Tenant Status"
     {
         Caption = 'Previous';
     }
+    value(3; Inactive)
+    {
+        Caption = 'Inactive';
+    }
 }

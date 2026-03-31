@@ -16,6 +16,16 @@ page 80808 "PMS Setup"
             {
                 Caption = 'General';
 
+                field("Property Dimension Code"; Rec."Property Dimension Code")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the dimension code used for properties. A dimension value is automatically created for each new property.';
+                }
+                field("Employee Dimension Code"; Rec."Employee Dimension Code")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the dimension code used for tenant employee dimensions.';
+                }
                 field("Default Job Type"; Rec."Default Job Type")
                 {
                     ApplicationArea = All;
@@ -61,6 +71,30 @@ page 80808 "PMS Setup"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the number series used to assign IDs to new PMS jobs.';
                 }
+            }
+        }
+    }
+
+    actions
+    {
+        area(Processing)
+        {
+            action(DeleteTenantMovements)
+            {
+                ApplicationArea = All;
+                Caption = 'Delete Tenant Movements';
+                ToolTip = 'Deletes all records from the Tenant Movement table.';
+                Image = Delete;
+
+                trigger OnAction()
+                var
+                    TenantMovement: Record "PMS Tenant Movement";
+                begin
+                    if not Confirm('Delete all Tenant Movement records?', false) then
+                        exit;
+                    TenantMovement.DeleteAll();
+                    Message('All Tenant Movement records have been deleted.');
+                end;
             }
         }
     }

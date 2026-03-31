@@ -49,6 +49,16 @@ table 80807 "PMS Setup"
         {
             Caption = 'Job Frequency';
         }
+        field(40; "Property Dimension Code"; Code[20])
+        {
+            Caption = 'Property Dimension Code';
+            TableRelation = Dimension;
+        }
+        field(41; "Employee Dimension Code"; Code[20])
+        {
+            Caption = 'Employee Dimension Code';
+            TableRelation = Dimension;
+        }
 
     }
 

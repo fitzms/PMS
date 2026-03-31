@@ -121,8 +121,10 @@ codeunit 80800 "PMS Job Management"
                         PurchLine.Validate("Direct Unit Cost", ContractLine."Unit Price");
                         PurchLine."Expected Receipt Date" := OccurrenceDate;
                         PurchLine."PMS Job No." := PMSJob."Job No.";
+                        PurchLine."PMS Property ID" := ContractLine."Property ID";
                         if ContractLine."Global Dimension 1 Code" <> '' then
                             PurchLine.Validate("Shortcut Dimension 1 Code", ContractLine."Global Dimension 1 Code");
+                        ApplyPropertyDimension(PurchLine, ContractLine."Property ID");
                         PurchLine.Modify(true);
 
                         NextPurchLineNo += 10000;
@@ -261,8 +263,10 @@ codeunit 80800 "PMS Job Management"
         PurchLine.Validate("Direct Unit Cost", PMSJob."Estimated Cost");
         PurchLine."Expected Receipt Date" := PMSJob."Scheduled Date";
         PurchLine."PMS Job No." := PMSJob."Job No.";
+        PurchLine."PMS Property ID" := PMSJob."Property ID";
         if PMSJob."Global Dimension 1 Code" <> '' then
             PurchLine.Validate("Shortcut Dimension 1 Code", PMSJob."Global Dimension 1 Code");
+        ApplyPropertyDimension(PurchLine, PMSJob."Property ID");
         PurchLine.Modify(true);
 
         PMSJob."Purchase Order No." := PurchHeader."No.";
@@ -292,5 +296,33 @@ codeunit 80800 "PMS Job Management"
             else
                 exit(CurrentDate + 1);
         end;
+    end;
+
+    local procedure ApplyPropertyDimension(var PurchLine: Record "Purchase Line"; PropertyID: Code[20])
+    var
+        PMSSetup: Record "PMS Setup";
+        TempDimSetEntry: Record "Dimension Set Entry" temporary;
+        DimMgt: Codeunit DimensionManagement;
+        DimSetID: Integer;
+    begin
+        if PropertyID = '' then
+            exit;
+        PMSSetup.GetRecordOnce();
+        if PMSSetup."Property Dimension Code" = '' then
+            exit;
+
+        DimMgt.GetDimensionSet(TempDimSetEntry, PurchLine."Dimension Set ID");
+        TempDimSetEntry.SetRange("Dimension Code", PMSSetup."Property Dimension Code");
+        if not TempDimSetEntry.IsEmpty() then
+            TempDimSetEntry.DeleteAll();
+        TempDimSetEntry.Reset();
+
+        TempDimSetEntry.Init();
+        TempDimSetEntry."Dimension Code" := PMSSetup."Property Dimension Code";
+        TempDimSetEntry."Dimension Value Code" := PropertyID;
+        TempDimSetEntry.Insert();
+
+        DimSetID := DimMgt.GetDimensionSetID(TempDimSetEntry);
+        PurchLine."Dimension Set ID" := DimSetID;
     end;
 }

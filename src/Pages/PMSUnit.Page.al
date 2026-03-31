@@ -19,9 +19,11 @@ page 80818 "PMS Unit"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the unique identifier for the unit.';
                 }
-                field("Current Tenant"; Rec."Current Tenant")
+                field(CurrentTenantName; CurrentTenantName)
                 {
                     ApplicationArea = All;
+                    Caption = 'Current Tenant';
+                    Editable = false;
                     ToolTip = 'Specifies the name of the current tenant occupying this unit.';
                 }
                 field(LastPreviousTenant; LastPreviousTenant)
@@ -34,17 +36,20 @@ page 80818 "PMS Unit"
                 field("Property ID"; Rec."Property ID")
                 {
                     ApplicationArea = All;
+                    Editable = not Rec."Single Unit";
                     Importance = Promoted;
                     ToolTip = 'Specifies the property this unit belongs to.';
                 }
                 field(Description; Rec.Description)
                 {
                     ApplicationArea = All;
+                    Editable = not Rec."Single Unit";
                     ToolTip = 'Specifies a description of the unit.';
                 }
                 field("Unit Type Code"; Rec."Unit Type Code")
                 {
                     ApplicationArea = All;
+                    Editable = not Rec."Single Unit";
                     ToolTip = 'Specifies the type of unit.';
                 }
                 field("Unit Type Description"; UnitTypeDescription)
@@ -58,14 +63,21 @@ page 80818 "PMS Unit"
                 field(Tenure; Rec.Tenure)
                 {
                     ApplicationArea = All;
+                    Editable = not Rec."Single Unit";
                     Importance = Promoted;
                     ToolTip = 'Specifies the tenure of the unit.';
                 }
                 field(Status; Rec.Status)
                 {
                     ApplicationArea = All;
+                    Editable = not Rec."Single Unit";
                     Importance = Promoted;
                     ToolTip = 'Specifies the current status of the unit.';
+                }
+                field("Single Unit"; Rec."Single Unit")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies whether this unit is the sole unit of a single-unit property.';
                 }
             }
             group(Property)
@@ -127,15 +139,23 @@ page 80818 "PMS Unit"
 
     trigger OnAfterGetRecord()
     begin
-        Rec.CalcFields("Current Tenant");
+        Rec.CalcFields("Current Tenant ID");
+        CurrentTenantName := '';
+        if Rec."Current Tenant ID" <> '' then begin
+            PMSTenant.Reset();
+            if PMSTenant.Get(Rec."Current Tenant ID") then
+                CurrentTenantName := PMSTenant.Name;
+        end;
 
-        PMSTenant.Reset();
-        PMSTenant.SetCurrentKey("End Date");
-        PMSTenant.SetRange("Unit ID", Rec."Unit ID");
-        PMSTenant.SetRange(Status, PMSTenant.Status::Previous);
-        if PMSTenant.FindLast() then
-            LastPreviousTenant := PMSTenant.Name
-        else
+        PMSTenantMovement.Reset();
+        PMSTenantMovement.SetRange("Unit ID", Rec."Unit ID");
+        PMSTenantMovement.SetRange(Status, PMSTenantMovement.Status::Previous);
+        if PMSTenantMovement.FindLast() then begin
+            if PMSTenant.Get(PMSTenantMovement."Tenant ID") then
+                LastPreviousTenant := PMSTenant.Name
+            else
+                LastPreviousTenant := '';
+        end else
             LastPreviousTenant := '';
         if Rec."Unit Type Code" <> '' then begin
             if PropertyType.Get(Rec."Unit Type Code") then
@@ -178,6 +198,8 @@ page 80818 "PMS Unit"
         PropertyType: Record "PMS Property Type";
         PMSProperty: Record "PMS Property";
         PMSTenant: Record "PMS Tenant";
+        PMSTenantMovement: Record "PMS Tenant Movement";
+        CurrentTenantName: Text[100];
         LastPreviousTenant: Text[100];
         UnitTypeDescription: Text[100];
         PropertyKnownAs: Text[100];

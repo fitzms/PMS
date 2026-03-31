@@ -44,12 +44,26 @@ page 80825 "PMS Helpdesk Call"
                         Importance = Promoted;
                         ToolTip = 'Specifies the current status of the helpdesk call.';
                     }
+                    field("Tenant ID"; Rec."Tenant ID")
+                    {
+                        ApplicationArea = All;
+                        Importance = Promoted;
+                        ToolTip = 'Specifies the tenant this call relates to.';
+                        Visible = false; // Hidden as per PM design decision, but kept on the page for ease of lookup and potential future use
+                    }
                     field("Property ID"; Rec."Property ID")
                     {
                         ApplicationArea = All;
                         Importance = Promoted;
                         QuickEntry = true;
                         ToolTip = 'Specifies the property this call relates to.';
+
+                        trigger OnValidate()
+                        begin
+                            Rec.Validate("Property ID", Rec."Property ID");
+                            UpdatePageVars();
+                            CurrPage.Update(true);
+                        end;
                     }
                     field(PropertyKnownAs; PropertyKnownAs)
                     {
@@ -61,6 +75,7 @@ page 80825 "PMS Helpdesk Call"
                     field("Unit ID"; Rec."Unit ID")
                     {
                         ApplicationArea = All;
+                        Editable = not IsSingleUnit;
                         QuickEntry = true;
                         ToolTip = 'Specifies the unit within the property this call relates to.';
                     }
@@ -381,6 +396,7 @@ page 80825 "PMS Helpdesk Call"
         CurrentTenant: Text[100];
         ResolvedOnTime: Boolean;
         ResolvedStyle: Text;
+        IsSingleUnit: Boolean;
 
     trigger OnNewRecord(BelowRec: Boolean)
     var
@@ -405,10 +421,27 @@ page 80825 "PMS Helpdesk Call"
     end;
 
     trigger OnAfterGetRecord()
+    begin
+        UpdatePageVars();
+    end;
+
+    trigger OnAfterGetCurrRecord()
+    begin
+        UpdatePageVars();
+    end;
+
+    trigger OnQueryClosePage(CloseAction: Action): Boolean
+    begin
+        CurrPage.SaveRecord();
+        exit(true);
+    end;
+
+    local procedure UpdatePageVars()
     var
         PMSJob: Record "PMS Job";
         Prop: Record "PMS Property";
         Unit: Record "PMS Unit";
+        PMSTenant: Record "PMS Tenant";
     begin
         case Rec.Priority of
             Rec.Priority::Critical:
@@ -427,16 +460,20 @@ page 80825 "PMS Helpdesk Call"
         HasJobInProgress := not PMSJob.IsEmpty();
         PMSJob.SetRange(Status);
 
-        if Prop.Get(Rec."Property ID") then
-            PropertyKnownAs := Prop."Known As"
-        else
-            PropertyKnownAs := '';
+        IsSingleUnit := false;
+        PropertyKnownAs := '';
+        if Prop.Get(Rec."Property ID") then begin
+            PropertyKnownAs := Prop."Known As";
+            IsSingleUnit := Prop."Single Unit";
+        end;
 
+        CurrentTenant := '';
         if Unit.Get(Rec."Unit ID") then begin
-            Unit.CalcFields("Current Tenant");
-            CurrentTenant := Unit."Current Tenant";
-        end else
-            CurrentTenant := '';
+            Unit.CalcFields("Current Tenant ID");
+            if Unit."Current Tenant ID" <> '' then
+                if PMSTenant.Get(Unit."Current Tenant ID") then
+                    CurrentTenant := PMSTenant.Name;
+        end;
 
         CurrPage.Editable := Rec.Status <> Rec.Status::Closed;
 
@@ -450,10 +487,5 @@ page 80825 "PMS Helpdesk Call"
             ResolvedOnTime := false;
             ResolvedStyle := 'Standard';
         end;
-    end;
-
-    trigger OnAfterGetCurrRecord()
-    begin
-        CurrPage.Editable := Rec.Status <> Rec.Status::Closed;
     end;
 }

@@ -27,70 +27,38 @@ table 80820 "PMS Tenant"
         field(3; Status; Enum "PMS Tenant Status")
         {
             Caption = 'Status';
-
-            trigger OnValidate()
-            begin
-                SyncUnitStatus("Unit ID");
-            end;
-        }
-        field(4; "Unit ID"; Code[20])
-        {
-            Caption = 'Unit ID';
-            TableRelation = "PMS Unit";
-
-            trigger OnValidate()
-            var
-                Unit: Record "PMS Unit";
-            begin
-                // Revert the old unit before moving to the new one
-                if xRec."Unit ID" <> "Unit ID" then
-                    SyncUnitStatus(xRec."Unit ID");
-
-                if "Unit ID" = '' then
-                    "Property ID" := ''
-                else
-                    if Unit.Get("Unit ID") then
-                        "Property ID" := Unit."Property ID";
-
-                SyncUnitStatus("Unit ID");
-            end;
-        }
-        field(8; "Property ID"; Code[20])
-        {
-            Caption = 'Property ID';
-            TableRelation = "PMS Property";
             Editable = false;
-        }
-        field(9; "Property Known As"; Text[100])
-        {
-            Caption = 'Known As';
-            FieldClass = FlowField;
-            CalcFormula = lookup("PMS Property"."Known As" where("Property ID" = field("Property ID")));
-            Editable = false;
-        }
-        field(5; "Start Date"; Date)
-        {
-            Caption = 'Start Date';
-        }
-        field(6; "End Date"; Date)
-        {
-            Caption = 'End Date';
-
-            trigger OnValidate()
-            begin
-                if "End Date" <> 0D then
-                    Status := Status::Previous
-                else
-                    if Status = Status::Previous then
-                        Status := Status::Current;
-                SyncUnitStatus("Unit ID");
-            end;
         }
         field(7; "No. Series"; Code[20])
         {
             Caption = 'No. Series';
             Editable = false;
             TableRelation = "No. Series";
+        }
+        field(10; "Employee Dimension Value"; Code[20])
+        {
+            Caption = 'Employee Dimension';
+            TableRelation = "Dimension Value".Code where("Dimension Code" = field("Employee Dimension Filter"), Blocked = const(false));
+
+            trigger OnValidate()
+            begin
+                UpdateDefaultDimension();
+            end;
+        }
+        field(11; "Employee Dimension Filter"; Code[20])
+        {
+            Caption = 'Employee Dimension Filter';
+            FieldClass = FlowFilter;
+        }
+        field(12; "Billing Code"; Code[10])
+        {
+            Caption = 'Billing Code';
+            TableRelation = "Service Shelf";
+        }
+        field(13; "Cost Centre Code"; Code[20])
+        {
+            Caption = 'Cost Centre';
+            Editable = false;
         }
     }
 
@@ -108,6 +76,7 @@ table 80820 "PMS Tenant"
 
     trigger OnInsert()
     begin
+        Status := Status::Inactive;
         if "Tenant ID" = '' then begin
             PMSSetup.GetRecordOnce();
             PMSSetup.TestField("Tenant Nos.");
@@ -116,40 +85,71 @@ table 80820 "PMS Tenant"
         end;
     end;
 
-    local procedure SyncUnitStatus(UnitID: Code[20])
+    local procedure UpdateDefaultDimension()
     var
-        Unit: Record "PMS Unit";
-        OtherTenant: Record "PMS Tenant";
-        HasCurrentTenant: Boolean;
+        DefaultDim: Record "Default Dimension";
+        DimValue: Record "Dimension Value";
+        CostCentreCode: Code[20];
     begin
-        if UnitID = '' then
+        PMSSetup.GetRecordOnce();
+        if PMSSetup."Employee Dimension Code" = '' then
             exit;
-        if not Unit.Get(UnitID) then
-            exit;
 
-        // Exclude the current record from the DB query — its fields may be changed
-        // in memory but not yet written to the database, so the DB value is stale.
-        OtherTenant.SetRange("Unit ID", UnitID);
-        OtherTenant.SetRange(Status, OtherTenant.Status::Current);
-        if "Tenant ID" <> '' then
-            OtherTenant.SetFilter("Tenant ID", '<>%1', "Tenant ID");
-        HasCurrentTenant := not OtherTenant.IsEmpty();
-
-        // Now account for the current record using its in-memory values.
-        // If its in-memory Unit ID matches and Status is Current, count it.
-        if (not HasCurrentTenant) and ("Unit ID" = UnitID) and (Status = Status::Current) then
-            HasCurrentTenant := true;
-
-        if HasCurrentTenant then begin
-            if Unit.Status <> Unit.Status::"Tenancy Occupied" then begin
-                Unit.Status := Unit.Status::"Tenancy Occupied";
-                Unit.Modify(true);
-            end;
+        // Handle Employee Dimension
+        if "Employee Dimension Value" = '' then begin
+            if DefaultDim.Get(Database::"PMS Tenant", "Tenant ID", PMSSetup."Employee Dimension Code") then
+                DefaultDim.Delete(true);
         end else begin
-            if Unit.Status = Unit.Status::"Tenancy Occupied" then begin
-                Unit.Status := Unit.Status::Operational;
-                Unit.Modify(true);
+            if DefaultDim.Get(Database::"PMS Tenant", "Tenant ID", PMSSetup."Employee Dimension Code") then begin
+                DefaultDim.Validate("Dimension Value Code", "Employee Dimension Value");
+                DefaultDim.Modify(true);
+            end else begin
+                DefaultDim.Init();
+                DefaultDim."Table ID" := Database::"PMS Tenant";
+                DefaultDim."No." := "Tenant ID";
+                DefaultDim.Validate("Dimension Code", PMSSetup."Employee Dimension Code");
+                DefaultDim.Validate("Dimension Value Code", "Employee Dimension Value");
+                DefaultDim.Insert(true);
+            end;
+
+            // Get Cost Centre from CRE Dimension Value field
+            if DimValue.Get(PMSSetup."Employee Dimension Code", "Employee Dimension Value") then
+                CostCentreCode := DimValue."Def. Cost Cent Dim. Value CRE";
+        end;
+
+        // Handle Cost Centre Dimension
+        "Cost Centre Code" := CostCentreCode;
+        if CostCentreCode = '' then begin
+            if DefaultDim.Get(Database::"PMS Tenant", "Tenant ID", 'COSTCENTRE') then
+                DefaultDim.Delete(true);
+        end else begin
+            if DefaultDim.Get(Database::"PMS Tenant", "Tenant ID", 'COSTCENTRE') then begin
+                DefaultDim.Validate("Dimension Value Code", CostCentreCode);
+                DefaultDim.Modify(true);
+            end else begin
+                DefaultDim.Init();
+                DefaultDim."Table ID" := Database::"PMS Tenant";
+                DefaultDim."No." := "Tenant ID";
+                DefaultDim.Validate("Dimension Code", 'COSTCENTRE');
+                DefaultDim.Validate("Dimension Value Code", CostCentreCode);
+                DefaultDim.Insert(true);
             end;
         end;
+    end;
+
+    procedure CalcStatusFromMovements()
+    var
+        TenantMovement: Record "PMS Tenant Movement";
+    begin
+        TenantMovement.SetRange("Tenant ID", "Tenant ID");
+        TenantMovement.SetCurrentKey("Tenant ID", "Date");
+        if TenantMovement.FindLast() then begin
+            if TenantMovement.Status = TenantMovement.Status::Current then
+                Status := Status::Current
+            else
+                Status := Status::Inactive;
+        end else
+            Status := Status::Inactive;
+        Modify();
     end;
 }

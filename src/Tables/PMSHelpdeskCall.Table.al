@@ -117,15 +117,23 @@ table 80808 "PMS Helpdesk Call"
 
             trigger OnValidate()
             var
+                PropertyRec: Record "PMS Property";
                 Unit: Record "PMS Unit";
             begin
-                if ("Unit ID" <> '') and ("Property ID" <> '') then begin
+                if "Property ID" = '' then begin
+                    Validate("Unit ID", '');
+                    exit;
+                end;
+                if PropertyRec.Get("Property ID") then
+                    if PropertyRec."Single Unit" then begin
+                        "Unit ID" := "Property ID";
+                        exit;
+                    end;
+                // Multi-unit: clear unit if it no longer belongs
+                if "Unit ID" <> '' then
                     if Unit.Get("Unit ID") then
                         if Unit."Property ID" <> "Property ID" then
                             Validate("Unit ID", '');
-                end else
-                    if "Property ID" = '' then
-                        Validate("Unit ID", '');
             end;
         }
         field(18; "Unit ID"; Code[20])
@@ -187,6 +195,11 @@ table 80808 "PMS Helpdesk Call"
         {
             Caption = 'Resolution Time';
             Editable = false;
+        }
+        field(24; "Tenant ID"; Code[20])
+        {
+            Caption = 'Tenant ID';
+            TableRelation = "PMS Tenant";
         }
     }
 

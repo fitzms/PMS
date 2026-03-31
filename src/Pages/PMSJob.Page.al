@@ -78,10 +78,22 @@ page 80826 "PMS Job"
                     ApplicationArea = All;
                     Importance = Promoted;
                     ToolTip = 'Specifies the property to which this job relates.';
+
+                    trigger OnValidate()
+                    var
+                        PropertyRec: Record "PMS Property";
+                    begin
+                        IsSingleUnit := false;
+                        if Rec."Property ID" <> '' then
+                            if PropertyRec.Get(Rec."Property ID") then
+                                IsSingleUnit := PropertyRec."Single Unit";
+                        CurrPage.Update(false);
+                    end;
                 }
                 field("Unit ID"; Rec."Unit ID")
                 {
                     ApplicationArea = All;
+                    Editable = not IsSingleUnit;
                     ToolTip = 'Specifies the unit within the property to which this job relates.';
                 }
                 field("Special Instructions"; Rec."Special Instructions")
@@ -344,10 +356,12 @@ page 80826 "PMS Job"
         StatusStyle: Text;
         IsHelpdeskCallClosed: Boolean;
         IsSourceNoEditable: Boolean;
+        IsSingleUnit: Boolean;
 
     trigger OnAfterGetRecord()
     var
         HelpdeskCall: Record "PMS Helpdesk Call";
+        PropertyRec: Record "PMS Property";
     begin
         case Rec.Status of
             Rec.Status::Completed:
@@ -373,5 +387,10 @@ page 80826 "PMS Job"
             IsSourceNoEditable := false
         else
             IsSourceNoEditable := true;
+
+        IsSingleUnit := false;
+        if Rec."Property ID" <> '' then
+            if PropertyRec.Get(Rec."Property ID") then
+                IsSingleUnit := PropertyRec."Single Unit";
     end;
 }

@@ -44,11 +44,16 @@ table 80816 "PMS Unit"
             Caption = 'Property ID';
             TableRelation = "PMS Property";
         }
-        field(7; "Current Tenant"; Text[100])
+        field(7; "Current Tenant ID"; Code[20])
         {
-            Caption = 'Current Tenant';
+            Caption = 'Current Tenant ID';
             FieldClass = FlowField;
-            CalcFormula = lookup("PMS Tenant".Name where("Unit ID" = field("Unit ID"), Status = const(Current)));
+            CalcFormula = lookup("PMS Tenant Movement"."Tenant ID" where("Unit ID" = field("Unit ID"), Status = const(Current)));
+            Editable = false;
+        }
+        field(8; "Single Unit"; Boolean)
+        {
+            Caption = 'Single Unit';
             Editable = false;
         }
     }

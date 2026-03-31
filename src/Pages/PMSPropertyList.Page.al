@@ -48,6 +48,11 @@ page 80812 "PMS Property List"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the current status of the property.';
                 }
+                field("Single Unit"; Rec."Single Unit")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies whether this property is a single-unit property.';
+                }
             }
         }
     }

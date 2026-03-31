@@ -38,6 +38,11 @@ page 80817 "PMS Unit List"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the current status of the unit.';
                 }
+                field("Single Unit"; Rec."Single Unit")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies whether this unit is the sole unit of a single-unit property.';
+                }
             }
         }
     }
