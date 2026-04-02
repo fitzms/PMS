@@ -10,28 +10,11 @@ page 80801 "PMS Cues Part"
         area(Content)
         {
             // ── Helpdesk ──────────────────────────────────────────────────────
-            cuegroup("Helpdesk")
+            cuegroup("Helpdesk All")
             {
-                Caption = 'Helpdesk';
+                Caption = 'Helpdesk - All';
 
-                field("My Calls"; Rec."My Calls")
-                {
-                    ApplicationArea = All;
-                    Caption = 'My Calls';
-                    StyleExpr = MyCallsStyle;
 
-                    trigger OnDrillDown()
-                    var
-                        HelpdeskCall: Record "PMS Helpdesk Call";
-                        HelpdeskList: Page "PMS Helpdesk Call List";
-                    begin
-                        HelpdeskCall.SetRange("Call Type", HelpdeskCall."Call Type"::Internal);
-                        HelpdeskCall.SetRange("Employee No.", UserId());
-                        HelpdeskCall.SetFilter(Status, '<>%1', HelpdeskCall.Status::Closed);
-                        HelpdeskList.SetTableView(HelpdeskCall);
-                        HelpdeskList.Run();
-                    end;
-                }
                 field("Open Calls"; Rec."Open Calls")
                 {
                     ApplicationArea = All;
@@ -82,6 +65,51 @@ page 80801 "PMS Cues Part"
                         HelpdeskList.Run();
                     end;
                 }
+            }
+
+            cuegroup("Helpdesk - Mine")
+            {
+                Caption = 'Helpdesk Mine';
+
+
+                field("My New Calls"; Rec."My New Calls")
+                {
+                    ApplicationArea = All;
+                    Caption = 'My New Calls';
+                    StyleExpr = MyNewCallsStyle;
+
+                    trigger OnDrillDown()
+                    var
+                        HelpdeskCall: Record "PMS Helpdesk Call";
+                        HelpdeskList: Page "PMS Helpdesk Call List";
+                    begin
+                        HelpdeskCall.SetRange(Status, HelpdeskCall.Status::New);
+                        HelpdeskCall.SetRange("Employee No.", UserId());
+                        HelpdeskList.SetTableView(HelpdeskCall);
+                        HelpdeskList.Run();
+                    end;
+                }
+
+                field("My Calls"; Rec."My Calls")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Calls';
+                    StyleExpr = MyCallsStyle;
+
+                    trigger OnDrillDown()
+                    var
+                        HelpdeskCall: Record "PMS Helpdesk Call";
+                        HelpdeskList: Page "PMS Helpdesk Call List";
+                    begin
+                        HelpdeskCall.SetRange("Call Type", HelpdeskCall."Call Type"::Internal);
+                        HelpdeskCall.SetRange("Employee No.", UserId());
+                        HelpdeskCall.SetFilter(Status, '<>%1', HelpdeskCall.Status::Closed);
+                        HelpdeskList.SetTableView(HelpdeskCall);
+                        HelpdeskList.Run();
+                    end;
+                }
+
+
             }
 
             // ── Properties ────────────────────────────────────────────────────
@@ -169,6 +197,7 @@ page 80801 "PMS Cues Part"
         NewCallsStyle: Text;
         CriticalCallsStyle: Text;
         MyCallsStyle: Text;
+        MyNewCallsStyle: Text;
 
     trigger OnAfterGetRecord()
     begin
@@ -212,12 +241,17 @@ page 80801 "PMS Cues Part"
             CriticalCallsStyle := 'Favorable';
 
         Rec.SetRange("Employee No. Filter", UserId());
-        Rec.CalcFields("My Calls");
+        Rec.CalcFields("My Calls", "My New Calls");
         Rec.SetRange("Employee No. Filter");
         if Rec."My Calls" > 0 then
             MyCallsStyle := 'Attention'
         else
             MyCallsStyle := 'Favorable';
+
+        if Rec."My New Calls" > 0 then
+            MyNewCallsStyle := 'Unfavorable'
+        else
+            MyNewCallsStyle := 'Favorable';
     end;
 
     trigger OnOpenPage()

@@ -6,6 +6,7 @@ page 80812 "PMS Property List"
     CardPageId = "PMS Property";
     ApplicationArea = All;
     UsageCategory = Lists;
+    Editable = false;
 
     layout
     {
@@ -38,6 +39,12 @@ page 80812 "PMS Property List"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the type of property.';
                 }
+                field("Global Dimension 1 Code"; Rec."Global Dimension 1 Code")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the global dimension 1 code (e.g. cost centre) for this property.';
+                }
+
                 field(Tenure; Rec.Tenure)
                 {
                     ApplicationArea = All;

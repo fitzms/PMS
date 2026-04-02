@@ -108,12 +108,7 @@ table 80811 "PMS Property"
                 SyncToSingleUnit();
             end;
         }
-        field(34; "Global Dimension 1 Code"; Code[20])
-        {
-            Caption = 'Global Dimension 1 Code';
-            CaptionClass = '1,1,1';
-            TableRelation = "Dimension Value".Code where("Global Dimension No." = const(1), Blocked = const(false));
-        }
+
         field(35; "Property Dimension Value"; Code[20])
         {
             Caption = 'Property Dimension';
@@ -124,11 +119,26 @@ table 80811 "PMS Property"
                 UpdateDefaultDimension();
             end;
         }
+
         field(36; "Property Dimension Filter"; Code[20])
         {
             Caption = 'Property Dimension Filter';
             FieldClass = FlowFilter;
         }
+
+        field(34; "Global Dimension 1 Code"; Code[20])
+        {
+            Caption = 'Global Dimension 1 Code';
+            CaptionClass = '1,1,1';
+            TableRelation = "Dimension Value".Code where("Global Dimension No." = const(1), Blocked = const(false));
+
+            trigger OnValidate()
+            begin
+                UpdateGlobalDim1DefaultDimension();
+            end;
+        }
+
+
         field(7; "VAT Elected"; Boolean)
         {
             Caption = 'VAT Elected';
@@ -150,6 +160,27 @@ table 80811 "PMS Property"
         {
             Caption = 'Single Unit';
             Editable = false;
+        }
+        field(50; "No. Series"; Code[20])
+        {
+            Caption = 'No. Series';
+            Editable = false;
+            TableRelation = "No. Series";
+        }
+        field(51; "Cost Centre Dimension Value"; Code[20])
+        {
+            Caption = 'Cost Centre';
+            TableRelation = "Dimension Value".Code where("Dimension Code" = field("Cost Centre Dimension Filter"), Blocked = const(false));
+
+            trigger OnValidate()
+            begin
+                UpdateCostCentreDimension();
+            end;
+        }
+        field(52; "Cost Centre Dimension Filter"; Code[20])
+        {
+            Caption = 'Cost Centre Dimension Filter';
+            FieldClass = FlowFilter;
         }
 
         // ── Unit counts (FlowFields) ──────────────────────────────────────────
@@ -202,6 +233,7 @@ table 80811 "PMS Property"
         if "Property ID" = '' then begin
             PMSSetup.GetRecordOnce();
             PMSSetup.TestField("Property Nos.");
+            "No. Series" := PMSSetup."Property Nos.";
             "Property ID" := NoSeries.GetNextNo(PMSSetup."Property Nos.", WorkDate(), true);
         end;
 
@@ -285,6 +317,57 @@ table 80811 "PMS Property"
             DefaultDim."No." := "Property ID";
             DefaultDim.Validate("Dimension Code", PMSSetup."Property Dimension Code");
             DefaultDim.Validate("Dimension Value Code", "Property Dimension Value");
+            DefaultDim.Insert(true);
+        end;
+    end;
+
+    local procedure UpdateCostCentreDimension()
+    var
+        DefaultDim: Record "Default Dimension";
+    begin
+        PMSSetup.GetRecordOnce();
+        if PMSSetup."Cost Centre Dimension Code" = '' then
+            exit;
+        if "Cost Centre Dimension Value" = '' then begin
+            if DefaultDim.Get(Database::"PMS Property", "Property ID", PMSSetup."Cost Centre Dimension Code") then
+                DefaultDim.Delete(true);
+            exit;
+        end;
+        if DefaultDim.Get(Database::"PMS Property", "Property ID", PMSSetup."Cost Centre Dimension Code") then begin
+            DefaultDim.Validate("Dimension Value Code", "Cost Centre Dimension Value");
+            DefaultDim.Modify(true);
+        end else begin
+            DefaultDim.Init();
+            DefaultDim."Table ID" := Database::"PMS Property";
+            DefaultDim."No." := "Property ID";
+            DefaultDim.Validate("Dimension Code", PMSSetup."Cost Centre Dimension Code");
+            DefaultDim.Validate("Dimension Value Code", "Cost Centre Dimension Value");
+            DefaultDim.Insert(true);
+        end;
+    end;
+
+    local procedure UpdateGlobalDim1DefaultDimension()
+    var
+        GLSetup: Record "General Ledger Setup";
+        DefaultDim: Record "Default Dimension";
+    begin
+        GLSetup.Get();
+        if GLSetup."Global Dimension 1 Code" = '' then
+            exit;
+        if "Global Dimension 1 Code" = '' then begin
+            if DefaultDim.Get(Database::"PMS Property", "Property ID", GLSetup."Global Dimension 1 Code") then
+                DefaultDim.Delete(true);
+            exit;
+        end;
+        if DefaultDim.Get(Database::"PMS Property", "Property ID", GLSetup."Global Dimension 1 Code") then begin
+            DefaultDim.Validate("Dimension Value Code", "Global Dimension 1 Code");
+            DefaultDim.Modify(true);
+        end else begin
+            DefaultDim.Init();
+            DefaultDim."Table ID" := Database::"PMS Property";
+            DefaultDim."No." := "Property ID";
+            DefaultDim.Validate("Dimension Code", GLSetup."Global Dimension 1 Code");
+            DefaultDim.Validate("Dimension Value Code", "Global Dimension 1 Code");
             DefaultDim.Insert(true);
         end;
     end;

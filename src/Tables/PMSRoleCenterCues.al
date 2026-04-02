@@ -163,6 +163,12 @@ table 80800 "PMS Role Center Cues"
             Caption = 'Employee No. Filter';
             FieldClass = FlowFilter;
         }
+        field(45; "My New Calls"; Integer)
+        {
+            Caption = 'My New Calls';
+            FieldClass = FlowField;
+            CalcFormula = count("PMS Helpdesk Call" where(Status = const(New), "Employee No." = field("Employee No. Filter")));
+        }
     }
 
     keys

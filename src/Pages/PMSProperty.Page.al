@@ -17,7 +17,21 @@ page 80813 "PMS Property"
                 field("Property ID"; Rec."Property ID")
                 {
                     ApplicationArea = All;
+                    AssistEdit = true;
                     ToolTip = 'Specifies the unique identifier for the property.';
+
+                    trigger OnAssistEdit()
+                    var
+                        PMSSetup: Record "PMS Setup";
+                        NoSeries: Codeunit "No. Series";
+                    begin
+                        PMSSetup.GetRecordOnce();
+                        PMSSetup.TestField("Property Nos.");
+                        if NoSeries.LookupRelatedNoSeries(PMSSetup."Property Nos.", Rec."No. Series") then begin
+                            Rec."Property ID" := NoSeries.GetNextNo(Rec."No. Series");
+                            CurrPage.Update();
+                        end;
+                    end;
                 }
                 field("Single Unit"; Rec."Single Unit")
                 {
@@ -93,6 +107,12 @@ page 80813 "PMS Property"
                     Caption = 'Property Dimension';
                     ToolTip = 'Specifies the property dimension value for this property.';
                 }
+                // field("Cost Centre Dimension Value"; Rec."Cost Centre Dimension Value")
+                // {
+                //     ApplicationArea = All;
+                //     Caption = 'Cost Centre';
+                //     ToolTip = 'Specifies the cost centre dimension value for this property.';
+                // }
                 field("VAT Elected"; Rec."VAT Elected")
                 {
                     ApplicationArea = All;
@@ -144,6 +164,7 @@ page 80813 "PMS Property"
                     DefaultDim: Record "Default Dimension";
                     DefaultDimPage: Page "Default Dimensions";
                     PMSSetup: Record "PMS Setup";
+                    GLSetup: Record "General Ledger Setup";
                 begin
                     DefaultDim.SetRange("Table ID", Database::"PMS Property");
                     DefaultDim.SetRange("No.", Rec."Property ID");
@@ -156,9 +177,22 @@ page 80813 "PMS Property"
                             Rec."Property Dimension Value" := DefaultDim."Dimension Value Code"
                         else
                             Rec."Property Dimension Value" := '';
-                        Rec.Modify(true);
-                        CurrPage.Update(false);
                     end;
+                    if PMSSetup."Cost Centre Dimension Code" <> '' then begin
+                        if DefaultDim.Get(Database::"PMS Property", Rec."Property ID", PMSSetup."Cost Centre Dimension Code") then
+                            Rec."Cost Centre Dimension Value" := DefaultDim."Dimension Value Code"
+                        else
+                            Rec."Cost Centre Dimension Value" := '';
+                    end;
+                    GLSetup.Get();
+                    if GLSetup."Global Dimension 1 Code" <> '' then begin
+                        if DefaultDim.Get(Database::"PMS Property", Rec."Property ID", GLSetup."Global Dimension 1 Code") then
+                            Rec."Global Dimension 1 Code" := DefaultDim."Dimension Value Code"
+                        else
+                            Rec."Global Dimension 1 Code" := '';
+                    end;
+                    Rec.Modify(true);
+                    CurrPage.Update(false);
                 end;
             }
             action(LedgerEntries)
