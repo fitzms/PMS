@@ -215,6 +215,28 @@ table 80824 "PMS Job"
             Editable = false;
             TableRelation = "PMS Job";
         }
+        field(28; "Resource No."; Code[20])
+        {
+            Caption = 'Resource No.';
+            TableRelation = Resource;
+
+            trigger OnValidate()
+            var
+                Res: Record Resource;
+            begin
+                if "Resource No." = '' then
+                    "Resource Name" := ''
+                else begin
+                    Res.Get("Resource No.");
+                    "Resource Name" := CopyStr(Res.Name, 1, MaxStrLen("Resource Name"));
+                end;
+            end;
+        }
+        field(29; "Resource Name"; Text[100])
+        {
+            Caption = 'Resource Name';
+            Editable = false;
+        }
     }
 
     keys

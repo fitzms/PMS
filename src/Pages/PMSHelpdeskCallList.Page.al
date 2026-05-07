@@ -37,6 +37,13 @@ page 80809 "PMS Helpdesk Call List"
                     Editable = false;
                     ToolTip = 'Specifies the employee or vendor assigned to this call.';
                 }
+                field("Resource Name"; Rec."Resource Name")
+                {
+                    ApplicationArea = All;
+                    Caption = 'Resource';
+                    Editable = false;
+                    ToolTip = 'Specifies the internal resource allocated to manage this call.';
+                }
                 field(Priority; Rec.Priority)
                 {
                     ApplicationArea = All;

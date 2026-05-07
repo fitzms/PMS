@@ -45,11 +45,6 @@ page 80812 "PMS Property List"
                     ToolTip = 'Specifies the global dimension 1 code (e.g. cost centre) for this property.';
                 }
 
-                field(Tenure; Rec.Tenure)
-                {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the tenure of the property.';
-                }
                 field(Status; Rec.Status)
                 {
                     ApplicationArea = All;

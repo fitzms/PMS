@@ -69,6 +69,11 @@ page 80827 "PMS Job List"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the employee (internal jobs).';
                 }
+                field("Resource No."; Rec."Resource No.")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the resource allocated to manage this job.';
+                }
                 field("Purchase Order No."; Rec."Purchase Order No.")
                 {
                     ApplicationArea = All;

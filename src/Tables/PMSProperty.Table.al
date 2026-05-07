@@ -88,17 +88,6 @@ table 80811 "PMS Property"
             end;
         }
 
-        field(5; Tenure; Option)
-        {
-            Caption = 'Tenure';
-            OptionCaption = ' ,Freehold,Leasehold';
-            OptionMembers = " ",Freehold,Leasehold;
-
-            trigger OnValidate()
-            begin
-                SyncToSingleUnit();
-            end;
-        }
         field(6; Status; Enum "PMS Property Status")
         {
             Caption = 'Status';
@@ -143,18 +132,49 @@ table 80811 "PMS Property"
         {
             Caption = 'VAT Elected';
         }
-        field(8; "Local Authority"; Text[50])
+        field(8; "Local Authority"; Option)
         {
+
             Caption = 'Local Authority';
+            OptionCaption = ' ,Forest Heath District Council,East Cambridgeshire District Council';
+            OptionMembers = " ","Forest Heath District Council","East Cambridgeshire District Council";
         }
-        field(9; "Water Company"; Text[50])
+        field(9; "Water Company"; Option)
         {
+
             Caption = 'Water Company';
+            OptionCaption = ' ,Anglian Water,Thames Water,Southern Water,Not Connected,See individual property details';
+            OptionMembers = " ","Anglian Water","Thames Water","Southern Water","Not Connected","See individual property details";
         }
-        field(10; Sewerage; Text[50])
+        field(10; Sewerage; Option)
         {
+
             Caption = 'Sewerage';
+            OptionCaption = ' ,Anglian Water,Thames Water,Southern Water,Not Connected,See individual property details';
+            OptionMembers = " ","Anglian Water","Thames Water","Southern Water","Not Connected","See individual property details";
         }
+
+        field(112; "Meter Location"; Text[50])
+        {
+            Caption = 'Meter Location';
+        }
+        field(113; "Fuse box Location"; Text[50])
+        {
+            Caption = 'Fuse box Location';
+        }
+        field(114; "Boiler Location"; Text[50])
+        {
+            Caption = 'Boiler Location';
+        }
+        field(115; "Stopcock Location"; Text[50])
+        {
+            Caption = 'Stopcock Location';
+        }
+        field(116; "Total Floor Area (sqm)"; Decimal)
+        {
+            Caption = 'Total Floor Area (sqm)';
+        }
+
 
         field(40; "Single Unit"; Boolean)
         {
@@ -247,7 +267,6 @@ table 80811 "PMS Property"
             UnitRec."Property ID" := "Property ID";
             UnitRec."Single Unit" := true;
             UnitRec."Unit Type Code" := "Property Type Code";
-            UnitRec.Tenure := Tenure;
             UnitRec.Status := Status;
             UnitRec.Insert(true);
         end;
@@ -261,7 +280,6 @@ table 80811 "PMS Property"
             exit;
         if UnitRec.Get("Property ID") then begin
             UnitRec."Unit Type Code" := "Property Type Code";
-            UnitRec.Tenure := Tenure;
             UnitRec.Status := Status;
             UnitRec.Modify(false);
         end;

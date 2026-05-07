@@ -201,6 +201,28 @@ table 80808 "PMS Helpdesk Call"
             Caption = 'Tenant ID';
             TableRelation = "PMS Tenant";
         }
+        field(25; "Resource No."; Code[20])
+        {
+            Caption = 'Resource No.';
+            TableRelation = Resource;
+
+            trigger OnValidate()
+            var
+                Res: Record Resource;
+            begin
+                if "Resource No." = '' then
+                    "Resource Name" := ''
+                else begin
+                    Res.Get("Resource No.");
+                    "Resource Name" := CopyStr(Res.Name, 1, MaxStrLen("Resource Name"));
+                end;
+            end;
+        }
+        field(26; "Resource Name"; Text[100])
+        {
+            Caption = 'Resource Name';
+            Editable = false;
+        }
     }
 
     keys

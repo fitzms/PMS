@@ -139,6 +139,22 @@ page 80825 "PMS Helpdesk Call"
                             ToolTip = 'Specifies the name of the assigned employee.';
                         }
                     }
+                    group(ResourceGroup)
+                    {
+                        ShowCaption = false;
+                        field("Resource No."; Rec."Resource No.")
+                        {
+                            ApplicationArea = All;
+                            QuickEntry = true;
+                            ToolTip = 'Specifies the internal resource allocated to manage this call.';
+                        }
+                        field("Resource Name"; Rec."Resource Name")
+                        {
+                            ApplicationArea = All;
+                            Editable = false;
+                            ToolTip = 'Specifies the name of the allocated resource.';
+                        }
+                    }
                     field(Description; Rec.Description)
                     {
                         ApplicationArea = All;

@@ -172,6 +172,8 @@ codeunit 80800 "PMS Job Management"
         PMSJob."Job Type" := PMSJob."Job Type"::Internal;
         PMSJob."Employee No." := HelpdeskCall."Employee No.";
         PMSJob."Employee Name" := HelpdeskCall."Employee Name";
+        PMSJob."Resource No." := HelpdeskCall."Resource No.";
+        PMSJob."Resource Name" := HelpdeskCall."Resource Name";
         PMSJob."Scheduled Date" := HelpdeskCall."Target Resolution Date";
         PMSJob.Status := PMSJob.Status::Open;
         PMSJob.Insert(false);

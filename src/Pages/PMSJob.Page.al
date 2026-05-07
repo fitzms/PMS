@@ -159,6 +159,24 @@ page 80826 "PMS Job"
                     ToolTip = 'Specifies the name of the employee.';
                 }
             }
+            group(ResourceGroup)
+            {
+                Caption = 'Resource';
+
+                field("Resource No."; Rec."Resource No.")
+                {
+                    ApplicationArea = All;
+                    Importance = Promoted;
+                    QuickEntry = true;
+                    ToolTip = 'Specifies the internal resource allocated to manage this job.';
+                }
+                field("Resource Name"; Rec."Resource Name")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                    ToolTip = 'Specifies the name of the allocated resource.';
+                }
+            }
             group(Source)
             {
                 Caption = 'Source';

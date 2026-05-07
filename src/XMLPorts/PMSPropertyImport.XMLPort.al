@@ -23,7 +23,6 @@ xmlport 80810 "PMS Property Import"
                 fieldelement(Postcode; PropertyImport.Postcode) { }
                 fieldelement(CountryRegionCode; PropertyImport."Country/Region Code") { }
                 fieldelement(PropertyTypeCode; PropertyImport."Property Type Code") { }
-                fieldelement(Tenure; PropertyImport.Tenure) { }
                 fieldelement(Status; PropertyImport.Status) { }
                 fieldelement(SingleUnit; PropertyImport."Single Unit") { }
                 fieldelement(VATElected; PropertyImport."VAT Elected") { }

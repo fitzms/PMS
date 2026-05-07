@@ -85,19 +85,25 @@ page 80813 "PMS Property"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the type of property.';
                 }
-                field(Tenure; Rec.Tenure)
-                {
-                    ApplicationArea = All;
-                    Importance = Promoted;
-                    ToolTip = 'Specifies the tenure of the property.';
-                }
                 field(Status; Rec.Status)
                 {
                     ApplicationArea = All;
                     ToolTip = 'Specifies the current status of the property.';
                 }
+            }
+            group(Finance)
+            {
+                Caption = 'Finance';
+
+                field("VAT Elected"; Rec."VAT Elected")
+                {
+                    ApplicationArea = All;
+
+                    ToolTip = 'Specifies whether VAT has been elected for this property.';
+                }
                 field("Global Dimension 1 Code"; Rec."Global Dimension 1 Code")
                 {
+                    Importance = Promoted;
                     ApplicationArea = All;
                     ToolTip = 'Specifies the global dimension 1 code (e.g. cost centre) for this property.';
                 }
@@ -113,24 +119,77 @@ page 80813 "PMS Property"
                 //     Caption = 'Cost Centre';
                 //     ToolTip = 'Specifies the cost centre dimension value for this property.';
                 // }
-                field("VAT Elected"; Rec."VAT Elected")
+            }
+            group(RefurbishmentHistory)
+            {
+                Caption = 'Refurbishment History';
+            }
+
+            group(FireAlarms)
+            {
+                Caption = 'Fire Alarms';
+            }
+
+            group(Boilers)
+            {
+                Caption = 'Boilers';
+            }
+
+            group(CommsIntruderAlarms)
+            {
+                Caption = 'Comms/Intruder Alarms';
+            }
+
+            group(Housing)
+            {
+                Caption = 'Housing';
+                field("Meter Location"; Rec."Meter Location")
                 {
                     ApplicationArea = All;
-                    Importance = Promoted;
-                    ToolTip = 'Specifies whether VAT has been elected for this property.';
+                    ToolTip = 'Specifies the location of the meter for this property.';
                 }
+                field("Fuse box Location"; Rec."Fuse box Location")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the location of the fuse box for this property.';
+                }
+                field("Boiler Location"; Rec."Boiler Location")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the location of the boiler for this property.';
+                }
+                field("Stopcock Location"; Rec."Stopcock Location")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the location of the stopcock for this property.';
+                }
+                field("Total floor area (sqm)"; Rec."Total Floor Area (sqm)")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the total floor area of the property in square meters.';
+                }
+
+            }
+
+            group(Utilities)
+            {
+                Caption = 'Utilities';
+
                 field("Local Authority"; Rec."Local Authority")
                 {
+                    Importance = Promoted;
                     ApplicationArea = All;
                     ToolTip = 'Specifies the local authority for the property.';
                 }
                 field("Water Company"; Rec."Water Company")
                 {
+                    Importance = Promoted;
                     ApplicationArea = All;
                     ToolTip = 'Specifies the water company serving the property.';
                 }
                 field(Sewerage; Rec.Sewerage)
                 {
+                    Importance = Promoted;
                     ApplicationArea = All;
                     ToolTip = 'Specifies the sewerage provider for the property.';
                 }
