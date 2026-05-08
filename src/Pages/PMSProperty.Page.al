@@ -90,11 +90,6 @@ page 80813 "PMS Property"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the current status of the property.';
                 }
-            }
-            group(Finance)
-            {
-                Caption = 'Finance';
-
                 field("VAT Elected"; Rec."VAT Elected")
                 {
                     ApplicationArea = All;
@@ -113,60 +108,114 @@ page 80813 "PMS Property"
                     Caption = 'Property Dimension';
                     ToolTip = 'Specifies the property dimension value for this property.';
                 }
-                // field("Cost Centre Dimension Value"; Rec."Cost Centre Dimension Value")
-                // {
-                //     ApplicationArea = All;
-                //     Caption = 'Cost Centre';
-                //     ToolTip = 'Specifies the cost centre dimension value for this property.';
-                // }
-            }
-            group(RefurbishmentHistory)
-            {
-                Caption = 'Refurbishment History';
             }
 
-            group(FireAlarms)
+            group(HousingAndCommunications)
             {
-                Caption = 'Fire Alarms';
-            }
+                Caption = 'Housing & Communications';
 
-            group(Boilers)
-            {
-                Caption = 'Boilers';
-            }
+                group("QuickHouseFacts")
+                {
+                    Caption = 'Quick House Facts';
+                    field("House Type"; Rec."House Type")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the type of house for this property.';
+                        Importance = Promoted;
+                    }
 
-            group(CommsIntruderAlarms)
-            {
-                Caption = 'Comms/Intruder Alarms';
-            }
+                    field("Furnishings Included"; Rec."Furnishings Included")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies whether furnishings are included with this property.';
+                    }
 
-            group(Housing)
-            {
-                Caption = 'Housing';
-                field("Meter Location"; Rec."Meter Location")
-                {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the location of the meter for this property.';
+
+                    field("Meter Location"; Rec."Meter Location")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the location of the meter for this property.';
+                    }
+
+                    field("Fuse box Location"; Rec."Fuse box Location")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the location of the fuse box for this property.';
+                    }
+                    field("Boiler Location"; Rec."Boiler Location")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the location of the boiler for this property.';
+                    }
+                    field("Stopcock Location"; Rec."Stopcock Location")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the location of the stopcock for this property.';
+                    }
                 }
-                field("Fuse box Location"; Rec."Fuse box Location")
+
+                group(PropertyCounts)
                 {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the location of the fuse box for this property.';
+                    Caption = 'Property Counts';
+                    field("Storey Count"; Rec."Storey Count")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the number of storeys for this property.';
+                    }
+                    field("Living Room Count"; Rec."Living Room Count")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the number of living rooms for this property.';
+                    }
+                    field("Bedroom Count"; Rec."Bedroom Count")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the number of bedrooms for this property.';
+                    }
+                    field("Bathroom Count"; Rec."Bathroom Count")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the number of bathrooms for this property.';
+                    }
+                    field("Garage Count"; Rec."Garage Count")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the number of garages for this property.';
+                    }
+                    field("Total floor area (sqm)"; Rec."Total Floor Area (sqm)")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the total floor area of the property in square meters.';
+                    }
                 }
-                field("Boiler Location"; Rec."Boiler Location")
+                group(Communications)
                 {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the location of the boiler for this property.';
-                }
-                field("Stopcock Location"; Rec."Stopcock Location")
-                {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the location of the stopcock for this property.';
-                }
-                field("Total floor area (sqm)"; Rec."Total Floor Area (sqm)")
-                {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the total floor area of the property in square meters.';
+                    Caption = 'Communications';
+                    field("Land Line"; Rec."Land Line")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the type of land line available at this property.';
+                    }
+                    field("Broadband Username"; Rec."Broadband Username")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the broadband username for this property.';
+                    }
+                    field("Broadband Password"; Rec."Broadband Password")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the broadband password for this property.';
+                    }
+                    field("Wifi Name"; Rec."Wifi Name")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the Wi-Fi network name for this property.';
+                    }
+                    field("Wifi Password"; Rec."Wifi Password")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the Wi-Fi password for this property.';
+                    }
                 }
 
             }
@@ -175,25 +224,138 @@ page 80813 "PMS Property"
             {
                 Caption = 'Utilities';
 
-                field("Local Authority"; Rec."Local Authority")
+                Group("Local Authority & Council Tax")
                 {
-                    Importance = Promoted;
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the local authority for the property.';
+                    Caption = 'Local Authority & Council Tax';
+                    field("Local Authority"; Rec."Local Authority")
+                    {
+                        Importance = Promoted;
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the local authority for the property.';
+                    }
+                    field("Council Tax Reference"; Rec."Council Tax Reference")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the council tax reference for the property.';
+                    }
+                    field("Council Tax Band"; Rec."Council Tax Band")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the council tax band for the property.';
+                    }
                 }
-                field("Water Company"; Rec."Water Company")
+                group("Water Service")
                 {
-                    Importance = Promoted;
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the water company serving the property.';
+                    Caption = 'Water Service';
+                    field("Water Company"; Rec."Water Company")
+                    {
+                        Importance = Promoted;
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the water company serving the property.';
+                    }
+                    field(Sewerage; Rec.Sewerage)
+                    {
+                        Importance = Promoted;
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the sewerage provider for the property.';
+                    }
+                    field("Water Meter Number"; Rec."Water Meter Number")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the water meter number for the property.';
+                    }
                 }
-                field(Sewerage; Rec.Sewerage)
+                Group("Gas and Electricity")
                 {
-                    Importance = Promoted;
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the sewerage provider for the property.';
+                    Caption = 'Gas and Electricity';
+                    field("Gas Meter Number"; Rec."Gas Meter Number")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the gas meter number for the property.';
+                    }
+                    field("MPRN/MSN"; Rec."MPRN/MSN")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the MPRN/MSN for the property.';
+                    }
+                    field("MPANNo."; Rec."MPANNo.")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the MPAN number for the property.';
+                    }
+                    field("Electricity Meter Number"; Rec."Electricity Meter Number")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the electricity meter number for the property.';
+                    }
+                }
+                group("Heating Oil")
+                {
+                    Caption = 'Heating Oil';
+
+                    field("Property Fuel Type"; Rec."Property Fuel Type")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the fuel type for the property.';
+                    }
+                    field("Heating Oil Tank No."; Rec."Heating Oil Tank No.")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the heating oil tank number for the property.';
+                    }
+                    field("Oil Tank Capacity (Ltr)"; Rec."Oil Tank Capacity (Ltr)")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the oil tank capacity in liters for the property.';
+                    }
+                    field("Auto Top Up Heating Oil Tank"; Rec."Auto Top Up Heating Oil Tank")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies whether the heating oil tank is on auto top-up.';
+                    }
+                    field("Oil Tank notes"; Rec."Oil Tank notes")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies any notes related to the oil tank for the property.';
+                    }
                 }
             }
+
+            part(PropertyBoilers; "PMS Property Boiler Subform")
+            {
+                ApplicationArea = All;
+                Caption = 'Boilers';
+                SubPageLink = "Property ID" = field("Property ID");
+            }
+
+            part(PropertyHazards; "PMS Property Hazard Subform")
+            {
+                ApplicationArea = All;
+                Caption = 'Hazards';
+                SubPageLink = "Property ID" = field("Property ID");
+            }
+
+            part(PropertyAlarms; "PMS Property Alarm Subform")
+            {
+                ApplicationArea = All;
+                Caption = 'Alarms';
+                SubPageLink = "Property ID" = field("Property ID");
+            }
+
+
+            part(PropertyImprovements; "PMS Prop Improvement Subform")
+            {
+                ApplicationArea = All;
+                Caption = 'Improvement History';
+                SubPageLink = "Property ID" = field("Property ID");
+            }
+            part(PropertyValuations; "PMS Reinstatement Val Subform")
+            {
+                ApplicationArea = All;
+                Caption = 'Reinstatement Valuations';
+                SubPageLink = "Property ID" = field("Property ID");
+            }
+
         }
 
         area(FactBoxes)
@@ -202,6 +364,13 @@ page 80813 "PMS Property"
             {
                 ApplicationArea = All;
                 SubPageLink = "Property ID" = field("Property ID");
+            }
+            part(Attachments; "Document Attachment Factbox")
+            {
+                ApplicationArea = All;
+                Caption = 'Documents';
+                SubPageLink = "Table ID" = const(80811),
+                              "No." = field("Property ID");
             }
         }
     }
@@ -356,6 +525,15 @@ page 80813 "PMS Property"
             }
         }
     }
+
+    trigger OnAfterGetRecord()
+    begin
+        CurrPage.PropertyAlarms.Page.SetPropertyID(Rec."Property ID");
+        CurrPage.PropertyImprovements.Page.SetPropertyID(Rec."Property ID");
+        CurrPage.PropertyBoilers.Page.SetPropertyID(Rec."Property ID");
+        CurrPage.PropertyHazards.Page.SetPropertyID(Rec."Property ID");
+        CurrPage.PropertyValuations.Page.SetPropertyID(Rec."Property ID");
+    end;
 
     trigger OnInsertRecord(BelowxRec: Boolean): Boolean
     begin

@@ -174,6 +174,105 @@ table 80811 "PMS Property"
         {
             Caption = 'Total Floor Area (sqm)';
         }
+        field(117; "Council Tax Reference"; Text[20])
+        {
+            Caption = 'Council Tax Reference';
+        }
+        field(118; "Council Tax Band"; Text[20])
+        {
+            Caption = 'Council Tax Band';
+        }
+        field(119; "Gas Meter Number"; Text[20])
+        {
+            Caption = 'Gas Meter Number';
+        }
+        field(120; "MPRN/MSN"; Text[20])
+        {
+            Caption = 'MPRN/MSN ';
+        }
+        field(121; "MPANNo."; Text[20])
+        {
+            Caption = 'MPAN No.';
+        }
+        field(122; "Electricity Meter Number"; Text[20])
+        {
+            Caption = 'Electricity Meter Number';
+        }
+        field(123; "Water Meter Number"; Text[20])
+        {
+            Caption = 'Water Meter Number';
+        }
+        field(124; "Property Fuel Type"; Option)
+        {
+            Caption = 'Property Fuel Type';
+            OptionCaption = ' ,Air Conditioning,Air Source Heat Pump,Electric,Geothermal,LPG Gas,Natural Gas,Oil,Other';
+            OptionMembers = " ","Air Conditioning","Air Source Heat Pump","Electric","Geothermal","LPG Gas","Natural Gas","Oil","Other";
+        }
+        field(125; "Heating Oil Tank No."; Text[20])
+        {
+            Caption = 'Heating Oil Tank No.';
+        }
+        field(126; "Oil Tank Capacity (Ltr)"; Decimal)
+        {
+            Caption = 'Oil Tank Capacity (Ltr)';
+        }
+        field(127; "Auto Top Up Heating Oil Tank"; Boolean)
+        {
+            Caption = 'Auto Top Up Heating Oil Tank';
+        }
+        field(128; "Oil Tank notes"; Text[100])
+        {
+            Caption = 'Oil Tank notes';
+        }
+        field(129; "Storey Count"; Integer)
+        {
+            Caption = 'Storey Count';
+        }
+        field(130; "Bedroom Count"; Integer)
+        {
+            Caption = 'Bedroom Count';
+        }
+        field(131; "Bathroom Count"; Integer)
+        {
+            Caption = 'Bathroom Count';
+        }
+        field(132; "Garage Count"; Integer)
+        {
+            Caption = 'Garage Count';
+        }
+        field(133; "House Type"; Enum "PMS House Type")
+        {
+            Caption = 'House Type';
+        }
+        field(134; "Furnishings Included"; Boolean)
+        {
+            Caption = 'Furnishings Included';
+        }
+        field(135; "Living Room Count"; Integer)
+        {
+            Caption = 'Living Room Count';
+        }
+        field(136; "Land Line"; Text[50])
+        {
+            Caption = 'Land Line';
+        }
+        field(137; "Broadband Username"; Text[50])
+        {
+            Caption = 'Broadband Username';
+        }
+        field(138; "Broadband Password"; Text[50])
+        {
+            Caption = 'Broadband Password';
+        }
+        field(139; "Wifi Name"; Text[50])
+        {
+            Caption = 'Wifi Name';
+        }
+        field(140; "Wifi Password"; Text[50])
+        {
+            Caption = 'Wifi Password';
+        }
+
 
 
         field(40; "Single Unit"; Boolean)
