@@ -365,7 +365,9 @@ page 80813 "PMS Property"
                 ApplicationArea = All;
                 SubPageLink = "Property ID" = field("Property ID");
             }
+#pragma warning disable AL0432
             part(Attachments; "Document Attachment Factbox")
+#pragma warning restore AL0432
             {
                 ApplicationArea = All;
                 Caption = 'Documents';
