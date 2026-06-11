@@ -130,6 +130,13 @@ page 80813 "PMS Property"
                         ToolTip = 'Specifies whether furnishings are included with this property.';
                     }
 
+                    field(HazardsExist; HazardsExist)
+                    {
+                        ApplicationArea = All;
+                        Caption = 'Hazards Exist';
+                        Editable = false;
+                        ToolTip = 'Indicates whether any hazard records exist for this property.';
+                    }
 
                     field("Meter Location"; Rec."Meter Location")
                     {
@@ -529,12 +536,16 @@ page 80813 "PMS Property"
     }
 
     trigger OnAfterGetRecord()
+    var
+        PropertyHazard: Record "PMS Property Hazard";
     begin
         CurrPage.PropertyAlarms.Page.SetPropertyID(Rec."Property ID");
         CurrPage.PropertyImprovements.Page.SetPropertyID(Rec."Property ID");
         CurrPage.PropertyBoilers.Page.SetPropertyID(Rec."Property ID");
         CurrPage.PropertyHazards.Page.SetPropertyID(Rec."Property ID");
         CurrPage.PropertyValuations.Page.SetPropertyID(Rec."Property ID");
+        PropertyHazard.SetRange("Property ID", Rec."Property ID");
+        HazardsExist := not PropertyHazard.IsEmpty();
     end;
 
     trigger OnInsertRecord(BelowxRec: Boolean): Boolean
@@ -555,5 +566,8 @@ page 80813 "PMS Property"
         Rec.SetFilter("Property Dimension Filter", PMSSetup."Property Dimension Code");
         Rec.FilterGroup(0);
     end;
+
+    var
+        HazardsExist: Boolean;
 }
 
