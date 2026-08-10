@@ -244,6 +244,20 @@ page 80822 "PMS Tenant"
                     CurrPage.Update(false);
                 end;
             }
+            action(RecalculateStatus)
+            {
+                ApplicationArea = All;
+                Caption = 'Recalculate Status';
+                Image = Refresh;
+                ToolTip = 'Recalculate the tenant status from movement records.';
+
+                trigger OnAction()
+                begin
+                    Rec.CalcStatusFromMovements();
+                    UpdatePageVars();
+                    CurrPage.Update(false);
+                end;
+            }
         }
         area(Processing)
         {
@@ -397,6 +411,12 @@ page 80822 "PMS Tenant"
                 Caption = 'Helpdesk';
 
                 actionref(NewHelpdeskCall_Promoted; NewHelpdeskCall) { }
+            }
+            group(Category_Admin)
+            {
+                Caption = 'Admin';
+
+                actionref(RecalculateStatus_Promoted; RecalculateStatus) { }
             }
         }
     }

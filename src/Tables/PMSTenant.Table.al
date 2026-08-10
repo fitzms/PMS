@@ -159,16 +159,13 @@ table 80820 "PMS Tenant"
     var
         TenantMovement: Record "PMS Tenant Movement";
     begin
-        TenantMovement.SetRange("Tenant ID", "Tenant ID");
         TenantMovement.SetCurrentKey("Tenant ID", "Date");
+        TenantMovement.SetRange("Tenant ID", "Tenant ID");
+        TenantMovement.SetFilter("Start Date", '<>%1&<=%2', 0D, WorkDate());
+        TenantMovement.SetFilter("End Date", '%1|>=%2', 0D, WorkDate());
         if TenantMovement.FindLast() then begin
-            if TenantMovement.Status = TenantMovement.Status::Current then begin
-                Status := Status::Current;
-                "Current Property ID" := TenantMovement."Property ID";
-            end else begin
-                Status := Status::Inactive;
-                "Current Property ID" := '';
-            end;
+            Status := Status::Current;
+            "Current Property ID" := TenantMovement."Property ID";
         end else begin
             Status := Status::Inactive;
             "Current Property ID" := '';

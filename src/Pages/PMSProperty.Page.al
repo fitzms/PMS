@@ -88,6 +88,7 @@ page 80813 "PMS Property"
                 field(Status; Rec.Status)
                 {
                     ApplicationArea = All;
+                    Editable = false;
                     ToolTip = 'Specifies the current status of the property.';
                 }
                 field("VAT Elected"; Rec."VAT Elected")
@@ -328,41 +329,6 @@ page 80813 "PMS Property"
                 }
             }
 
-            part(PropertyBoilers; "PMS Property Boiler Subform")
-            {
-                ApplicationArea = All;
-                Caption = 'Boilers';
-                SubPageLink = "Property ID" = field("Property ID");
-            }
-
-            part(PropertyHazards; "PMS Property Hazard Subform")
-            {
-                ApplicationArea = All;
-                Caption = 'Hazards';
-                SubPageLink = "Property ID" = field("Property ID");
-            }
-
-            part(PropertyAlarms; "PMS Property Alarm Subform")
-            {
-                ApplicationArea = All;
-                Caption = 'Alarms';
-                SubPageLink = "Property ID" = field("Property ID");
-            }
-
-
-            part(PropertyImprovements; "PMS Prop Improvement Subform")
-            {
-                ApplicationArea = All;
-                Caption = 'Improvement History';
-                SubPageLink = "Property ID" = field("Property ID");
-            }
-            part(PropertyValuations; "PMS Reinstatement Val Subform")
-            {
-                ApplicationArea = All;
-                Caption = 'Reinstatement Valuations';
-                SubPageLink = "Property ID" = field("Property ID");
-            }
-
         }
 
         area(FactBoxes)
@@ -380,6 +346,14 @@ page 80813 "PMS Property"
                 Caption = 'Documents';
                 SubPageLink = "Table ID" = const(80811),
                               "No." = field("Property ID");
+            }
+            systempart(Notes; Notes)
+            {
+                ApplicationArea = All;
+            }
+            systempart(Links; Links)
+            {
+                ApplicationArea = All;
             }
         }
     }
@@ -432,6 +406,127 @@ page 80813 "PMS Property"
                     CurrPage.Update(false);
                 end;
             }
+            action(PropertyLedgerEntries)
+            {
+                ApplicationArea = All;
+                Caption = 'Property Ledger Entries';
+                Image = Ledger;
+                ToolTip = 'View ledger entries for this property.';
+
+                trigger OnAction()
+                begin
+                end;
+            }
+            action(ViewTenantMovements)
+            {
+                ApplicationArea = All;
+                Caption = 'Tenant History';
+                Image = Entries;
+                ToolTip = 'View all tenant history for this property.';
+
+                trigger OnAction()
+                var
+                    TenantMovement: Record "PMS Tenant Movement";
+                begin
+                    TenantMovement.SetRange("Property ID", Rec."Property ID");
+                    Page.Run(Page::"PMS Tenant Movement List", TenantMovement);
+                end;
+            }
+            action(HazardEntries)
+            {
+                ApplicationArea = All;
+                Caption = 'Hazard Entries';
+                Image = Warning;
+                ToolTip = 'View hazard entries for this property.';
+
+                trigger OnAction()
+                var
+                    PropertyHazard: Record "PMS Property Hazard";
+                begin
+                    PropertyHazard.SetRange("Property ID", Rec."Property ID");
+                    Page.Run(Page::"PMS Property Hazard List", PropertyHazard);
+                end;
+            }
+            action(AlarmEntries)
+            {
+                ApplicationArea = All;
+                Caption = 'Alarm Entries';
+                Image = Alerts;
+                ToolTip = 'View alarm entries for this property.';
+
+                trigger OnAction()
+                var
+                    PropertyAlarm: Record "PMS Property Alarm";
+                begin
+                    PropertyAlarm.SetRange("Property ID", Rec."Property ID");
+                    Page.Run(Page::"PMS Property Alarm List", PropertyAlarm);
+                end;
+            }
+
+            action(BoilerEntries)
+            {
+                ApplicationArea = All;
+                Caption = 'Boiler Entries';
+                Image = ServiceLedger;
+                ToolTip = 'View boiler entries for this property.';
+
+                trigger OnAction()
+                var
+                    PropertyBoiler: Record "PMS Property Boiler";
+                begin
+                    PropertyBoiler.SetRange("Property ID", Rec."Property ID");
+                    Page.Run(Page::"PMS Property Boiler List", PropertyBoiler);
+                end;
+            }
+
+            action(ImprovementHistory)
+            {
+                ApplicationArea = All;
+                Caption = 'Improvement History';
+                Image = History;
+                ToolTip = 'View improvement history for this property.';
+
+                trigger OnAction()
+                var
+                    PropertyImprovement: Record "PMS Property Improvement";
+                begin
+                    PropertyImprovement.SetRange("Property ID", Rec."Property ID");
+                    Page.Run(Page::"PMS Prop Improvement List", PropertyImprovement);
+                end;
+            }
+            action(ReinstatementValuations)
+            {
+                ApplicationArea = All;
+                Caption = 'Reinstatement Valuations';
+                Image = Calculate;
+                ToolTip = 'View reinstatement valuations for this property.';
+
+                trigger OnAction()
+                var
+                    ReinstatementVal: Record "PMS Reinstatement Valuation";
+                begin
+                    ReinstatementVal.SetRange("Property ID", Rec."Property ID");
+                    Page.Run(Page::"PMS Reinstatement Val List", ReinstatementVal);
+                end;
+            }
+
+
+
+            action(StatusLog)
+            {
+                ApplicationArea = All;
+                Caption = 'Status Log';
+                Image = Log;
+                ToolTip = 'View the status change history for this property.';
+
+                trigger OnAction()
+                var
+                    StatusLog: Record "PMS Property Status Log";
+                begin
+                    StatusLog.SetRange("Property ID", Rec."Property ID");
+                    Page.Run(Page::"PMS Property Status Log", StatusLog);
+                end;
+            }
             action(LedgerEntries)
             {
                 ApplicationArea = All;
@@ -466,6 +561,40 @@ page 80813 "PMS Property"
         }
         area(Processing)
         {
+            action(ChangeStatus)
+            {
+                ApplicationArea = All;
+                Caption = 'Change Status';
+                Image = Edit;
+                ToolTip = 'Change the status of this property.';
+
+                trigger OnAction()
+                var
+                    StatusChangeDlg: Page "PMS Prop Status Change Dlg";
+                    StatusLog: Record "PMS Property Status Log";
+                    OldStatus: Enum "PMS Property Status";
+                begin
+                    if Rec.Status = Rec.Status::"Tenancy Occupied" then
+                        Error('Cannot change the status of a property with an active tenancy. End the tenancy first.');
+                    CurrPage.SaveRecord();
+                    StatusChangeDlg.SetCurrentStatus(Rec.Status);
+                    StatusChangeDlg.RunModal();
+                    if not StatusChangeDlg.WasConfirmed() then
+                        exit;
+                    OldStatus := Rec.Status;
+                    Rec.Status := StatusChangeDlg.GetNewStatus();
+                    Rec.Modify(true);
+                    StatusLog.Init();
+                    StatusLog."Property ID" := Rec."Property ID";
+                    StatusLog."Changed On" := CurrentDateTime();
+                    StatusLog."Changed By" := CopyStr(UserId(), 1, MaxStrLen(StatusLog."Changed By"));
+                    StatusLog."Old Status" := OldStatus;
+                    StatusLog."New Status" := Rec.Status;
+                    StatusLog.Note := CopyStr(StatusChangeDlg.GetNote(), 1, MaxStrLen(StatusLog.Note));
+                    StatusLog.Insert(true);
+                    CurrPage.Update(false);
+                end;
+            }
             action(NewHelpdeskCall)
             {
                 ApplicationArea = All;
@@ -523,6 +652,14 @@ page 80813 "PMS Property"
                 Caption = 'Property';
 
                 actionref(Dimensions_Promoted; Dimensions) { }
+                actionref(PropertyLedgerEntries_Promoted; PropertyLedgerEntries) { }
+                actionref(StatusLog_Promoted; StatusLog) { }
+                actionref(ViewTenantMovements_Promoted; ViewTenantMovements) { }
+                actionref(HazardEntries_Promoted; HazardEntries) { }
+                actionref(AlarmEntries_Promoted; AlarmEntries) { }
+                actionref(BoilerEntries_Promoted; BoilerEntries) { }
+                actionref(ImprovementHistory_Promoted; ImprovementHistory) { }
+                actionref(ReinstatementValuations_Promoted; ReinstatementValuations) { }
                 actionref(LedgerEntries_Promoted; LedgerEntries) { }
             }
             group(Category_Process)
@@ -531,6 +668,7 @@ page 80813 "PMS Property"
 
                 actionref(NewHelpdeskCall_Promoted; NewHelpdeskCall) { }
                 actionref(NewTenantMovement_Promoted; NewTenantMovement) { }
+                actionref(ChangeStatus_Promoted; ChangeStatus) { }
             }
         }
     }
@@ -539,13 +677,11 @@ page 80813 "PMS Property"
     var
         PropertyHazard: Record "PMS Property Hazard";
     begin
-        CurrPage.PropertyAlarms.Page.SetPropertyID(Rec."Property ID");
-        CurrPage.PropertyImprovements.Page.SetPropertyID(Rec."Property ID");
-        CurrPage.PropertyBoilers.Page.SetPropertyID(Rec."Property ID");
-        CurrPage.PropertyHazards.Page.SetPropertyID(Rec."Property ID");
-        CurrPage.PropertyValuations.Page.SetPropertyID(Rec."Property ID");
         PropertyHazard.SetRange("Property ID", Rec."Property ID");
         HazardsExist := not PropertyHazard.IsEmpty();
+        if PageJustOpened and HazardsExist then
+            Message('Hazards exist at this property!');
+        PageJustOpened := false;
     end;
 
     trigger OnInsertRecord(BelowxRec: Boolean): Boolean
@@ -565,9 +701,11 @@ page 80813 "PMS Property"
             Rec.FilterGroup(2);
         Rec.SetFilter("Property Dimension Filter", PMSSetup."Property Dimension Code");
         Rec.FilterGroup(0);
+        PageJustOpened := true;
     end;
 
     var
         HazardsExist: Boolean;
+        PageJustOpened: Boolean;
 }
 

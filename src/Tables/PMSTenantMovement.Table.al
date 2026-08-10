@@ -131,17 +131,20 @@ table 80825 "PMS Tenant Movement"
         CalcStatus();
         CopyFromTenant();
         UpdateTenantStatus();
+        UpdatePropertyStatus(0);
     end;
 
     trigger OnModify()
     begin
         CalcStatus();
         UpdateTenantStatus();
+        UpdatePropertyStatus(0);
     end;
 
     trigger OnDelete()
     begin
         UpdateTenantStatus();
+        UpdatePropertyStatus("Entry No.");
     end;
 
     local procedure CalcStatus()
@@ -164,6 +167,27 @@ table 80825 "PMS Tenant Movement"
             exit;
         if Tenant.Get("Tenant ID") then
             Tenant.CalcStatusFromMovements();
+    end;
+
+    local procedure UpdatePropertyStatus(ExcludeEntryNo: Integer)
+    var
+        Property: Record "PMS Property";
+        Movement: Record "PMS Tenant Movement";
+    begin
+        if "Property ID" = '' then
+            exit;
+        if not Property.Get("Property ID") then
+            exit;
+        Movement.SetRange("Property ID", "Property ID");
+        Movement.SetFilter("Start Date", '<>%1&<=%2', 0D, WorkDate());
+        Movement.SetFilter("End Date", '%1|>=%2', 0D, WorkDate());
+        if ExcludeEntryNo <> 0 then
+            Movement.SetFilter("Entry No.", '<>%1', ExcludeEntryNo);
+        if Movement.FindFirst() then
+            Property.Status := Property.Status::"Tenancy Occupied"
+        else
+            Property.Status := Property.Status::Vacant;
+        Property.Modify();
     end;
 
     local procedure CopyFromTenant()

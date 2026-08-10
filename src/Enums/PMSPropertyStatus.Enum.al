@@ -7,14 +7,6 @@ enum 80806 "PMS Property Status"
     {
         Caption = ' ';
     }
-    value(1; Allocated)
-    {
-        Caption = 'Allocated';
-    }
-    value(2; "In Construction")
-    {
-        Caption = 'In Construction';
-    }
     value(3; "Non Operational")
     {
         Caption = 'Non Operational';
@@ -22,14 +14,6 @@ enum 80806 "PMS Property Status"
     value(4; Operational)
     {
         Caption = 'Operational';
-    }
-    value(5; Rehoming)
-    {
-        Caption = 'Rehoming';
-    }
-    value(6; Relocated)
-    {
-        Caption = 'Relocated';
     }
     value(7; Sold)
     {
@@ -42,5 +26,9 @@ enum 80806 "PMS Property Status"
     value(9; Vacant)
     {
         Caption = 'Vacant';
+    }
+    value(10; Archived)
+    {
+        Caption = 'Archived';
     }
 }
