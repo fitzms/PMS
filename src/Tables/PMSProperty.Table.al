@@ -272,6 +272,16 @@ table 80811 "PMS Property"
         {
             Caption = 'Wifi Password';
         }
+        field(141; "SharePoint Folder URL"; Text[500])
+        {
+            Caption = 'SharePoint Folder URL';
+            DataClassification = OrganizationIdentifiableInformation;
+        }
+        field(142; "Qube Document History"; Text[100])
+        {
+            Caption = 'Qube Document History';
+            DataClassification = CustomerContent;
+        }
 
 
 

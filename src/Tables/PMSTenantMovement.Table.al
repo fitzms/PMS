@@ -130,27 +130,27 @@ table 80825 "PMS Tenant Movement"
     begin
         CalcStatus();
         CopyFromTenant();
-        UpdateTenantStatus();
+        UpdateTenantStatus(0);
         UpdatePropertyStatus(0);
     end;
 
     trigger OnModify()
     begin
         CalcStatus();
-        UpdateTenantStatus();
+        UpdateTenantStatus(0);
         UpdatePropertyStatus(0);
     end;
 
     trigger OnDelete()
     begin
-        UpdateTenantStatus();
+        UpdateTenantStatus("Entry No.");
         UpdatePropertyStatus("Entry No.");
     end;
 
     local procedure CalcStatus()
     begin
         if ("Start Date" <> 0D) and ("Start Date" <= WorkDate()) and
-           (("End Date" = 0D) or ("End Date" >= WorkDate())) then
+           (("End Date" = 0D) or ("End Date" > WorkDate())) then
             Status := Status::Current
         else
             if "Start Date" <> 0D then
@@ -159,14 +159,14 @@ table 80825 "PMS Tenant Movement"
                 Status := Status::" ";
     end;
 
-    procedure UpdateTenantStatus()
+    procedure UpdateTenantStatus(ExcludeEntryNo: Integer)
     var
         Tenant: Record "PMS Tenant";
     begin
         if "Tenant ID" = '' then
             exit;
         if Tenant.Get("Tenant ID") then
-            Tenant.CalcStatusFromMovements();
+            Tenant.CalcStatusFromMovements(ExcludeEntryNo);
     end;
 
     local procedure UpdatePropertyStatus(ExcludeEntryNo: Integer)
@@ -180,7 +180,7 @@ table 80825 "PMS Tenant Movement"
             exit;
         Movement.SetRange("Property ID", "Property ID");
         Movement.SetFilter("Start Date", '<>%1&<=%2', 0D, WorkDate());
-        Movement.SetFilter("End Date", '%1|>=%2', 0D, WorkDate());
+        Movement.SetFilter("End Date", '%1|>%2', 0D, WorkDate());
         if ExcludeEntryNo <> 0 then
             Movement.SetFilter("Entry No.", '<>%1', ExcludeEntryNo);
         if Movement.FindFirst() then

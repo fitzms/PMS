@@ -73,6 +73,11 @@ table 80820 "PMS Tenant"
             CalcFormula = lookup("PMS Property"."Known As" where("Property ID" = field("Current Property ID")));
             Editable = false;
         }
+        field(22; "SharePoint Folder URL"; Text[500])
+        {
+            Caption = 'SharePoint Folder URL';
+            DataClassification = OrganizationIdentifiableInformation;
+        }
     }
 
     keys
@@ -155,14 +160,16 @@ table 80820 "PMS Tenant"
         end;
     end;
 
-    procedure CalcStatusFromMovements()
+    procedure CalcStatusFromMovements(ExcludeEntryNo: Integer)
     var
         TenantMovement: Record "PMS Tenant Movement";
     begin
         TenantMovement.SetCurrentKey("Tenant ID", "Date");
         TenantMovement.SetRange("Tenant ID", "Tenant ID");
         TenantMovement.SetFilter("Start Date", '<>%1&<=%2', 0D, WorkDate());
-        TenantMovement.SetFilter("End Date", '%1|>=%2', 0D, WorkDate());
+        TenantMovement.SetFilter("End Date", '%1|>%2', 0D, WorkDate());
+        if ExcludeEntryNo <> 0 then
+            TenantMovement.SetFilter("Entry No.", '<>%1', ExcludeEntryNo);
         if TenantMovement.FindLast() then begin
             Status := Status::Current;
             "Current Property ID" := TenantMovement."Property ID";

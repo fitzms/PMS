@@ -109,6 +109,17 @@ page 80813 "PMS Property"
                     Caption = 'Property Dimension';
                     ToolTip = 'Specifies the property dimension value for this property.';
                 }
+                field("SharePoint Folder URL"; Rec."SharePoint Folder URL")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                    ToolTip = 'Specifies the SharePoint Documents folder URL for this property.';
+                }
+                field("Qube Document History"; Rec."Qube Document History")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the Qube document history reference for this property.';
+                }
             }
 
             group(HousingAndCommunications)
@@ -644,6 +655,49 @@ page 80813 "PMS Property"
                     MovementPage.RunModal();
                 end;
             }
+            action(CreateSPFolder)
+            {
+                ApplicationArea = All;
+                Caption = 'Create SharePoint Folder';
+                Image = Cloud;
+                Enabled = Rec."SharePoint Folder URL" = '';
+                ToolTip = 'Create the Properties/{ID}/Documents folder structure in SharePoint and store the URL.';
+
+                trigger OnAction()
+                var
+                    SPMgt: Codeunit "PMS SharePoint Mgt";
+                begin
+                    CurrPage.SaveRecord();
+                    SPMgt.CreatePropertyFolder(Rec);
+                    CurrPage.Update(false);
+                end;
+            }
+            action(OpenSPFolder)
+            {
+                ApplicationArea = All;
+                Caption = 'Open in SharePoint';
+                Image = Open;
+                Enabled = Rec."SharePoint Folder URL" <> '';
+                ToolTip = 'Open the SharePoint Documents folder for this property in a browser.';
+
+                trigger OnAction()
+                begin
+                    HyperLink(Rec."SharePoint Folder URL");
+                end;
+            }
+            action(OpenQubeDocHistory)
+            {
+                ApplicationArea = All;
+                Caption = 'Open Qube Document History';
+                Image = Documents;
+                Enabled = Rec."Qube Document History" <> '';
+                ToolTip = 'Open the Qube Document History URL for this property in a browser.';
+
+                trigger OnAction()
+                begin
+                    HyperLink(Rec."Qube Document History");
+                end;
+            }
         }
         area(Promoted)
         {
@@ -669,6 +723,9 @@ page 80813 "PMS Property"
                 actionref(NewHelpdeskCall_Promoted; NewHelpdeskCall) { }
                 actionref(NewTenantMovement_Promoted; NewTenantMovement) { }
                 actionref(ChangeStatus_Promoted; ChangeStatus) { }
+                actionref(CreateSPFolder_Promoted; CreateSPFolder) { }
+                actionref(OpenSPFolder_Promoted; OpenSPFolder) { }
+                actionref(OpenQubeDocHistory_Promoted; OpenQubeDocHistory) { }
             }
         }
     }

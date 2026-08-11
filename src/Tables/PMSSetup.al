@@ -64,6 +64,49 @@ table 80807 "PMS Setup"
             Caption = 'Cost Centre Dimension Code';
             TableRelation = Dimension;
         }
+        field(50; "SP Tenant ID"; Text[100])
+        {
+            Caption = 'Azure AD Tenant ID';
+            DataClassification = OrganizationIdentifiableInformation;
+        }
+        field(51; "SP Client ID"; Text[100])
+        {
+            Caption = 'App Client ID';
+            DataClassification = OrganizationIdentifiableInformation;
+        }
+        field(52; "SP Site Host"; Text[100])
+        {
+            Caption = 'SharePoint Host';
+            DataClassification = OrganizationIdentifiableInformation;
+        }
+        field(53; "SP Site Path"; Text[200])
+        {
+            Caption = 'SharePoint Site Path';
+            DataClassification = OrganizationIdentifiableInformation;
+        }
+        field(54; "SP Document Library"; Text[100])
+        {
+            Caption = 'Document Library';
+            DataClassification = OrganizationIdentifiableInformation;
+        }
+        field(55; "SP Graph Site ID"; Text[300])
+        {
+            Caption = 'Graph Site ID';
+            Editable = false;
+            DataClassification = OrganizationIdentifiableInformation;
+        }
+        field(56; "SP Graph Drive ID"; Text[300])
+        {
+            Caption = 'Graph Drive ID';
+            Editable = false;
+            DataClassification = OrganizationIdentifiableInformation;
+        }
+        field(57; "SP Has Client Secret"; Boolean)
+        {
+            Caption = 'Client Secret Configured';
+            Editable = false;
+            DataClassification = SystemMetadata;
+        }
 
     }
 
@@ -79,6 +122,7 @@ table 80807 "PMS Setup"
     begin
         if not Get() then begin
             Init();
+            "SP Document Library" := 'Documents';
             Insert();
         end;
     end;

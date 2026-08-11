@@ -77,6 +77,51 @@ page 80808 "PMS Setup"
                     ToolTip = 'Specifies the number series used to assign IDs to new PMS jobs.';
                 }
             }
+            group(SharePoint)
+            {
+                Caption = 'SharePoint Integration';
+
+                field("SP Tenant ID"; Rec."SP Tenant ID")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the Azure AD tenant ID (GUID) for your Microsoft 365 tenant.';
+                }
+                field("SP Client ID"; Rec."SP Client ID")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the Application (client) ID of the Azure App Registration.';
+                }
+                field("SP Site Host"; Rec."SP Site Host")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the SharePoint hostname, e.g. teamgodolphin.sharepoint.com.';
+                }
+                field("SP Site Path"; Rec."SP Site Path")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the SharePoint site path, e.g. /sites/UK-PROPERTY-BC.';
+                }
+                field("SP Document Library"; Rec."SP Document Library")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Specifies the document library name, e.g. Documents.';
+                }
+                field("SP Has Client Secret"; Rec."SP Has Client Secret")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Indicates whether a client secret has been stored in secure storage.';
+                }
+                field("SP Graph Site ID"; Rec."SP Graph Site ID")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Cached Graph API site ID. Populated automatically when you validate the connection.';
+                }
+                field("SP Graph Drive ID"; Rec."SP Graph Drive ID")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Cached Graph API drive ID. Populated automatically when you validate the connection.';
+                }
+            }
         }
     }
 
@@ -99,6 +144,74 @@ page 80808 "PMS Setup"
                         exit;
                     TenantMovement.DeleteAll();
                     Message('All Tenant Movement records have been deleted.');
+                end;
+            }
+            action(SetClientSecret)
+            {
+                ApplicationArea = All;
+                Caption = 'Set Client Secret';
+                Image = Lock;
+                ToolTip = 'Store the Azure App Registration client secret in secure isolated storage.';
+
+                trigger OnAction()
+                var
+                    SecretDlg: Page "PMS Set SP Secret Dlg";
+                    SPMgt: Codeunit "PMS SharePoint Mgt";
+                begin
+                    SecretDlg.RunModal();
+                    if not SecretDlg.WasConfirmed() then
+                        exit;
+                    SPMgt.SetClientSecret(SecretDlg.GetSecret());
+                    CurrPage.Update(false);
+                    Message('Client secret saved to secure storage.');
+                end;
+            }
+            action(ClearClientSecret)
+            {
+                ApplicationArea = All;
+                Caption = 'Clear Client Secret';
+                Image = Delete;
+                ToolTip = 'Remove the stored client secret from secure isolated storage.';
+
+                trigger OnAction()
+                var
+                    SPMgt: Codeunit "PMS SharePoint Mgt";
+                begin
+                    if not Confirm('Clear the stored SharePoint client secret?', false) then
+                        exit;
+                    SPMgt.ClearClientSecret();
+                    CurrPage.Update(false);
+                end;
+            }
+            action(ValidateSPConnection)
+            {
+                ApplicationArea = All;
+                Caption = 'Validate SP Connection';
+                Image = TestFile;
+                ToolTip = 'Test the SharePoint connection and cache the site and drive IDs.';
+
+                trigger OnAction()
+                var
+                    SPMgt: Codeunit "PMS SharePoint Mgt";
+                begin
+                    CurrPage.SaveRecord();
+                    SPMgt.ValidateConnection(Rec);
+                    CurrPage.Update(false);
+                end;
+            }
+            action(ResetSPCache)
+            {
+                ApplicationArea = All;
+                Caption = 'Reset Cached IDs';
+                Image = Refresh;
+                ToolTip = 'Clear cached Graph Site ID and Drive ID so they are re-fetched on next use.';
+
+                trigger OnAction()
+                begin
+                    Rec."SP Graph Site ID" := '';
+                    Rec."SP Graph Drive ID" := '';
+                    Rec.Modify();
+                    CurrPage.Update(false);
                 end;
             }
         }

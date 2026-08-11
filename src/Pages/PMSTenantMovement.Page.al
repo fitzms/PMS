@@ -128,6 +128,30 @@ page 80832 "PMS Tenant Movement"
 
     actions
     {
+        area(Processing)
+        {
+            action(VacateProperty)
+            {
+                ApplicationArea = All;
+                Caption = 'Vacate Property';
+                Image = Stop;
+                ToolTip = 'Set the end date for this tenancy to vacate the property.';
+
+                trigger OnAction()
+                var
+                    VacateDlg: Page "PMS Vacate Dlg";
+                begin
+                    if Rec."Start Date" = 0D then
+                        Error('Cannot vacate a property with no start date.');
+                    VacateDlg.RunModal();
+                    if not VacateDlg.WasConfirmed() then
+                        exit;
+                    Rec.Validate("End Date", VacateDlg.GetVacateDate());
+                    Rec.Modify(true);
+                    CurrPage.Update(false);
+                end;
+            }
+        }
         area(Navigation)
         {
             action(NavigateToTenant)
@@ -167,6 +191,11 @@ page 80832 "PMS Tenant Movement"
         }
         area(Promoted)
         {
+            group(Category_Process)
+            {
+                Caption = 'Process';
+                actionref(VacateProperty_Promoted; VacateProperty) { }
+            }
             group(Category_Navigate)
             {
                 Caption = 'Navigate';
