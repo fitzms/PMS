@@ -1,0 +1,12 @@
+{
+	"servers": {
+		"bc-code-intel": {
+			"type": "stdio",
+			"command": "npx",
+			"args": [
+				"bc-code-intelligence-mcp"
+			]
+		}
+	},
+	"inputs": []
+}

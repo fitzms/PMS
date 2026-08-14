@@ -129,6 +129,15 @@ page 80802 "PMS Role Center"
                     Image = Setup;
                     ToolTip = 'View and manage PMS category posting groups.';
                 }
+
+                action(ImportVendorInvoicesWithUnitCost)
+                {
+                    ApplicationArea = All;
+                    Caption = 'Import Vendor Invoices (Unit Cost)';
+                    Image = Import;
+                    ToolTip = 'Import vendor invoices from a file that includes Direct Unit Cost.';
+                    RunObject = codeunit "PMS Run Vend Inv Import CRE";
+                }
             }
         }
 
