@@ -25,6 +25,7 @@ page 80826 "PMS Job"
                 {
                     ApplicationArea = All;
                     Importance = Promoted;
+                    Editable = IsCallFieldsEditable;
                     ToolTip = 'Specifies whether this is an external supplier job or an internal employee works order.';
 
                     trigger OnValidate()
@@ -44,6 +45,7 @@ page 80826 "PMS Job"
                     {
                         ApplicationArea = All;
                         Importance = Promoted;
+                        Editable = IsCallFieldsEditable;
                         ToolTip = 'Specifies the employee responsible for this works order.';
                     }
                     field("Employee Name"; Rec."Employee Name")
@@ -57,6 +59,7 @@ page 80826 "PMS Job"
                         ApplicationArea = All;
                         Importance = Promoted;
                         QuickEntry = true;
+                        Editable = IsCallFieldsEditable;
                         ToolTip = 'Specifies the internal resource allocated to manage this job.';
                     }
                     field("Resource Name"; Rec."Resource Name")
@@ -115,13 +118,22 @@ page 80826 "PMS Job"
                     {
                         ApplicationArea = All;
                         Importance = Promoted;
+                        Editable = IsCallFieldsEditable;
                         ToolTip = 'Specifies a description of the job.';
+                    }
+                    field(Details; Rec.Details)
+                    {
+                        ApplicationArea = All;
+                        MultiLine = true;
+                        Editable = IsCallFieldsEditable;
+                        ToolTip = 'Specifies detailed information about the job.';
                     }
 
                     field("Property ID"; Rec."Property ID")
                     {
                         ApplicationArea = All;
                         Importance = Promoted;
+                        Editable = IsCallFieldsEditable;
                         ToolTip = 'Specifies the property to which this job relates.';
 
                         trigger OnValidate()
@@ -144,24 +156,27 @@ page 80826 "PMS Job"
                     field("Unit ID"; Rec."Unit ID")
                     {
                         ApplicationArea = All;
-                        Editable = not IsSingleUnit;
+                        Editable = (not IsSingleUnit) and IsCallFieldsEditable;
                         ToolTip = 'Specifies the unit within the property to which this job relates.';
                     }
                     field("Special Instructions"; Rec."Special Instructions")
                     {
                         ApplicationArea = All;
+                        Editable = IsCallFieldsEditable;
                         ToolTip = 'Specifies any special instructions for carrying out this job.';
                     }
 
                     field(Priority; Rec.Priority)
                     {
                         ApplicationArea = All;
+                        Editable = IsCallFieldsEditable;
                         ToolTip = 'Specifies the priority of the job.';
                     }
                     field("Scheduled Date"; Rec."Scheduled Date")
                     {
                         ApplicationArea = All;
                         Importance = Promoted;
+                        Editable = IsCallFieldsEditable;
                         ToolTip = 'Specifies the scheduled date for this job occurrence.';
                     }
 
@@ -276,6 +291,22 @@ page 80826 "PMS Job"
                 begin
                     PurchHeader.Get(PurchHeader."Document Type"::Order, Rec."Purchase Order No.");
                     Page.Run(Page::"Purchase Order", PurchHeader);
+                end;
+            }
+            action(ViewCall)
+            {
+                ApplicationArea = All;
+                Caption = 'View Call';
+                Enabled = (Rec."Source Type" = Rec."Source Type"::"Helpdesk Call") and (Rec."Source No." <> '');
+                Image = Document;
+                ToolTip = 'View the helpdesk call that created this job.';
+
+                trigger OnAction()
+                var
+                    HelpdeskCall: Record "PMS Helpdesk Call";
+                begin
+                    if HelpdeskCall.Get(Rec."Source No.") then
+                        Page.Run(Page::"PMS Helpdesk Call", HelpdeskCall);
                 end;
             }
             action(MarkInProgress)
@@ -415,6 +446,7 @@ page 80826 "PMS Job"
             group(Category_Navigate)
             {
                 Caption = 'Navigate';
+                actionref(ViewCall_Promoted; ViewCall) { }
                 actionref(JobList_Promoted; JobList) { }
             }
         }
@@ -428,9 +460,11 @@ page 80826 "PMS Job"
         IsSingleUnit: Boolean;
         ShowEmployeeFields: Boolean;
         ShowVendorFields: Boolean;
+        IsCallFieldsEditable: Boolean;
 
     trigger OnOpenPage()
     begin
+        IsCallFieldsEditable := true;
         UpdateVisibility();
     end;
 
@@ -445,6 +479,7 @@ page 80826 "PMS Job"
             Rec."Job No." := NoSeriesCU.GetNextNo(PMSSetup."Job Nos.", WorkDate(), true);
         end;
 
+        IsCallFieldsEditable := true;
         UpdateVisibility();
     end;
 
@@ -482,6 +517,9 @@ page 80826 "PMS Job"
         if Rec."Property ID" <> '' then
             if PropertyRec.Get(Rec."Property ID") then
                 IsSingleUnit := PropertyRec."Single Unit";
+
+        // Lock fields if job was created from a helpdesk call
+        IsCallFieldsEditable := Rec."Source Type" <> Rec."Source Type"::"Helpdesk Call";
 
         UpdateVisibility();
     end;

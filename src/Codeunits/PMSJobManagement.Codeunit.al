@@ -164,6 +164,7 @@ codeunit 80800 "PMS Job Management"
         PMSJob."Job No." := NoSeries.GetNextNo(PMSSetup."Job Nos.", WorkDate(), true);
         PMSJob."No. Series" := PMSSetup."Job Nos.";
         PMSJob.Description := HelpdeskCall.Description;
+        PMSJob.Details := HelpdeskCall.Details;
         PMSJob."Source Type" := PMSJob."Source Type"::"Helpdesk Call";
         PMSJob."Source No." := HelpdeskCall."Call No.";
         PMSJob."Property ID" := HelpdeskCall."Property ID";

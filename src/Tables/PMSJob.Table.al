@@ -99,6 +99,10 @@ table 80824 "PMS Job"
             Caption = 'SharePoint Folder URL';
             ExtendedDatatype = URL;
         }
+        field(32; Details; Text[2048])
+        {
+            Caption = 'Details';
+        }
         field(10; Status; Enum "PMS Job Status")
         {
             Caption = 'Status';

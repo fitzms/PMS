@@ -198,7 +198,7 @@ table 80808 "PMS Helpdesk Call"
         }
         field(22; "Acknowledged Date"; DateTime)
         {
-            Caption = 'Acknowledged Date';
+            Caption = 'Job Created Date';
             Editable = false;
         }
         field(23; "Resolution Time"; Duration)
