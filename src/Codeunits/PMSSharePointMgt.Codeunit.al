@@ -24,23 +24,23 @@ codeunit 80801 "PMS SharePoint Mgt"
         Message('SharePoint folder created successfully.');
     end;
 
-    procedure CreateTenantFolder(var TenantRec: Record "PMS Tenant")
+    procedure CreateJobFolder(var JobRec: Record "PMS Job")
     var
         Setup: Record "PMS Setup";
         AccessToken: Text;
         FolderUrl: Text;
-        TenantId: Code[20];
+        JobNo: Code[20];
     begin
         Setup.GetRecordOnce();
         ValidateSetup(Setup);
         AccessToken := GetAccessToken(Setup);
         EnsureSiteAndDriveIds(Setup, AccessToken);
-        TenantId := TenantRec."Tenant ID";
-        EnsureFolder(Setup."SP Graph Drive ID", AccessToken, '', 'Tenants');
-        EnsureFolder(Setup."SP Graph Drive ID", AccessToken, 'Tenants', TenantId);
-        FolderUrl := EnsureFolder(Setup."SP Graph Drive ID", AccessToken, 'Tenants/' + TenantId, 'Documents');
-        TenantRec."SharePoint Folder URL" := CopyStr(FolderUrl, 1, MaxStrLen(TenantRec."SharePoint Folder URL"));
-        TenantRec.Modify(true);
+        JobNo := JobRec."Job No.";
+        EnsureFolder(Setup."SP Graph Drive ID", AccessToken, '', 'Jobs');
+        EnsureFolder(Setup."SP Graph Drive ID", AccessToken, 'Jobs', JobNo);
+        FolderUrl := EnsureFolder(Setup."SP Graph Drive ID", AccessToken, 'Jobs/' + JobNo, 'Documents');
+        JobRec."SharePoint Folder URL" := CopyStr(FolderUrl, 1, MaxStrLen(JobRec."SharePoint Folder URL"));
+        JobRec.Modify(true);
         Message('SharePoint folder created successfully.');
     end;
 

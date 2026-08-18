@@ -20,42 +20,180 @@ page 80826 "PMS Job"
                     Importance = Promoted;
                     ToolTip = 'Specifies the unique job number.';
                 }
-                field(Description; Rec.Description)
-                {
-                    ApplicationArea = All;
-                    Importance = Promoted;
-                    ToolTip = 'Specifies a description of the job.';
-                }
-                field(Status; Rec.Status)
-                {
-                    ApplicationArea = All;
-                    Importance = Promoted;
-                    StyleExpr = StatusStyle;
-                    ToolTip = 'Specifies the current status of the job.';
-                }
+
                 field("Job Type"; Rec."Job Type")
                 {
                     ApplicationArea = All;
                     Importance = Promoted;
                     ToolTip = 'Specifies whether this is an external supplier job or an internal employee works order.';
+
+                    trigger OnValidate()
+                    begin
+                        UpdateVisibility();
+                    end;
                 }
-                field(Priority; Rec.Priority)
+
+
+
+                group(InternalDetails)
                 {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the priority of the job.';
+                    Caption = 'Internal Details';
+                    Visible = ShowEmployeeFields;
+
+                    field("Employee No."; Rec."Employee No.")
+                    {
+                        ApplicationArea = All;
+                        Importance = Promoted;
+                        ToolTip = 'Specifies the employee responsible for this works order.';
+                    }
+                    field("Employee Name"; Rec."Employee Name")
+                    {
+                        ApplicationArea = All;
+                        Editable = false;
+                        ToolTip = 'Specifies the name of the employee.';
+                    }
+                    field("Resource No."; Rec."Resource No.")
+                    {
+                        ApplicationArea = All;
+                        Importance = Promoted;
+                        QuickEntry = true;
+                        ToolTip = 'Specifies the internal resource allocated to manage this job.';
+                    }
+                    field("Resource Name"; Rec."Resource Name")
+                    {
+                        ApplicationArea = All;
+                        Editable = false;
+                        ToolTip = 'Specifies the name of the allocated resource.';
+                    }
                 }
-                field("Scheduled Date"; Rec."Scheduled Date")
+
+                group(ExternalDetails)
                 {
-                    ApplicationArea = All;
-                    Importance = Promoted;
-                    ToolTip = 'Specifies the scheduled date for this job occurrence.';
+                    Caption = 'External Details';
+                    Visible = ShowVendorFields;
+
+                    field("Vendor No."; Rec."Vendor No.")
+                    {
+                        ApplicationArea = All;
+                        Importance = Promoted;
+                        ToolTip = 'Specifies the vendor who will carry out this job.';
+                    }
+                    field("Vendor Name"; Rec."Vendor Name")
+                    {
+                        ApplicationArea = All;
+                        Editable = false;
+                        ToolTip = 'Specifies the name of the vendor.';
+                    }
+                    field("G/L Account No."; Rec."G/L Account No.")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the G/L account to post costs against.';
+                    }
+                    field("Global Dimension 1 Code"; Rec."Global Dimension 1 Code")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the global dimension 1 value for this job.';
+                    }
+                    field("Estimated Cost"; Rec."Estimated Cost")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the estimated cost of this job.';
+                    }
+                    field("Purchase Order No."; Rec."Purchase Order No.")
+                    {
+                        ApplicationArea = All;
+                        Editable = false;
+                        ToolTip = 'Specifies the purchase order number linked to this job.';
+                    }
                 }
+
+                group(JobDetails)
+                {
+                    Caption = 'Job Details';
+
+                    field(Description; Rec.Description)
+                    {
+                        ApplicationArea = All;
+                        Importance = Promoted;
+                        ToolTip = 'Specifies a description of the job.';
+                    }
+
+                    field("Property ID"; Rec."Property ID")
+                    {
+                        ApplicationArea = All;
+                        Importance = Promoted;
+                        ToolTip = 'Specifies the property to which this job relates.';
+
+                        trigger OnValidate()
+                        var
+                            PropertyRec: Record "PMS Property";
+                        begin
+                            IsSingleUnit := false;
+                            if Rec."Property ID" <> '' then
+                                if PropertyRec.Get(Rec."Property ID") then
+                                    IsSingleUnit := PropertyRec."Single Unit";
+                            CurrPage.Update(true);
+                        end;
+                    }
+                    field("Property Known As"; Rec."Property Known As")
+                    {
+                        ApplicationArea = All;
+                        Editable = false;
+                        ToolTip = 'Specifies the known as name of the property.';
+                    }
+                    field("Unit ID"; Rec."Unit ID")
+                    {
+                        ApplicationArea = All;
+                        Editable = not IsSingleUnit;
+                        ToolTip = 'Specifies the unit within the property to which this job relates.';
+                    }
+                    field("Special Instructions"; Rec."Special Instructions")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies any special instructions for carrying out this job.';
+                    }
+
+                    field(Priority; Rec.Priority)
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the priority of the job.';
+                    }
+                    field("Scheduled Date"; Rec."Scheduled Date")
+                    {
+                        ApplicationArea = All;
+                        Importance = Promoted;
+                        ToolTip = 'Specifies the scheduled date for this job occurrence.';
+                    }
+
+
+                }
+
                 field("Completed Date"; Rec."Completed Date")
                 {
                     ApplicationArea = All;
                     Caption = 'Completed/Spawned Date';
                     Editable = false;
                     ToolTip = 'Specifies the date the job was completed or spawned.';
+                }
+
+                field("Source Type"; Rec."Source Type")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                    ToolTip = 'Specifies whether this job originated from a contract or a helpdesk call.';
+                }
+                field("Source No."; Rec."Source No.")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                    ToolTip = 'Specifies the source document number (contract ID or call number).';
+                }
+                field("Source Line No."; Rec."Source Line No.")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                    Visible = Rec."Source Type" = Rec."Source Type"::Contract;
+                    ToolTip = 'Specifies the contract line number that generated this job.';
                 }
                 field("Related Job No."; Rec."Related Job No.")
                 {
@@ -68,137 +206,14 @@ page 80826 "PMS Job"
                     Editable = false;
                     ToolTip = 'Specifies which recurrence this job represents within its contract line (e.g. 3 = third visit).';
                 }
-            }
-            group(Location)
-            {
-                Caption = 'Location';
 
-                field("Property ID"; Rec."Property ID")
+                field(Status; Rec.Status)
                 {
                     ApplicationArea = All;
                     Importance = Promoted;
-                    ToolTip = 'Specifies the property to which this job relates.';
-
-                    trigger OnValidate()
-                    var
-                        PropertyRec: Record "PMS Property";
-                    begin
-                        IsSingleUnit := false;
-                        if Rec."Property ID" <> '' then
-                            if PropertyRec.Get(Rec."Property ID") then
-                                IsSingleUnit := PropertyRec."Single Unit";
-                        CurrPage.Update(false);
-                    end;
-                }
-                field("Unit ID"; Rec."Unit ID")
-                {
-                    ApplicationArea = All;
-                    Editable = not IsSingleUnit;
-                    ToolTip = 'Specifies the unit within the property to which this job relates.';
-                }
-                field("Special Instructions"; Rec."Special Instructions")
-                {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies any special instructions for carrying out this job.';
-                }
-            }
-            group(SupplierGroup)
-            {
-                Caption = 'Supplier';
-                Visible = Rec."Job Type" = Rec."Job Type"::External;
-
-                field("Vendor No."; Rec."Vendor No.")
-                {
-                    ApplicationArea = All;
-                    Importance = Promoted;
-                    ToolTip = 'Specifies the vendor who will carry out this job.';
-                }
-                field("Vendor Name"; Rec."Vendor Name")
-                {
-                    ApplicationArea = All;
+                    StyleExpr = StatusStyle;
                     Editable = false;
-                    ToolTip = 'Specifies the name of the vendor.';
-                }
-                field("G/L Account No."; Rec."G/L Account No.")
-                {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the G/L account to post costs against.';
-                }
-                field("Global Dimension 1 Code"; Rec."Global Dimension 1 Code")
-                {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the global dimension 1 value for this job.';
-                }
-                field("Estimated Cost"; Rec."Estimated Cost")
-                {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the estimated cost of this job.';
-                }
-                field("Purchase Order No."; Rec."Purchase Order No.")
-                {
-                    ApplicationArea = All;
-                    Editable = false;
-                    ToolTip = 'Specifies the purchase order number linked to this job.';
-                }
-            }
-            group(EmployeeGroup)
-            {
-                Caption = 'Employee';
-                Visible = Rec."Job Type" = Rec."Job Type"::Internal;
-
-                field("Employee No."; Rec."Employee No.")
-                {
-                    ApplicationArea = All;
-                    Importance = Promoted;
-                    ToolTip = 'Specifies the employee responsible for this works order.';
-                }
-                field("Employee Name"; Rec."Employee Name")
-                {
-                    ApplicationArea = All;
-                    Editable = false;
-                    ToolTip = 'Specifies the name of the employee.';
-                }
-            }
-            group(ResourceGroup)
-            {
-                Caption = 'Resource';
-
-                field("Resource No."; Rec."Resource No.")
-                {
-                    ApplicationArea = All;
-                    Importance = Promoted;
-                    QuickEntry = true;
-                    ToolTip = 'Specifies the internal resource allocated to manage this job.';
-                }
-                field("Resource Name"; Rec."Resource Name")
-                {
-                    ApplicationArea = All;
-                    Editable = false;
-                    ToolTip = 'Specifies the name of the allocated resource.';
-                }
-            }
-            group(Source)
-            {
-                Caption = 'Source';
-
-                field("Source Type"; Rec."Source Type")
-                {
-                    ApplicationArea = All;
-                    Editable = false;
-                    ToolTip = 'Specifies whether this job originated from a contract or a helpdesk call.';
-                }
-                field("Source No."; Rec."Source No.")
-                {
-                    ApplicationArea = All;
-                    Editable = IsSourceNoEditable;
-                    ToolTip = 'Specifies the source document number (contract ID or call number).';
-                }
-                field("Source Line No."; Rec."Source Line No.")
-                {
-                    ApplicationArea = All;
-                    Editable = false;
-                    Visible = Rec."Source Type" = Rec."Source Type"::Contract;
-                    ToolTip = 'Specifies the contract line number that generated this job.';
+                    ToolTip = 'Specifies the current status of the job.';
                 }
             }
             group(NotesGroup)
@@ -333,6 +348,36 @@ page 80826 "PMS Job"
                     Page.Run(Page::"PMS Job", NewJob);
                 end;
             }
+            action(CreateSPFolder)
+            {
+                ApplicationArea = All;
+                Caption = 'Create SharePoint Folder';
+                Image = Cloud;
+                Enabled = Rec."SharePoint Folder URL" = '';
+                ToolTip = 'Create the Jobs/{Job No.}/Documents folder structure in SharePoint and store the URL.';
+
+                trigger OnAction()
+                var
+                    SPMgt: Codeunit "PMS SharePoint Mgt";
+                begin
+                    CurrPage.SaveRecord();
+                    SPMgt.CreateJobFolder(Rec);
+                    CurrPage.Update(false);
+                end;
+            }
+            action(OpenSPFolder)
+            {
+                ApplicationArea = All;
+                Caption = 'Open in SharePoint';
+                Image = Open;
+                Enabled = Rec."SharePoint Folder URL" <> '';
+                ToolTip = 'Open the SharePoint Documents folder for this job in a browser.';
+
+                trigger OnAction()
+                begin
+                    HyperLink(Rec."SharePoint Folder URL");
+                end;
+            }
         }
         area(Navigation)
         {
@@ -361,6 +406,12 @@ page 80826 "PMS Job"
                 actionref(CreatePurchaseOrder_Promoted; CreatePurchaseOrder) { }
                 actionref(OpenPurchaseOrder_Promoted; OpenPurchaseOrder) { }
             }
+            group(Category_SharePoint)
+            {
+                Caption = 'SharePoint';
+                actionref(CreateSPFolder_Promoted; CreateSPFolder) { }
+                actionref(OpenSPFolder_Promoted; OpenSPFolder) { }
+            }
             group(Category_Navigate)
             {
                 Caption = 'Navigate';
@@ -375,6 +426,13 @@ page 80826 "PMS Job"
         IsHelpdeskCallClosed: Boolean;
         IsSourceNoEditable: Boolean;
         IsSingleUnit: Boolean;
+        ShowEmployeeFields: Boolean;
+        ShowVendorFields: Boolean;
+
+    trigger OnOpenPage()
+    begin
+        UpdateVisibility();
+    end;
 
     trigger OnNewRecord(BelowxRec: Boolean)
     var
@@ -386,6 +444,8 @@ page 80826 "PMS Job"
             Rec."No. Series" := PMSSetup."Job Nos.";
             Rec."Job No." := NoSeriesCU.GetNextNo(PMSSetup."Job Nos.", WorkDate(), true);
         end;
+
+        UpdateVisibility();
     end;
 
     trigger OnAfterGetRecord()
@@ -422,5 +482,13 @@ page 80826 "PMS Job"
         if Rec."Property ID" <> '' then
             if PropertyRec.Get(Rec."Property ID") then
                 IsSingleUnit := PropertyRec."Single Unit";
+
+        UpdateVisibility();
+    end;
+
+    local procedure UpdateVisibility()
+    begin
+        ShowEmployeeFields := Rec."Job Type" = Rec."Job Type"::Internal;
+        ShowVendorFields := Rec."Job Type" = Rec."Job Type"::External;
     end;
 }

@@ -73,11 +73,6 @@ table 80820 "PMS Tenant"
             CalcFormula = lookup("PMS Property"."Known As" where("Property ID" = field("Current Property ID")));
             Editable = false;
         }
-        field(22; "SharePoint Folder URL"; Text[500])
-        {
-            Caption = 'SharePoint Folder URL';
-            DataClassification = OrganizationIdentifiableInformation;
-        }
     }
 
     keys

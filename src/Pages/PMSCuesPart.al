@@ -9,109 +9,6 @@ page 80801 "PMS Cues Part"
     {
         area(Content)
         {
-            // ── Helpdesk ──────────────────────────────────────────────────────
-            cuegroup("Helpdesk All")
-            {
-                Caption = 'Helpdesk - All';
-
-
-                field("Open Calls"; Rec."Open Calls")
-                {
-                    ApplicationArea = All;
-                    Caption = 'Open Calls';
-                    StyleExpr = OpenCallsStyle;
-
-                    trigger OnDrillDown()
-                    var
-                        HelpdeskCall: Record "PMS Helpdesk Call";
-                        HelpdeskList: Page "PMS Helpdesk Call List";
-                    begin
-                        HelpdeskCall.SetFilter(Status, '<>%1', HelpdeskCall.Status::Closed);
-                        HelpdeskList.SetTableView(HelpdeskCall);
-                        HelpdeskList.Run();
-                    end;
-                }
-                field("New Helpdesk Calls"; Rec."New Helpdesk Calls")
-                {
-                    ApplicationArea = All;
-                    Caption = 'New Calls';
-                    StyleExpr = NewCallsStyle;
-                    DrillDownPageId = "PMS Helpdesk Call List";
-
-                    trigger OnDrillDown()
-                    var
-                        HelpdeskCall: Record "PMS Helpdesk Call";
-                        HelpdeskList: Page "PMS Helpdesk Call List";
-                    begin
-                        HelpdeskCall.SetRange(Status, HelpdeskCall.Status::New);
-                        HelpdeskList.SetTableView(HelpdeskCall);
-                        HelpdeskList.Run();
-                    end;
-                }
-                field("Critical Calls"; Rec."Critical Calls")
-                {
-                    ApplicationArea = All;
-                    Caption = 'Critical';
-                    StyleExpr = CriticalCallsStyle;
-                    DrillDownPageId = "PMS Helpdesk Call List";
-
-                    trigger OnDrillDown()
-                    var
-                        HelpdeskCall: Record "PMS Helpdesk Call";
-                        HelpdeskList: Page "PMS Helpdesk Call List";
-                    begin
-                        HelpdeskCall.SetRange(Priority, HelpdeskCall.Priority::Critical);
-                        HelpdeskList.SetTableView(HelpdeskCall);
-                        HelpdeskList.Run();
-                    end;
-                }
-            }
-
-            cuegroup("My Helpdesk Calls")
-            {
-                Caption = 'My Helpdesk Calls';
-
-
-                field("My New Calls"; Rec."My New Calls")
-                {
-                    ApplicationArea = All;
-                    Caption = 'My New Calls';
-                    StyleExpr = MyNewCallsStyle;
-
-                    trigger OnDrillDown()
-                    var
-                        HelpdeskCall: Record "PMS Helpdesk Call";
-                        HelpdeskList: Page "PMS Helpdesk Call List";
-                    begin
-                        HelpdeskCall.SetRange(Status, HelpdeskCall.Status::New);
-                        HelpdeskCall.SetRange("Employee No.", UserId());
-                        HelpdeskList.SetTableView(HelpdeskCall);
-                        HelpdeskList.Run();
-                    end;
-                }
-
-                field("My Calls"; Rec."My Calls")
-                {
-                    ApplicationArea = All;
-                    Caption = 'Calls';
-                    StyleExpr = MyCallsStyle;
-
-                    trigger OnDrillDown()
-                    var
-                        HelpdeskCall: Record "PMS Helpdesk Call";
-                        HelpdeskList: Page "PMS Helpdesk Call List";
-                    begin
-                        HelpdeskCall.SetRange("Call Type", HelpdeskCall."Call Type"::Internal);
-                        HelpdeskCall.SetRange("Employee No.", UserId());
-                        HelpdeskCall.SetFilter(Status, '<>%1', HelpdeskCall.Status::Closed);
-                        HelpdeskList.SetTableView(HelpdeskCall);
-                        HelpdeskList.Run();
-                    end;
-                }
-
-
-            }
-
             // ── Properties ────────────────────────────────────────────────────
             cuegroup("Properties")
             {
@@ -193,11 +90,6 @@ page 80801 "PMS Cues Part"
         OccupiedUnitsStyle: Text;
         TenancyOccupiedStyle: Text;
         NonOperationalStyle: Text;
-        OpenCallsStyle: Text;
-        NewCallsStyle: Text;
-        CriticalCallsStyle: Text;
-        MyCallsStyle: Text;
-        MyNewCallsStyle: Text;
 
     trigger OnAfterGetRecord()
     begin
@@ -209,10 +101,7 @@ page 80801 "PMS Cues Part"
             "Tenancy Occupied Units",
             "Non Operational Units",
             "Operational Units",
-            "Active Tenants",
-            "New Helpdesk Calls",
-            "Critical Calls",
-            "Open Calls");
+            "Active Tenants");
 
         OccupiedUnitsStyle := 'Favorable';
 
@@ -224,34 +113,6 @@ page 80801 "PMS Cues Part"
             NonOperationalStyle := 'Favorable';
 
         ActivePropertiesStyle := 'Favorable';
-
-        if Rec."Open Calls" > 0 then
-            OpenCallsStyle := 'Attention'
-        else
-            OpenCallsStyle := 'Favorable';
-
-        if Rec."New Helpdesk Calls" > 0 then
-            NewCallsStyle := 'Unfavorable'
-        else
-            NewCallsStyle := 'Favorable';
-
-        if Rec."Critical Calls" > 0 then
-            CriticalCallsStyle := 'Unfavorable'
-        else
-            CriticalCallsStyle := 'Favorable';
-
-        Rec.SetRange("Employee No. Filter", UserId());
-        Rec.CalcFields("My Calls", "My New Calls");
-        Rec.SetRange("Employee No. Filter");
-        if Rec."My Calls" > 0 then
-            MyCallsStyle := 'Attention'
-        else
-            MyCallsStyle := 'Favorable';
-
-        if Rec."My New Calls" > 0 then
-            MyNewCallsStyle := 'Unfavorable'
-        else
-            MyNewCallsStyle := 'Favorable';
     end;
 
     trigger OnOpenPage()

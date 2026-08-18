@@ -87,6 +87,18 @@ table 80824 "PMS Job"
                     "Property ID" := UnitRec."Property ID";
             end;
         }
+        field(30; "Property Known As"; Text[100])
+        {
+            Caption = 'Property Known As';
+            FieldClass = FlowField;
+            CalcFormula = lookup("PMS Property"."Known As" where("Property ID" = field("Property ID")));
+            Editable = false;
+        }
+        field(31; "SharePoint Folder URL"; Text[500])
+        {
+            Caption = 'SharePoint Folder URL';
+            ExtendedDatatype = URL;
+        }
         field(10; Status; Enum "PMS Job Status")
         {
             Caption = 'Status';
@@ -104,6 +116,8 @@ table 80824 "PMS Job"
                 if "Job Type" = "Job Type"::External then begin
                     "Employee No." := '';
                     "Employee Name" := '';
+                    "Resource No." := '';
+                    "Resource Name" := '';
                 end else begin
                     "Vendor No." := '';
                     "Vendor Name" := '';
@@ -143,16 +157,26 @@ table 80824 "PMS Job"
             var
                 UserSetup: Record "User Setup";
                 BCUser: Record User;
+                Res: Record Resource;
             begin
-                if "Employee No." = '' then
-                    "Employee Name" := ''
-                else begin
+                if "Employee No." = '' then begin
+                    "Employee Name" := '';
+                    "Resource No." := '';
+                    "Resource Name" := '';
+                end else begin
                     UserSetup.Get("Employee No.");
                     BCUser.SetRange("User Name", "Employee No.");
                     if BCUser.FindFirst() then
                         "Employee Name" := CopyStr(BCUser."Full Name", 1, MaxStrLen("Employee Name"))
                     else
                         "Employee Name" := CopyStr("Employee No.", 1, MaxStrLen("Employee Name"));
+
+                    // Auto-populate Resource No. if there's a matching Resource name
+                    if "Employee Name" <> '' then begin
+                        Res.SetRange(Name, "Employee Name");
+                        if Res.FindFirst() then
+                            Validate("Resource No.", Res."No.");
+                    end;
                 end;
             end;
         }

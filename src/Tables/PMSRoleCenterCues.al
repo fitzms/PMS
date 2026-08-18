@@ -169,6 +169,55 @@ table 80800 "PMS Role Center Cues"
             FieldClass = FlowField;
             CalcFormula = count("PMS Helpdesk Call" where(Status = const(New), "Employee No." = field("Employee No. Filter")));
         }
+
+        // ── Jobs ──────────────────────────────────────────────────────────────
+        field(50; "Open Jobs"; Integer)
+        {
+            Caption = 'Open Jobs';
+            FieldClass = FlowField;
+            CalcFormula = count("PMS Job" where(Status = const(Open)));
+        }
+        field(51; "Jobs In Progress"; Integer)
+        {
+            Caption = 'Jobs In Progress';
+            FieldClass = FlowField;
+            CalcFormula = count("PMS Job" where(Status = const("In Progress")));
+        }
+        field(52; "Jobs Due Today"; Integer)
+        {
+            Caption = 'Jobs Due Today';
+            FieldClass = FlowField;
+            CalcFormula = count("PMS Job" where("Scheduled Date" = field("Date Filter"), Status = filter(< Completed)));
+        }
+        field(53; "Overdue Jobs"; Integer)
+        {
+            Caption = 'Overdue Jobs';
+            FieldClass = FlowField;
+            CalcFormula = count("PMS Job" where("Scheduled Date" = field("Date Filter"), Status = filter(< Completed)));
+        }
+        field(54; "My Jobs"; Integer)
+        {
+            Caption = 'My Jobs';
+            FieldClass = FlowField;
+            CalcFormula = count("PMS Job" where("Job Type" = const(Internal), "Employee No." = field("Employee No. Filter"), Status = filter(< Completed)));
+        }
+        field(55; "External Jobs Awaiting PO"; Integer)
+        {
+            Caption = 'External Jobs Awaiting PO';
+            FieldClass = FlowField;
+            CalcFormula = count("PMS Job" where("Job Type" = const(External), "Purchase Order No." = const(''), Status = filter(< Completed)));
+        }
+        field(56; "Resource No. Filter"; Code[20])
+        {
+            Caption = 'Resource No. Filter';
+            FieldClass = FlowFilter;
+            TableRelation = Resource;
+        }
+        field(57; "Date Filter"; Date)
+        {
+            Caption = 'Date Filter';
+            FieldClass = FlowFilter;
+        }
     }
 
     keys

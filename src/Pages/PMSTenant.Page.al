@@ -123,17 +123,6 @@ page 80822 "PMS Tenant"
                 }
 
             }
-            group(SharePoint)
-            {
-                Caption = 'SharePoint';
-
-                field("SharePoint Folder URL"; Rec."SharePoint Folder URL")
-                {
-                    ApplicationArea = All;
-                    Editable = false;
-                    ToolTip = 'Specifies the SharePoint Documents folder URL for this tenant.';
-                }
-            }
             part(TenantMovement; "PMS Tenant Movement Subform")
             {
                 ApplicationArea = All;
@@ -365,36 +354,6 @@ page 80822 "PMS Tenant"
                     CurrPage.Update(false);
                 end;
             }
-            action(CreateSPFolder)
-            {
-                ApplicationArea = All;
-                Caption = 'Create SharePoint Folder';
-                Image = Cloud;
-                Enabled = Rec."SharePoint Folder URL" = '';
-                ToolTip = 'Create the Tenants/{ID}/Documents folder structure in SharePoint and store the URL.';
-
-                trigger OnAction()
-                var
-                    SPMgt: Codeunit "PMS SharePoint Mgt";
-                begin
-                    CurrPage.SaveRecord();
-                    SPMgt.CreateTenantFolder(Rec);
-                    CurrPage.Update(false);
-                end;
-            }
-            action(OpenSPFolder)
-            {
-                ApplicationArea = All;
-                Caption = 'Open in SharePoint';
-                Image = Open;
-                Enabled = Rec."SharePoint Folder URL" <> '';
-                ToolTip = 'Open the SharePoint Documents folder for this tenant in a browser.';
-
-                trigger OnAction()
-                begin
-                    HyperLink(Rec."SharePoint Folder URL");
-                end;
-            }
             action(NewHelpdeskCall)
             {
                 ApplicationArea = All;
@@ -458,13 +417,6 @@ page 80822 "PMS Tenant"
                 Caption = 'Admin';
 
                 actionref(RecalculateStatus_Promoted; RecalculateStatus) { }
-            }
-            group(Category_SharePoint)
-            {
-                Caption = 'SharePoint';
-
-                actionref(CreateSPFolder_Promoted; CreateSPFolder) { }
-                actionref(OpenSPFolder_Promoted; OpenSPFolder) { }
             }
         }
     }

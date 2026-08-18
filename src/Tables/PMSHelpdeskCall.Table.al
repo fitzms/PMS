@@ -91,9 +91,12 @@ table 80808 "PMS Helpdesk Call"
             var
                 UserSetup: Record "User Setup";
                 BCUser: Record User;
+                Res: Record Resource;
             begin
                 if "Employee No." = '' then begin
                     "Employee Name" := '';
+                    "Resource No." := '';
+                    "Resource Name" := '';
                 end else begin
                     UserSetup.Get("Employee No.");
                     BCUser.SetRange("User Name", "Employee No.");
@@ -101,6 +104,13 @@ table 80808 "PMS Helpdesk Call"
                         "Employee Name" := CopyStr(BCUser."Full Name", 1, MaxStrLen("Employee Name"))
                     else
                         "Employee Name" := CopyStr("Employee No.", 1, MaxStrLen("Employee Name"));
+
+                    // Auto-populate Resource No. if there's a matching Resource name
+                    if "Employee Name" <> '' then begin
+                        Res.SetRange(Name, "Employee Name");
+                        if Res.FindFirst() then
+                            Validate("Resource No.", Res."No.");
+                    end;
                 end;
             end;
         }

@@ -14,6 +14,11 @@ page 80802 "PMS Role Center"
             {
                 ApplicationArea = All;
             }
+            // Helpdesk & Jobs KPI cues
+            part(HelpdeskJobsCuesPart; "PMS Helpdesk Jobs Cues Part")
+            {
+                ApplicationArea = All;
+            }
             // Properties & Tenants KPI cues
             part(CuesPart; "PMS Cues Part")
             {
