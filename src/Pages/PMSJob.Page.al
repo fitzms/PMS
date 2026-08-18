@@ -183,12 +183,26 @@ page 80826 "PMS Job"
 
                 }
 
+                field("Created Date"; Rec."Created Date")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                    ToolTip = 'Specifies the date and time the job was created. For helpdesk call jobs, this is the call''s reported date.';
+                }
+
                 field("Completed Date"; Rec."Completed Date")
                 {
                     ApplicationArea = All;
                     Caption = 'Completed/Spawned Date';
                     Editable = false;
                     ToolTip = 'Specifies the date the job was completed or spawned.';
+                }
+
+                field("Resolution Time"; Rec."Resolution Time")
+                {
+                    ApplicationArea = All;
+                    Editable = false;
+                    ToolTip = 'Specifies the time elapsed from when the job was created (or the helpdesk call was reported) to when it was completed.';
                 }
 
                 field("Source Type"; Rec."Source Type")
@@ -333,8 +347,6 @@ page 80826 "PMS Job"
                 ToolTip = 'Mark this job as completed and record the completion date.';
 
                 trigger OnAction()
-                var
-                    HelpdeskCall: Record "PMS Helpdesk Call";
                 begin
                     if Rec."Job Type" = Rec."Job Type"::Internal then
                         Rec.TestField("Resolution Notes");
@@ -342,17 +354,6 @@ page 80826 "PMS Job"
                     if Rec."Completed Date" = 0DT then
                         Rec."Completed Date" := CurrentDateTime;
                     Rec.Modify(true);
-
-                    if (Rec."Job Type" = Rec."Job Type"::Internal) and
-                       (Rec."Source Type" = Rec."Source Type"::"Helpdesk Call") and
-                       (Rec."Source No." <> '') then begin
-                        if HelpdeskCall.Get(Rec."Source No.") then
-                            if HelpdeskCall.Status <> HelpdeskCall.Status::Closed then begin
-                                HelpdeskCall.Validate(Status, HelpdeskCall.Status::Closed);
-                                HelpdeskCall.Modify(true);
-                            end;
-                    end;
-
                     CurrPage.Update(false);
                 end;
             }

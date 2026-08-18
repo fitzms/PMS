@@ -42,6 +42,7 @@ page 80825 "PMS Helpdesk Call"
                     {
                         ApplicationArea = All;
                         Importance = Promoted;
+                        Editable = false;
                         ToolTip = 'Specifies the current status of the helpdesk call.';
                     }
                     field("Tenant ID"; Rec."Tenant ID")
@@ -228,6 +229,7 @@ page 80825 "PMS Helpdesk Call"
             {
                 ApplicationArea = All;
                 Caption = 'Jobs';
+                Editable = false;
                 SubPageLink = "Source Type" = const("Helpdesk Call"), "Source No." = field("Call No.");
             }
         }
@@ -268,7 +270,7 @@ page 80825 "PMS Helpdesk Call"
             {
                 ApplicationArea = All;
                 Caption = 'Create Job';
-                Enabled = (Rec.Status = Rec.Status::New) and (Rec."Call Type" = Rec."Call Type"::Internal);
+                Enabled = (Rec.Status = Rec.Status::Open) and (Rec."Call Type" = Rec."Call Type"::Internal);
                 Image = Approve;
                 ToolTip = 'Mark this call as In Progress and create a job.';
 
@@ -294,58 +296,14 @@ page 80825 "PMS Helpdesk Call"
                     Page.Run(Page::"PMS Job", PMSJob);
                 end;
             }
-            action(PutOnHold)
-            {
-                ApplicationArea = All;
-                Caption = 'Put On Hold';
-                Enabled = (Rec.Status = Rec.Status::"In Progress") and not HasJobInProgress;
-                Image = Stop;
-                ToolTip = 'Put this call on hold pending further information.';
 
-                trigger OnAction()
-                begin
-                    Rec.Validate(Status, Rec.Status::"On Hold");
-                    Rec.Modify(true);
-                    CurrPage.Update(false);
-                end;
-            }
-            action(ResumeCall)
-            {
-                ApplicationArea = All;
-                Caption = 'Resume';
-                Enabled = Rec.Status = Rec.Status::"On Hold";
-                Image = RefreshLines;
-                ToolTip = 'Resume work on this call.';
-
-                trigger OnAction()
-                begin
-                    Rec.Validate(Status, Rec.Status::"In Progress");
-                    Rec.Modify(true);
-                    CurrPage.Update(false);
-                end;
-            }
-            action(ResolveCall)
-            {
-                ApplicationArea = All;
-                Caption = 'Resolve';
-                Enabled = (Rec.Status = Rec.Status::"In Progress") and not HasJobInProgress;
-                Image = Completed;
-                ToolTip = 'Mark this call as Resolved.';
-
-                trigger OnAction()
-                begin
-                    Rec.Validate(Status, Rec.Status::Resolved);
-                    Rec.Modify(true);
-                    CurrPage.Update(false);
-                end;
-            }
             action(CloseCall)
             {
                 ApplicationArea = All;
                 Caption = 'Close';
-                Enabled = Rec.Status = Rec.Status::Resolved;
+                Enabled = (Rec.Status <> Rec.Status::Closed) and not HasJob;
                 Image = CloseDocument;
-                ToolTip = 'Close this helpdesk call. The closed date will be set automatically.';
+                ToolTip = 'Close this helpdesk call. The closed date will be set automatically. Can only close calls with no associated jobs.';
 
                 trigger OnAction()
                 begin
@@ -358,13 +316,13 @@ page 80825 "PMS Helpdesk Call"
             {
                 ApplicationArea = All;
                 Caption = 'Reopen';
-                Enabled = Rec.Status = Rec.Status::Resolved;
+                Enabled = (Rec.Status = Rec.Status::Closed) and not HasJob;
                 Image = ReOpen;
-                ToolTip = 'Reopen this helpdesk call and set the status back to New.';
+                ToolTip = 'Reopen this helpdesk call and set the status back to New. Can only reopen calls with no associated jobs.';
 
                 trigger OnAction()
                 begin
-                    Rec.Validate(Status, Rec.Status::New);
+                    Rec.Validate(Status, Rec.Status::Open);
                     Rec.Modify(true);
                     CurrPage.Update(false);
                 end;
@@ -373,7 +331,7 @@ page 80825 "PMS Helpdesk Call"
             {
                 ApplicationArea = All;
                 Caption = 'Create Job';
-                Enabled = (not HasJob) and not ((Rec.Status = Rec.Status::New) and (Rec."Call Type" = Rec."Call Type"::Internal));
+                Enabled = (not HasJob) and not ((Rec.Status = Rec.Status::Open) and (Rec."Call Type" = Rec."Call Type"::Internal));
                 Image = NewDocument;
                 ToolTip = 'Create a PMS job from this helpdesk call. The job defaults to Internal type; change it on the job card and use Create Purchase Order if a supplier is involved.';
 
@@ -396,9 +354,6 @@ page 80825 "PMS Helpdesk Call"
             {
                 Caption = 'Process';
                 actionref(AcknowledgeCall_Promoted; AcknowledgeCall) { }
-                actionref(PutOnHold_Promoted; PutOnHold) { }
-                actionref(ResumeCall_Promoted; ResumeCall) { }
-                actionref(ResolveCall_Promoted; ResolveCall) { }
                 actionref(CloseCall_Promoted; CloseCall) { }
                 actionref(ReopenCall_Promoted; ReopenCall) { }
                 actionref(CreateJob_Promoted; CreateJob) { }
@@ -503,7 +458,7 @@ page 80825 "PMS Helpdesk Call"
 
         CurrPage.Editable := Rec.Status <> Rec.Status::Closed;
 
-        IsCallNew := Rec.Status = Rec.Status::New;
+        IsCallNew := Rec.Status = Rec.Status::Open;
 
         if (Rec.Status = Rec.Status::Closed) and (Rec."Closed Date" <> 0DT) and (Rec."Target Resolution Date" <> 0D) then begin
             ResolvedOnTime := DT2Date(Rec."Closed Date") <= Rec."Target Resolution Date";

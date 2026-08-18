@@ -106,6 +106,29 @@ table 80824 "PMS Job"
         field(10; Status; Enum "PMS Job Status")
         {
             Caption = 'Status';
+
+            trigger OnValidate()
+            var
+                PMSJobMgt: Codeunit "PMS Job Management";
+            begin
+                if Status in [Status::Completed, Status::Spawned, Status::Cancelled] then begin
+                    if "Completed Date" = 0DT then
+                        "Completed Date" := CurrentDateTime;
+                    if "Created Date" <> 0DT then
+                        "Resolution Time" := "Completed Date" - "Created Date"
+                    else
+                        "Resolution Time" := 0;
+
+                    // Check if all jobs for helpdesk call are complete and close if needed
+                    if ("Source Type" = "Source Type"::"Helpdesk Call") and ("Source No." <> '') then
+                        PMSJobMgt.CheckAndCloseHelpdeskCall("Source No.");
+                end else begin
+                    if xRec.Status in [Status::Completed, Status::Spawned, Status::Cancelled] then begin
+                        "Completed Date" := 0DT;
+                        "Resolution Time" := 0;
+                    end;
+                end;
+            end;
         }
         field(11; Priority; Enum "PMS Helpdesk Priority")
         {
@@ -193,9 +216,19 @@ table 80824 "PMS Job"
         {
             Caption = 'Scheduled Date';
         }
+        field(33; "Created Date"; DateTime)
+        {
+            Caption = 'Created Date';
+            Editable = false;
+        }
         field(18; "Completed Date"; DateTime)
         {
             Caption = 'Completed/Spawned Date';
+        }
+        field(34; "Resolution Time"; Duration)
+        {
+            Caption = 'Resolution Time';
+            Editable = false;
         }
         field(19; "Estimated Cost"; Decimal)
         {
@@ -289,6 +322,10 @@ table 80824 "PMS Job"
             "No. Series" := PMSSetup."Job Nos.";
             "Job No." := NoSeries.GetNextNo(PMSSetup."Job Nos.", WorkDate(), true);
         end;
+
+        // Only set Created Date if not already set (e.g., from helpdesk call)
+        if "Created Date" = 0DT then
+            "Created Date" := CurrentDateTime;
 
         // For manually created jobs (not from Contract or Helpdesk Call)
         if "Source Type" = "Source Type"::" " then begin

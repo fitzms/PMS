@@ -33,7 +33,7 @@ page 80804 "PMS Helpdesk Jobs Cues Part"
                 field("New Helpdesk Calls"; Rec."New Helpdesk Calls")
                 {
                     ApplicationArea = All;
-                    Caption = 'New Calls';
+                    Caption = 'Open Calls';
                     StyleExpr = NewCallsStyle;
 
                     trigger OnDrillDown()
@@ -41,7 +41,7 @@ page 80804 "PMS Helpdesk Jobs Cues Part"
                         HelpdeskCall: Record "PMS Helpdesk Call";
                         HelpdeskList: Page "PMS Helpdesk Call List";
                     begin
-                        HelpdeskCall.SetRange(Status, HelpdeskCall.Status::New);
+                        HelpdeskCall.SetRange(Status, HelpdeskCall.Status::Open);
                         HelpdeskList.SetTableView(HelpdeskCall);
                         HelpdeskList.Run();
                     end;
@@ -71,7 +71,7 @@ page 80804 "PMS Helpdesk Jobs Cues Part"
                 field("My New Calls"; Rec."My New Calls")
                 {
                     ApplicationArea = All;
-                    Caption = 'My New Calls';
+                    Caption = 'My Open Calls';
                     StyleExpr = MyNewCallsStyle;
 
                     trigger OnDrillDown()
@@ -79,7 +79,7 @@ page 80804 "PMS Helpdesk Jobs Cues Part"
                         HelpdeskCall: Record "PMS Helpdesk Call";
                         HelpdeskList: Page "PMS Helpdesk Call List";
                     begin
-                        HelpdeskCall.SetRange(Status, HelpdeskCall.Status::New);
+                        HelpdeskCall.SetRange(Status, HelpdeskCall.Status::Open);
                         HelpdeskCall.SetRange("Employee No.", UserId());
                         HelpdeskList.SetTableView(HelpdeskCall);
                         HelpdeskList.Run();

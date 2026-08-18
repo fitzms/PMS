@@ -176,6 +176,7 @@ codeunit 80800 "PMS Job Management"
         PMSJob."Resource No." := HelpdeskCall."Resource No.";
         PMSJob."Resource Name" := HelpdeskCall."Resource Name";
         PMSJob."Scheduled Date" := HelpdeskCall."Target Resolution Date";
+        PMSJob."Created Date" := HelpdeskCall."Reported Date";  // Use call's reported date
         PMSJob.Status := PMSJob.Status::Open;
         PMSJob.Insert(false);
 
@@ -221,6 +222,7 @@ codeunit 80800 "PMS Job Management"
         NewJob."Estimated Cost" := CurrentJob."Estimated Cost";
         NewJob."G/L Account No." := CurrentJob."G/L Account No.";
         NewJob."Global Dimension 1 Code" := CurrentJob."Global Dimension 1 Code";
+        NewJob."Created Date" := CurrentJob."Created Date";  // Inherit created date from original job
         NewJob.Status := NewJob.Status::Open;
         NewJob."Related Job No." := CurrentJob."Job No.";
         NewJob.Insert(false);
@@ -327,5 +329,42 @@ codeunit 80800 "PMS Job Management"
 
         DimSetID := DimMgt.GetDimensionSetID(TempDimSetEntry);
         PurchLine."Dimension Set ID" := DimSetID;
+    end;
+
+    /// <summary>
+    /// Checks if all jobs for a helpdesk call are in a final state (Completed, Cancelled, or Spawned).
+    /// If so, automatically closes the call and calculates resolution time.
+    /// </summary>
+    procedure CheckAndCloseHelpdeskCall(CallNo: Code[20])
+    var
+        HelpdeskCall: Record "PMS Helpdesk Call";
+        PMSJob: Record "PMS Job";
+        AllJobsComplete: Boolean;
+    begin
+        if CallNo = '' then
+            exit;
+
+        if not HelpdeskCall.Get(CallNo) then
+            exit;
+
+        // Don't process if already closed
+        if HelpdeskCall.Status = HelpdeskCall.Status::Closed then
+            exit;
+
+        // Check if all jobs are in a final state
+        AllJobsComplete := true;
+        PMSJob.SetRange("Source Type", PMSJob."Source Type"::"Helpdesk Call");
+        PMSJob.SetRange("Source No.", CallNo);
+        if PMSJob.FindSet() then
+            repeat
+                if not (PMSJob.Status in [PMSJob.Status::Completed, PMSJob.Status::Cancelled, PMSJob.Status::Spawned]) then
+                    AllJobsComplete := false;
+            until (PMSJob.Next() = 0) or (not AllJobsComplete);
+
+        // Close the call if all jobs are complete
+        if AllJobsComplete then begin
+            HelpdeskCall.Validate(Status, HelpdeskCall.Status::Closed);
+            HelpdeskCall.Modify(true);
+        end;
     end;
 }
