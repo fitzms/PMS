@@ -376,6 +376,18 @@ page 80826 "PMS Job"
         IsSourceNoEditable: Boolean;
         IsSingleUnit: Boolean;
 
+    trigger OnNewRecord(BelowxRec: Boolean)
+    var
+        PMSSetup: Record "PMS Setup";
+        NoSeriesCU: Codeunit "No. Series";
+    begin
+        PMSSetup.GetRecordOnce();
+        if PMSSetup."Job Nos." <> '' then begin
+            Rec."No. Series" := PMSSetup."Job Nos.";
+            Rec."Job No." := NoSeriesCU.GetNextNo(PMSSetup."Job Nos.", WorkDate(), true);
+        end;
+    end;
+
     trigger OnAfterGetRecord()
     var
         HelpdeskCall: Record "PMS Helpdesk Call";

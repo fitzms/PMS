@@ -72,10 +72,29 @@ page 80802 "PMS Role Center"
             }
 
 
-            // ── Contracts section ──────────────────────────────────────────────
-            group("Contracts")
+
+            // ── Helpdesk section ──────────────────────────────────────────────
+            group("Helpdesk Jobs and Contracts")
             {
-                Caption = 'Contracts';
+                Caption = 'Helpdesk Jobs and Contracts';
+
+                action(HelpdeskCallList)
+                {
+                    ApplicationArea = All;
+                    Caption = 'Calls';
+                    RunObject = page "PMS Helpdesk Call List";
+                    Image = ServiceLedger;
+                    ToolTip = 'View and manage reactive helpdesk calls for property issues.';
+                }
+
+                action(JobList)
+                {
+                    ApplicationArea = All;
+                    Caption = 'Jobs';
+                    RunObject = page "PMS Job List";
+                    Image = Document;
+                    ToolTip = 'View and manage all jobs.';
+                }
 
                 action(ContractList)
                 {
@@ -84,23 +103,6 @@ page 80802 "PMS Role Center"
                     RunObject = page "PMS Contract List";
                     Image = Document;
                     ToolTip = 'View and manage all contracts.';
-                }
-
-            }
-
-
-            // ── Helpdesk section ──────────────────────────────────────────────
-            group("Helpdesk")
-            {
-                Caption = 'Helpdesk';
-
-                action(HelpdeskCallList)
-                {
-                    ApplicationArea = All;
-                    Caption = 'Helpdesk Calls';
-                    RunObject = page "PMS Helpdesk Call List";
-                    Image = ServiceLedger;
-                    ToolTip = 'View and manage reactive helpdesk calls for property issues.';
                 }
 
             }
@@ -189,6 +191,15 @@ page 80802 "PMS Role Center"
                 Image = NewDocument;
                 ToolTip = 'Quickly log a new helpdesk call.';
                 RunObject = page "PMS Helpdesk Call";
+                RunPageMode = Create;
+            }
+            action(QuickNewJob)
+            {
+                ApplicationArea = All;
+                Caption = 'New Job';
+                Image = NewDocument;
+                ToolTip = 'Quickly create a new manual job.';
+                RunObject = page "PMS Job";
                 RunPageMode = Create;
             }
             group(QuickNewGroup)

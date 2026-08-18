@@ -261,5 +261,11 @@ table 80824 "PMS Job"
             "No. Series" := PMSSetup."Job Nos.";
             "Job No." := NoSeries.GetNextNo(PMSSetup."Job Nos.", WorkDate(), true);
         end;
+
+        // For manually created jobs (not from Contract or Helpdesk Call)
+        if "Source Type" = "Source Type"::" " then begin
+            "Source Type" := "Source Type"::Job;
+            "Source No." := "Job No.";
+        end;
     end;
 }

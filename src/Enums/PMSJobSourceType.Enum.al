@@ -15,4 +15,8 @@ enum 80812 "PMS Job Source Type"
     {
         Caption = 'Helpdesk Call';
     }
+    value(3; Job)
+    {
+        Caption = 'Job';
+    }
 }

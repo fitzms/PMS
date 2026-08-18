@@ -67,9 +67,9 @@ page 80801 "PMS Cues Part"
                 }
             }
 
-            cuegroup("Helpdesk - Mine")
+            cuegroup("My Helpdesk Calls")
             {
-                Caption = 'Helpdesk Mine';
+                Caption = 'My Helpdesk Calls';
 
 
                 field("My New Calls"; Rec."My New Calls")
