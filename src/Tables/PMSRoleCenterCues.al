@@ -146,12 +146,6 @@ table 80800 "PMS Role Center Cues"
             FieldClass = FlowField;
             CalcFormula = count("PMS Helpdesk Call" where(Status = const(Open)));
         }
-        field(41; "Critical Calls"; Integer)
-        {
-            Caption = 'Critical Calls';
-            FieldClass = FlowField;
-            CalcFormula = count("PMS Helpdesk Call" where(Priority = const(Critical)));
-        }
         field(42; "My Calls"; Integer)
         {
             Caption = 'My Calls';
@@ -235,6 +229,12 @@ table 80800 "PMS Role Center Cues"
         {
             Caption = 'Date Filter';
             FieldClass = FlowFilter;
+        }
+        field(61; "New External Jobs"; Integer)
+        {
+            Caption = 'New External Jobs';
+            FieldClass = FlowField;
+            CalcFormula = count("PMS Job" where("Job Type" = const(External), Status = const(Open), "Source Type" = const("Helpdesk Call"), "Related Job No." = filter(<> '')));
         }
     }
 

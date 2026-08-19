@@ -87,21 +87,6 @@ page 80826 "PMS Job"
                         Editable = false;
                         ToolTip = 'Specifies the name of the vendor.';
                     }
-                    field("G/L Account No."; Rec."G/L Account No.")
-                    {
-                        ApplicationArea = All;
-                        ToolTip = 'Specifies the G/L account to post costs against.';
-                    }
-                    field("Global Dimension 1 Code"; Rec."Global Dimension 1 Code")
-                    {
-                        ApplicationArea = All;
-                        ToolTip = 'Specifies the global dimension 1 value for this job.';
-                    }
-                    field("Estimated Cost"; Rec."Estimated Cost")
-                    {
-                        ApplicationArea = All;
-                        ToolTip = 'Specifies the estimated cost of this job.';
-                    }
                     field("Purchase Order No."; Rec."Purchase Order No.")
                     {
                         ApplicationArea = All;
@@ -265,28 +250,33 @@ page 80826 "PMS Job"
                     Editable = false;
                     ToolTip = 'Specifies the current status of the job.';
                 }
-            }
-            group(NotesGroup)
-            {
-                Caption = 'Notes';
 
-                field(Notes; Rec.Notes)
+                group(NotesDetails)
                 {
-                    ApplicationArea = All;
-                    MultiLine = true;
-                    ToolTip = 'Specifies any additional notes for this job.';
+                    Caption = 'Notes';
+
+                    field(Notes; Rec.Notes)
+                    {
+                        ApplicationArea = All;
+                        MultiLine = true;
+                        ToolTip = 'Specifies any additional notes for this job.';
+                    }
+
+                    field("Resolution Notes"; Rec."Resolution Notes")
+                    {
+                        ApplicationArea = All;
+                        MultiLine = true;
+                        ToolTip = 'Specifies notes on how the job was resolved. Required for internal jobs before completing.';
+                    }
                 }
             }
-            group(ResolutionGroup)
+            part(ExpenseLines; "PMS Job Expense Lines")
             {
-                Caption = 'Resolution';
-
-                field("Resolution Notes"; Rec."Resolution Notes")
-                {
-                    ApplicationArea = All;
-                    MultiLine = true;
-                    ToolTip = 'Specifies notes on how the job was resolved. Required for internal jobs before completing.';
-                }
+                ApplicationArea = All;
+                Caption = 'Expense Lines';
+                SubPageLink = "Job No." = field("Job No.");
+                Visible = (Rec."Job Type" = Rec."Job Type"::External) and (Rec."Purchase Order No." = '');
+                Editable = Rec.Status = Rec.Status::Open;
             }
         }
     }

@@ -46,6 +46,11 @@ page 80808 "PMS Setup"
                     ApplicationArea = All;
                     ToolTip = 'Optional: Specify the base URL for email links. Leave blank to use automatic URL detection.';
                 }
+                field("Office Team Email"; Rec."Office Team Email")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Email address(es) for the office team who handle spawned jobs. Separate multiple addresses with semicolons (e.g., office@example.com;admin@example.com).';
+                }
             }
             group(Numbering)
             {

@@ -91,8 +91,6 @@ page 80828 "PMS Jobs Part"
         case Rec.Status of
             Rec.Status::Completed:
                 StatusStyle := 'Favorable';
-            Rec.Status::Spawned:
-                StatusStyle := 'Subordinate';
             Rec.Status::Cancelled:
                 StatusStyle := 'Unfavorable';
             Rec.Status::"In Progress":

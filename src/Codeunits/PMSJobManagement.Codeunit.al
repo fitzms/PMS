@@ -247,9 +247,17 @@ codeunit 80800 "PMS Job Management"
         NewJob.Priority := SpawnDlg.GetPriority();
         NewJob."Job Type" := NewJob."Job Type"::External;
         NewJob."Scheduled Date" := CurrentJob."Scheduled Date";
+        NewJob."Estimated Quantity" := SpawnDlg.GetQuantity();
+        NewJob."Estimated Unit Cost" := SpawnDlg.GetDirectUnitCost();
         NewJob."Estimated Cost" := SpawnDlg.GetLineAmount();
         NewJob."G/L Account No." := CurrentJob."G/L Account No.";
-        NewJob."Global Dimension 1 Code" := CurrentJob."Global Dimension 1 Code";
+        
+        // Inherit Global Dimension 1 from current job, or from Property if not set
+        if CurrentJob."Global Dimension 1 Code" <> '' then
+            NewJob."Global Dimension 1 Code" := CurrentJob."Global Dimension 1 Code"
+        else
+            NewJob."Global Dimension 1 Code" := GetPropertyGlobalDimension1(CurrentJob."Property ID");
+            
         NewJob."Created Date" := CurrentJob."Created Date";  // Inherit created date from original job
         NewJob.Status := NewJob.Status::Open;
         NewJob."Related Job No." := CurrentJob."Job No.";
@@ -258,6 +266,13 @@ codeunit 80800 "PMS Job Management"
             NewJob.Validate("Vendor No.", SuggestedVendor);
         NewJob.Notes := 'Spawned from job ' + CurrentJob."Job No." + ' by ' + SpawnedByName + '. Reason: ' + SpawnReason;
         NewJob.Insert(false);
+
+        // Copy all dimensions from Property to Job
+        if NewJob."Property ID" <> '' then
+            NewJob.CopyDimensionsFromPropertyPublic(NewJob."Property ID");
+
+        // Create initial expense line from spawn dialog values
+        CreateInitialExpenseLine(NewJob, SpawnDlg.GetCategoryPostingGroup(), NewJob.Description, SpawnDlg.GetQuantity(), SpawnDlg.GetDirectUnitCost());
 
         // Link back from original job to new job
         CurrentJob."Related Job No." := NewJob."Job No.";
@@ -277,13 +292,18 @@ codeunit 80800 "PMS Job Management"
     var
         PurchHeader: Record "Purchase Header";
         PurchLine: Record "Purchase Line";
-        PMSPropertyRec: Record "PMS Property";
+        JobExpenseLine: Record "PMS Job Expense Line";
+        LineNo: Integer;
     begin
         PMSJob.TestField("Vendor No.");
-        PMSJob.TestField("G/L Account No.");
 
         if PMSJob."Purchase Order No." <> '' then
             Error(JobAlreadyHasPOErr, PMSJob."Job No.", PMSJob."Purchase Order No.");
+
+        // Ensure at least one expense line exists
+        JobExpenseLine.SetRange("Job No.", PMSJob."Job No.");
+        if not JobExpenseLine.FindSet() then
+            Error('Cannot create purchase order. Please add at least one expense line to job %1.', PMSJob."Job No.");
 
         PurchHeader.Init();
         PurchHeader.Validate("Document Type", PurchHeader."Document Type"::Order);
@@ -292,19 +312,84 @@ codeunit 80800 "PMS Job Management"
         PurchHeader."Your Reference" := PMSJob."Job No.";
         PurchHeader.Modify(true);
 
-        PurchLine.Init();
-        PurchLine."Document Type" := PurchHeader."Document Type";
-        PurchLine."Document No." := PurchHeader."No.";
-        PurchLine."Line No." := 10000;
-        PurchLine.Insert(true);
-        PurchLine.Validate(Type, PurchLine.Type::"G/L Account");
-        PurchLine.Validate("No.", PMSJob."G/L Account No.");
-        PurchLine.Description := PMSJob.Description;
-        PurchLine.Validate(Quantity, 1);
-        PurchLine.Validate("Direct Unit Cost", PMSJob."Estimated Cost");
-        PurchLine."Expected Receipt Date" := PMSJob."Scheduled Date";
-        PurchLine."PMS Job No." := PMSJob."Job No.";
-        PurchLine."PMS Property ID" := PMSJob."Property ID";
+        // Loop through expense lines and create PO lines
+        LineNo := 10000;
+        repeat
+            JobExpenseLine.TestField("G/L Account No.");
+            PurchLine.Init();
+            PurchLine."Document Type" := PurchHeader."Document Type";
+            PurchLine."Document No." := PurchHeader."No.";
+            PurchLine."Line No." := LineNo;
+            PurchLine.Insert(true);
+            PurchLine.Validate(Type, PurchLine.Type::"G/L Account");
+            PurchLine.Validate("No.", JobExpenseLine."G/L Account No.");
+            PurchLine.Description := JobExpenseLine.Description;
+            PurchLine.Validate(Quantity, JobExpenseLine.Quantity);
+            PurchLine.Validate("Direct Unit Cost", JobExpenseLine."Direct Unit Cost");
+            PurchLine."Expected Receipt Date" := PMSJob."Scheduled Date";
+            PurchLine."PMS Job No." := PMSJob."Job No.";
+            PurchLine."PMS Property ID" := PMSJob."Property ID";
+            
+            // Copy dimensions from expense line and apply property dimension
+            CopyDimensionsFromExpenseLine(PurchLine, JobExpenseLine, PMSJob."Property ID");
+            
+            PurchLine.Modify(true);
+            LineNo += 10000;
+        until JobExpenseLine.Next() = 0;
+
+        PMSJob."Purchase Order No." := PurchHeader."No.";
+        PMSJob."Purchase Order Line No." := 10000;
+        PMSJob.Modify(true);
+
+        Message(PurchOrderCreatedMsg, PurchHeader."No.", PMSJob."Job No.");
+    end;
+
+    local procedure CreateInitialExpenseLine(var PMSJob: Record "PMS Job"; CategoryPostingGroup: Code[20]; Description: Text[100]; Quantity: Decimal; DirectUnitCost: Decimal)
+    var
+        ExpenseLine: Record "PMS Job Expense Line";
+        CatPostingGroup: Record "PMS Cat. Posting Group";
+        DefaultDim: Record "Default Dimension";
+        TempDimSetEntry: Record "Dimension Set Entry" temporary;
+        DimMgt: Codeunit DimensionManagement;
+        DimSetID: Integer;
+    begin
+        ExpenseLine.Init();
+        ExpenseLine."Job No." := PMSJob."Job No.";
+        ExpenseLine."Line No." := 10000;
+        ExpenseLine.Description := Description;
+        if CategoryPostingGroup <> '' then begin
+            ExpenseLine.Validate("Category Posting Group", CategoryPostingGroup);
+            // OnValidate automatically populates G/L Account and Description
+        end;
+        ExpenseLine.Quantity := Quantity;
+        ExpenseLine."Direct Unit Cost" := DirectUnitCost;
+        ExpenseLine."Line Amount" := Quantity * DirectUnitCost;
+        ExpenseLine.Insert(true);
+        
+        // Copy all dimensions from Job's Default Dimensions to the expense line
+        DefaultDim.SetRange("Table ID", Database::"PMS Job");
+        DefaultDim.SetRange("No.", PMSJob."Job No.");
+        if DefaultDim.FindSet() then begin
+            repeat
+                TempDimSetEntry.Init();
+                TempDimSetEntry."Dimension Set ID" := 0;
+                TempDimSetEntry."Dimension Code" := DefaultDim."Dimension Code";
+                TempDimSetEntry."Dimension Value Code" := DefaultDim."Dimension Value Code";
+                TempDimSetEntry."Dimension Value ID" := 0;
+                if TempDimSetEntry.Insert() then;
+            until DefaultDim.Next() = 0;
+            
+            DimSetID := DimMgt.GetDimensionSetID(TempDimSetEntry);
+            ExpenseLine."Dimension Set ID" := DimSetID;
+            DimMgt.UpdateGlobalDimFromDimSetID(DimSetID, ExpenseLine."Shortcut Dimension 1 Code", ExpenseLine."Shortcut Dimension 2 Code");
+            ExpenseLine.Modify(true);
+        end;
+    end;
+
+    local procedure ApplyDimensionsToPurchLine(var PurchLine: Record "Purchase Line"; PMSJob: Record "PMS Job")
+    var
+        PMSPropertyRec: Record "PMS Property";
+    begin
         // Inherit Global Dimension 1 from Property if Job doesn't have it
         if (PMSJob."Global Dimension 1 Code" = '') and (PMSJob."Property ID" <> '') then begin
             if PMSPropertyRec.Get(PMSJob."Property ID") then
@@ -313,14 +398,9 @@ codeunit 80800 "PMS Job Management"
         end else
             if PMSJob."Global Dimension 1 Code" <> '' then
                 PurchLine.Validate("Shortcut Dimension 1 Code", PMSJob."Global Dimension 1 Code");
+
+        // Apply Property dimensions
         ApplyPropertyDimension(PurchLine, PMSJob."Property ID");
-        PurchLine.Modify(true);
-
-        PMSJob."Purchase Order No." := PurchHeader."No.";
-        PMSJob."Purchase Order Line No." := 10000;
-        PMSJob.Modify(true);
-
-        Message(PurchOrderCreatedMsg, PurchHeader."No.", PMSJob."Job No.");
     end;
 
     local procedure CalcNextOccurrenceDate(CurrentDate: Date; Frequency: Enum "PMS Job Frequency"): Date
@@ -371,6 +451,53 @@ codeunit 80800 "PMS Job Management"
 
         DimSetID := DimMgt.GetDimensionSetID(TempDimSetEntry);
         PurchLine."Dimension Set ID" := DimSetID;
+    end;
+
+    local procedure GetPropertyGlobalDimension1(PropertyID: Code[20]): Code[20]
+    var
+        PropertyRec: Record "PMS Property";
+    begin
+        if PropertyID = '' then
+            exit('');
+        if PropertyRec.Get(PropertyID) then
+            exit(PropertyRec."Global Dimension 1 Code");
+        exit('');
+    end;
+
+    local procedure CopyDimensionsFromExpenseLine(var PurchLine: Record "Purchase Line"; ExpenseLine: Record "PMS Job Expense Line"; PropertyID: Code[20])
+    var
+        TempDimSetEntry: Record "Dimension Set Entry" temporary;
+        DimMgt: Codeunit DimensionManagement;
+        PMSSetup: Record "PMS Setup";
+        DimSetID: Integer;
+    begin
+        // Start with expense line dimensions
+        if ExpenseLine."Dimension Set ID" <> 0 then begin
+            DimMgt.GetDimensionSet(TempDimSetEntry, ExpenseLine."Dimension Set ID");
+        end;
+
+        // Add/update property dimension if configured
+        if PropertyID <> '' then begin
+            PMSSetup.GetRecordOnce();
+            if PMSSetup."Property Dimension Code" <> '' then begin
+                TempDimSetEntry.SetRange("Dimension Code", PMSSetup."Property Dimension Code");
+                if not TempDimSetEntry.IsEmpty() then
+                    TempDimSetEntry.DeleteAll();
+                TempDimSetEntry.Reset();
+
+                TempDimSetEntry.Init();
+                TempDimSetEntry."Dimension Code" := PMSSetup."Property Dimension Code";
+                TempDimSetEntry."Dimension Value Code" := PropertyID;
+                TempDimSetEntry.Insert();
+            end;
+        end;
+
+        // Apply the final dimension set to the purchase line
+        if TempDimSetEntry.FindFirst() then begin
+            DimSetID := DimMgt.GetDimensionSetID(TempDimSetEntry);
+            PurchLine."Dimension Set ID" := DimSetID;
+            DimMgt.UpdateGlobalDimFromDimSetID(DimSetID, PurchLine."Shortcut Dimension 1 Code", PurchLine."Shortcut Dimension 2 Code");
+        end;
     end;
 
     local procedure SendJobAssignmentEmail(PMSJob: Record "PMS Job")

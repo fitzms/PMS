@@ -321,6 +321,32 @@ table 80824 "PMS Job"
             TableRelation = Vendor;
             DataClassification = CustomerContent;
         }
+        field(38; "Estimated Quantity"; Decimal)
+        {
+            Caption = 'Estimated Quantity';
+            DecimalPlaces = 0 : 5;
+            MinValue = 0;
+            DataClassification = CustomerContent;
+
+            trigger OnValidate()
+            begin
+                if "Estimated Unit Cost" <> 0 then
+                    "Estimated Cost" := "Estimated Quantity" * "Estimated Unit Cost";
+            end;
+        }
+        field(39; "Estimated Unit Cost"; Decimal)
+        {
+            Caption = 'Estimated Unit Cost';
+            DecimalPlaces = 2 : 5;
+            MinValue = 0;
+            DataClassification = CustomerContent;
+
+            trigger OnValidate()
+            begin
+                if "Estimated Quantity" <> 0 then
+                    "Estimated Cost" := "Estimated Quantity" * "Estimated Unit Cost";
+            end;
+        }
     }
 
     keys
@@ -378,5 +404,10 @@ table 80824 "PMS Job"
                     DestDefaultDim.Insert(true);
                 end;
             until SourceDefaultDim.Next() = 0;
+    end;
+
+    procedure CopyDimensionsFromPropertyPublic(PropertyID: Code[20])
+    begin
+        CopyDimensionsFromProperty(PropertyID);
     end;
 }

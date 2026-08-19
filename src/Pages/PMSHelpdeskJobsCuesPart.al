@@ -47,24 +47,6 @@ page 80804 "PMS Helpdesk Jobs Cues Part"
                         HelpdeskList.Run();
                     end;
                 }
-
-
-                field("Critical Calls"; Rec."Critical Calls")
-                {
-                    ApplicationArea = All;
-                    Caption = 'Critical';
-                    StyleExpr = CriticalCallsStyle;
-
-                    trigger OnDrillDown()
-                    var
-                        HelpdeskCall: Record "PMS Helpdesk Call";
-                        HelpdeskList: Page "PMS Helpdesk Call List";
-                    begin
-                        HelpdeskCall.SetRange(Priority, HelpdeskCall.Priority::Critical);
-                        HelpdeskList.SetTableView(HelpdeskCall);
-                        HelpdeskList.Run();
-                    end;
-                }
             }
 
             cuegroup("My Helpdesk Calls")
@@ -266,6 +248,34 @@ page 80804 "PMS Helpdesk Jobs Cues Part"
                     end;
                 }
             }
+
+            // ── Office Team Actions ───────────────────────────────────────────
+            cuegroup("Office Team")
+            {
+                Caption = 'Office Team Actions';
+
+                field("New External Jobs"; Rec."New External Jobs")
+                {
+                    ApplicationArea = All;
+                    Caption = 'New External (from Spawning)';
+                    StyleExpr = NewExternalJobsStyle;
+                    DrillDownPageId = "PMS Job List";
+                    ToolTip = 'New external jobs created from spawning that need vendor assignment and purchase order creation.';
+
+                    trigger OnDrillDown()
+                    var
+                        Job: Record "PMS Job";
+                        JobList: Page "PMS Job List";
+                    begin
+                        Job.SetRange("Job Type", Job."Job Type"::External);
+                        Job.SetRange(Status, Job.Status::Open);
+                        Job.SetRange("Source Type", Job."Source Type"::"Helpdesk Call");
+                        Job.SetFilter("Related Job No.", '<>%1', '');
+                        JobList.SetTableView(Job);
+                        JobList.Run();
+                    end;
+                }
+            }
         }
     }
 
@@ -273,7 +283,6 @@ page 80804 "PMS Helpdesk Jobs Cues Part"
         OpenCallsStyle: Text;
         InProgressCallsStyle: Text;
         NewCallsStyle: Text;
-        CriticalCallsStyle: Text;
         MyCallsStyle: Text;
         MyNewCallsStyle: Text;
         OpenJobsStyle: Text;
@@ -284,6 +293,7 @@ page 80804 "PMS Helpdesk Jobs Cues Part"
         MyOpenJobsStyle: Text;
         MyScheduledJobsStyle: Text;
         MyInProgressJobsStyle: Text;
+        NewExternalJobsStyle: Text;
 
     trigger OnAfterGetRecord()
     begin
@@ -293,7 +303,6 @@ page 80804 "PMS Helpdesk Jobs Cues Part"
             "Open Calls",
             "In Progress Calls",
             "New Helpdesk Calls",
-            "Critical Calls",
             "My Calls",
             "My New Calls");
         Rec.SetRange("Employee No. Filter");
@@ -312,11 +321,6 @@ page 80804 "PMS Helpdesk Jobs Cues Part"
             NewCallsStyle := 'Unfavorable'
         else
             NewCallsStyle := 'Favorable';
-
-        if Rec."Critical Calls" > 0 then
-            CriticalCallsStyle := 'Unfavorable'
-        else
-            CriticalCallsStyle := 'Favorable';
 
         if Rec."My Calls" > 0 then
             MyCallsStyle := 'Attention'
@@ -339,7 +343,8 @@ page 80804 "PMS Helpdesk Jobs Cues Part"
             "External Jobs Awaiting PO",
             "My Open Jobs",
             "My Scheduled Jobs",
-            "My In Progress Jobs");
+            "My In Progress Jobs",
+            "New External Jobs");
         Rec.SetRange("Date Filter");
         Rec.SetRange("Employee No. Filter");
 
@@ -382,6 +387,11 @@ page 80804 "PMS Helpdesk Jobs Cues Part"
             MyInProgressJobsStyle := 'Attention'
         else
             MyInProgressJobsStyle := 'Favorable';
+
+        if Rec."New External Jobs" > 0 then
+            NewExternalJobsStyle := 'Attention'
+        else
+            NewExternalJobsStyle := 'Favorable';
     end;
 
     trigger OnOpenPage()

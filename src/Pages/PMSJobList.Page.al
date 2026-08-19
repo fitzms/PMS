@@ -92,6 +92,35 @@ page 80827 "PMS Job List"
     {
         area(Processing)
         {
+            action(ShowNewExternalJobs)
+            {
+                ApplicationArea = All;
+                Caption = 'Show New External Jobs (from Spawning)';
+                Image = FilterLines;
+                ToolTip = 'Filter to show only new external jobs created from spawning that need vendor assignment.';
+
+                trigger OnAction()
+                begin
+                    Rec.SetRange("Job Type", Rec."Job Type"::External);
+                    Rec.SetRange(Status, Rec.Status::Open);
+                    Rec.SetRange("Source Type", Rec."Source Type"::"Helpdesk Call");
+                    Rec.SetFilter("Related Job No.", '<>%1', '');
+                    CurrPage.Update(false);
+                end;
+            }
+            action(ClearFilters)
+            {
+                ApplicationArea = All;
+                Caption = 'Clear Filters';
+                Image = ClearFilter;
+                ToolTip = 'Remove all filters and show all jobs.';
+
+                trigger OnAction()
+                begin
+                    Rec.Reset();
+                    CurrPage.Update(false);
+                end;
+            }
             action(DeleteAll)
             {
                 ApplicationArea = All;
@@ -110,6 +139,15 @@ page 80827 "PMS Job List"
                 end;
             }
         }
+        area(Promoted)
+        {
+            group(Category_Filters)
+            {
+                Caption = 'Filters';
+                actionref(ShowNewExternalJobs_Promoted; ShowNewExternalJobs) { }
+                actionref(ClearFilters_Promoted; ClearFilters) { }
+            }
+        }
     }
 
     trigger OnAfterGetRecord()
@@ -117,8 +155,6 @@ page 80827 "PMS Job List"
         case Rec.Status of
             Rec.Status::Completed:
                 StatusStyle := 'Favorable';
-            Rec.Status::Spawned:
-                StatusStyle := 'Subordinate';
             Rec.Status::Cancelled:
                 StatusStyle := 'Unfavorable';
             Rec.Status::"In Progress":

@@ -112,6 +112,11 @@ table 80807 "PMS Setup"
             Caption = 'Web Client Base URL';
             DataClassification = OrganizationIdentifiableInformation;
         }
+        field(61; "Office Team Email"; Text[250])
+        {
+            Caption = 'Office Team Email';
+            DataClassification = OrganizationIdentifiableInformation;
+        }
 
     }
 

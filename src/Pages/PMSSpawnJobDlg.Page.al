@@ -54,6 +54,35 @@ page 80848 "PMS Spawn Job Dlg"
                     Editable = false;
                     ToolTip = 'The name of the suggested vendor.';
                 }
+                field(CategoryPostingGroupField; CategoryPostingGroup)
+                {
+                    ApplicationArea = All;
+                    Caption = 'Category Posting Group';
+                    TableRelation = "PMS Cat. Posting Group";
+                    ToolTip = 'Select the category posting group for this expense. This determines the G/L account.';
+                    ShowMandatory = true;
+
+                    trigger OnValidate()
+                    var
+                        CatPostingGroup: Record "PMS Cat. Posting Group";
+                    begin
+                        if CategoryPostingGroup <> '' then begin
+                            if CatPostingGroup.Get(CategoryPostingGroup) then
+                                CategoryDescription := CatPostingGroup."G/L Account Description"
+                            else
+                                CategoryDescription := '';
+                        end else
+                            CategoryDescription := '';
+                        UpdateConfirmEnabled();
+                    end;
+                }
+                field(CategoryDescriptionField; CategoryDescription)
+                {
+                    ApplicationArea = All;
+                    Caption = 'G/L Account Description';
+                    Editable = false;
+                    ToolTip = 'The G/L account that will be used based on the selected category.';
+                }
                 field(QuantityField; Quantity)
                 {
                     ApplicationArea = All;
@@ -152,7 +181,7 @@ page 80848 "PMS Spawn Job Dlg"
 
     local procedure UpdateConfirmEnabled()
     begin
-        ConfirmEnabled := SpawnReason <> '';
+        ConfirmEnabled := (SpawnReason <> '') and (CategoryPostingGroup <> '');
     end;
 
     procedure SetDefaults(DefaultEstimatedCost: Decimal; DefaultPriority: Enum "PMS Helpdesk Priority")
@@ -194,6 +223,11 @@ page 80848 "PMS Spawn Job Dlg"
         exit(Priority);
     end;
 
+    procedure GetCategoryPostingGroup(): Code[20]
+    begin
+        exit(CategoryPostingGroup);
+    end;
+
     procedure WasConfirmed(): Boolean
     begin
         exit(Confirmed);
@@ -203,6 +237,8 @@ page 80848 "PMS Spawn Job Dlg"
         SpawnReason: Text;
         SuggestedVendorNo: Code[20];
         SuggestedVendorName: Text[100];
+        CategoryPostingGroup: Code[20];
+        CategoryDescription: Text[100];
         Quantity: Decimal;
         DirectUnitCost: Decimal;
         LineAmount: Decimal;
