@@ -144,6 +144,10 @@ table 80808 "PMS Helpdesk Call"
                     if Unit.Get("Unit ID") then
                         if Unit."Property ID" <> "Property ID" then
                             Validate("Unit ID", '');
+
+                // Copy dimensions from Property
+                if "Call No." <> '' then
+                    CopyDimensionsFromProperty("Property ID");
             end;
         }
         field(18; "Unit ID"; Code[20])
@@ -233,6 +237,24 @@ table 80808 "PMS Helpdesk Call"
             Caption = 'Resource Name';
             Editable = false;
         }
+        field(480; "Dimension Set ID"; Integer)
+        {
+            Caption = 'Dimension Set ID';
+            Editable = false;
+            TableRelation = "Dimension Set Entry";
+        }
+        field(481; "Global Dimension 1 Code"; Code[20])
+        {
+            CaptionClass = '1,1,1';
+            Caption = 'Global Dimension 1 Code';
+            TableRelation = "Dimension Value".Code where("Global Dimension No." = const(1));
+        }
+        field(482; "Global Dimension 2 Code"; Code[20])
+        {
+            CaptionClass = '1,1,2';
+            Caption = 'Global Dimension 2 Code';
+            TableRelation = "Dimension Value".Code where("Global Dimension No." = const(2));
+        }
     }
 
     keys
@@ -262,6 +284,10 @@ table 80808 "PMS Helpdesk Call"
             "Created By" := CopyStr(UserId(), 1, MaxStrLen("Created By"));
         if Priority = Priority::Low then
             Priority := Priority::Normal;
+
+        // Copy dimensions from Property if set
+        if "Property ID" <> '' then
+            CopyDimensionsFromProperty("Property ID");
     end;
 
     trigger OnDelete()
@@ -273,5 +299,49 @@ table 80808 "PMS Helpdesk Call"
         Job.SetRange("Source No.", "Call No.");
         if not Job.IsEmpty() then
             Error('Cannot delete helpdesk call %1 because it has associated jobs.', "Call No.");
+    end;
+
+    local procedure CopyDimensionsFromProperty(PropertyID: Code[20])
+    var
+        SourceDefaultDim: Record "Default Dimension";
+        DestDefaultDim: Record "Default Dimension";
+        TempDimSetEntry: Record "Dimension Set Entry" temporary;
+        DimMgt: Codeunit DimensionManagement;
+        DimSetID: Integer;
+    begin
+        if PropertyID = '' then
+            exit;
+
+        // Copy all default dimensions from the Property to this Call
+        SourceDefaultDim.SetRange("Table ID", Database::"PMS Property");
+        SourceDefaultDim.SetRange("No.", PropertyID);
+        if SourceDefaultDim.FindSet() then begin
+            // Delete existing default dimensions for this call
+            DestDefaultDim.SetRange("Table ID", Database::"PMS Helpdesk Call");
+            DestDefaultDim.SetRange("No.", "Call No.");
+            DestDefaultDim.DeleteAll();
+
+            // Copy dimensions from Property
+            repeat
+                DestDefaultDim.Init();
+                DestDefaultDim."Table ID" := Database::"PMS Helpdesk Call";
+                DestDefaultDim."No." := "Call No.";
+                DestDefaultDim."Dimension Code" := SourceDefaultDim."Dimension Code";
+                DestDefaultDim."Dimension Value Code" := SourceDefaultDim."Dimension Value Code";
+                DestDefaultDim."Value Posting" := SourceDefaultDim."Value Posting";
+                DestDefaultDim.Insert(true);
+
+                // Build dimension set
+                Clear(TempDimSetEntry);
+                TempDimSetEntry."Dimension Code" := SourceDefaultDim."Dimension Code";
+                TempDimSetEntry."Dimension Value Code" := SourceDefaultDim."Dimension Value Code";
+                TempDimSetEntry.Insert(false);
+            until SourceDefaultDim.Next() = 0;
+
+            // Update dimension set ID and global dimensions
+            DimSetID := DimMgt.GetDimensionSetID(TempDimSetEntry);
+            "Dimension Set ID" := DimSetID;
+            DimMgt.UpdateGlobalDimFromDimSetID(DimSetID, "Global Dimension 1 Code", "Global Dimension 2 Code");
+        end;
     end;
 }

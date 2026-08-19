@@ -14,25 +14,70 @@ page 80826 "PMS Job"
             {
                 Caption = 'General';
 
-                field("Job No."; Rec."Job No.")
+                group(JobFundamentals)
                 {
-                    ApplicationArea = All;
-                    Importance = Promoted;
-                    ToolTip = 'Specifies the unique job number.';
+                    Caption = 'Job Fundamentals';
+                    field("Job No."; Rec."Job No.")
+                    {
+                        ApplicationArea = All;
+                        Importance = Promoted;
+                        ToolTip = 'Specifies the unique job number.';
+                    }
+
+
+                    field(Priority; Rec.Priority)
+                    {
+                        ApplicationArea = All;
+                        Editable = IsCallFieldsEditable;
+                        ToolTip = 'Specifies the priority of the job.';
+                    }
+
+
+                    field("Property ID"; Rec."Property ID")
+                    {
+                        ApplicationArea = All;
+                        Importance = Promoted;
+                        Editable = IsCallFieldsEditable;
+                        ToolTip = 'Specifies the property to which this job relates.';
+
+                        trigger OnValidate()
+                        var
+                            PropertyRec: Record "PMS Property";
+                        begin
+                            IsSingleUnit := false;
+                            if Rec."Property ID" <> '' then
+                                if PropertyRec.Get(Rec."Property ID") then
+                                    IsSingleUnit := PropertyRec."Single Unit";
+                            CurrPage.Update(true);
+                        end;
+                    }
+                    field("Property Known As"; Rec."Property Known As")
+                    {
+                        ApplicationArea = All;
+                        Editable = false;
+                        ToolTip = 'Specifies the known as name of the property.';
+                    }
+                    field("Unit ID"; Rec."Unit ID")
+                    {
+                        ApplicationArea = All;
+                        Editable = (not IsSingleUnit) and IsCallFieldsEditable;
+                        ToolTip = 'Specifies the unit within the property to which this job relates.';
+                    }
+                    field("Job Type"; Rec."Job Type")
+                    {
+                        ApplicationArea = All;
+                        Importance = Promoted;
+                        Editable = IsCallFieldsEditable;
+                        ToolTip = 'Specifies whether this is an external supplier job or an internal employee works order.';
+
+                        trigger OnValidate()
+                        begin
+                            UpdateVisibility();
+                        end;
+                    }
+
                 }
 
-                field("Job Type"; Rec."Job Type")
-                {
-                    ApplicationArea = All;
-                    Importance = Promoted;
-                    Editable = IsCallFieldsEditable;
-                    ToolTip = 'Specifies whether this is an external supplier job or an internal employee works order.';
-
-                    trigger OnValidate()
-                    begin
-                        UpdateVisibility();
-                    end;
-                }
 
 
 
@@ -114,36 +159,6 @@ page 80826 "PMS Job"
                         ToolTip = 'Specifies detailed information about the job.';
                     }
 
-                    field("Property ID"; Rec."Property ID")
-                    {
-                        ApplicationArea = All;
-                        Importance = Promoted;
-                        Editable = IsCallFieldsEditable;
-                        ToolTip = 'Specifies the property to which this job relates.';
-
-                        trigger OnValidate()
-                        var
-                            PropertyRec: Record "PMS Property";
-                        begin
-                            IsSingleUnit := false;
-                            if Rec."Property ID" <> '' then
-                                if PropertyRec.Get(Rec."Property ID") then
-                                    IsSingleUnit := PropertyRec."Single Unit";
-                            CurrPage.Update(true);
-                        end;
-                    }
-                    field("Property Known As"; Rec."Property Known As")
-                    {
-                        ApplicationArea = All;
-                        Editable = false;
-                        ToolTip = 'Specifies the known as name of the property.';
-                    }
-                    field("Unit ID"; Rec."Unit ID")
-                    {
-                        ApplicationArea = All;
-                        Editable = (not IsSingleUnit) and IsCallFieldsEditable;
-                        ToolTip = 'Specifies the unit within the property to which this job relates.';
-                    }
                     field("Special Instructions"; Rec."Special Instructions")
                     {
                         ApplicationArea = All;
@@ -151,12 +166,7 @@ page 80826 "PMS Job"
                         ToolTip = 'Specifies any special instructions for carrying out this job.';
                     }
 
-                    field(Priority; Rec.Priority)
-                    {
-                        ApplicationArea = All;
-                        Editable = IsCallFieldsEditable;
-                        ToolTip = 'Specifies the priority of the job.';
-                    }
+
                     field("Scheduled Date"; Rec."Scheduled Date")
                     {
                         ApplicationArea = All;
@@ -164,96 +174,6 @@ page 80826 "PMS Job"
                         Editable = IsCallFieldsEditable;
                         ToolTip = 'Specifies the scheduled date for this job occurrence.';
                     }
-
-
-                }
-
-                field("Created Date"; Rec."Created Date")
-                {
-                    ApplicationArea = All;
-                    Editable = false;
-                    ToolTip = 'Specifies the date and time the job was created. For helpdesk call jobs, this is the call''s reported date.';
-                }
-
-                field("Completed Date"; Rec."Completed Date")
-                {
-                    ApplicationArea = All;
-                    Caption = 'Completed/Spawned Date';
-                    Editable = false;
-                    ToolTip = 'Specifies the date the job was completed or spawned.';
-                }
-
-                field("Resolution Time"; Rec."Resolution Time")
-                {
-                    ApplicationArea = All;
-                    Editable = false;
-                    ToolTip = 'Specifies the time elapsed from when the job was created (or the helpdesk call was reported) to when it was completed.';
-                }
-
-                field("Source Type"; Rec."Source Type")
-                {
-                    ApplicationArea = All;
-                    Editable = false;
-                    ToolTip = 'Specifies whether this job originated from a contract or a helpdesk call.';
-                }
-                field("Source No."; Rec."Source No.")
-                {
-                    ApplicationArea = All;
-                    Editable = false;
-                    ToolTip = 'Specifies the source document number (contract ID or call number).';
-                }
-                field("Source Line No."; Rec."Source Line No.")
-                {
-                    ApplicationArea = All;
-                    Editable = false;
-                    Visible = Rec."Source Type" = Rec."Source Type"::Contract;
-                    ToolTip = 'Specifies the contract line number that generated this job.';
-                }
-                field("Related Job No."; Rec."Related Job No.")
-                {
-                    ApplicationArea = All;
-                    ToolTip = 'Specifies the related job created when this job was spawned, or the original job this was spawned from.';
-                }
-                field("Spawned By"; Rec."Spawned By")
-                {
-                    ApplicationArea = All;
-                    Visible = Rec."Spawned By" <> '';
-                    Editable = false;
-                    ToolTip = 'Specifies which engineer spawned this job.';
-                }
-                field("Spawn Reason"; Rec."Spawn Reason")
-                {
-                    ApplicationArea = All;
-                    Visible = Rec."Spawned By" <> '';
-                    Editable = false;
-                    MultiLine = true;
-                    ToolTip = 'Specifies why this job was spawned to an external vendor.';
-                }
-                field("Suggested Vendor No."; Rec."Suggested Vendor No.")
-                {
-                    ApplicationArea = All;
-                    Visible = (Rec."Job Type" = Rec."Job Type"::External) and (Rec."Related Job No." <> '');
-                    ToolTip = 'Specifies the vendor suggested by the engineer who spawned this job.';
-                }
-                field("Occurrence No."; Rec."Occurrence No.")
-                {
-                    ApplicationArea = All;
-                    Editable = false;
-                    ToolTip = 'Specifies which recurrence this job represents within its contract line (e.g. 3 = third visit).';
-                }
-
-                field(Status; Rec.Status)
-                {
-                    ApplicationArea = All;
-                    Importance = Promoted;
-                    StyleExpr = StatusStyle;
-                    Editable = false;
-                    ToolTip = 'Specifies the current status of the job.';
-                }
-
-                group(NotesDetails)
-                {
-                    Caption = 'Notes';
 
                     field(Notes; Rec.Notes)
                     {
@@ -268,7 +188,98 @@ page 80826 "PMS Job"
                         MultiLine = true;
                         ToolTip = 'Specifies notes on how the job was resolved. Required for internal jobs before completing.';
                     }
+
+
                 }
+                group(JobHistory)
+                {
+
+                    Caption = 'Job History';
+
+                    field("Created Date"; Rec."Created Date")
+                    {
+                        ApplicationArea = All;
+                        Editable = false;
+                        ToolTip = 'Specifies the date and time the job was created. For helpdesk call jobs, this is the call''s reported date.';
+                    }
+
+                    field("Completed Date"; Rec."Completed Date")
+                    {
+                        ApplicationArea = All;
+                        Caption = 'Completed/Spawned Date';
+                        Editable = false;
+                        ToolTip = 'Specifies the date the job was completed or spawned.';
+                    }
+
+                    field("Resolution Time"; Rec."Resolution Time")
+                    {
+                        ApplicationArea = All;
+                        Editable = false;
+                        ToolTip = 'Specifies the time elapsed from when the job was created (or the helpdesk call was reported) to when it was completed.';
+                    }
+
+                    field("Source Type"; Rec."Source Type")
+                    {
+                        ApplicationArea = All;
+                        Editable = false;
+                        ToolTip = 'Specifies whether this job originated from a contract or a helpdesk call.';
+                    }
+                    field("Source No."; Rec."Source No.")
+                    {
+                        ApplicationArea = All;
+                        Editable = false;
+                        ToolTip = 'Specifies the source document number (contract ID or call number).';
+                    }
+                    field("Source Line No."; Rec."Source Line No.")
+                    {
+                        ApplicationArea = All;
+                        Editable = false;
+                        Visible = Rec."Source Type" = Rec."Source Type"::Contract;
+                        ToolTip = 'Specifies the contract line number that generated this job.';
+                    }
+                    field("Related Job No."; Rec."Related Job No.")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the related job created when this job was spawned, or the original job this was spawned from.';
+                    }
+                    field("Spawned By"; Rec."Spawned By")
+                    {
+                        ApplicationArea = All;
+                        Visible = Rec."Spawned By" <> '';
+                        Editable = false;
+                        ToolTip = 'Specifies which engineer spawned this job.';
+                    }
+                    field("Spawn Reason"; Rec."Spawn Reason")
+                    {
+                        ApplicationArea = All;
+                        Visible = Rec."Spawned By" <> '';
+                        Editable = false;
+                        MultiLine = true;
+                        ToolTip = 'Specifies why this job was spawned to an external vendor.';
+                    }
+                    field("Suggested Vendor No."; Rec."Suggested Vendor No.")
+                    {
+                        ApplicationArea = All;
+                        Visible = (Rec."Job Type" = Rec."Job Type"::External) and (Rec."Related Job No." <> '');
+                        ToolTip = 'Specifies the vendor suggested by the engineer who spawned this job.';
+                    }
+                    field("Occurrence No."; Rec."Occurrence No.")
+                    {
+                        ApplicationArea = All;
+                        Editable = false;
+                        ToolTip = 'Specifies which recurrence this job represents within its contract line (e.g. 3 = third visit).';
+                    }
+
+                    field(Status; Rec.Status)
+                    {
+                        ApplicationArea = All;
+                        Importance = Promoted;
+                        StyleExpr = StatusStyle;
+                        Editable = false;
+                        ToolTip = 'Specifies the current status of the job.';
+                    }
+                }
+
             }
             part(ExpenseLines; "PMS Job Expense Lines")
             {
@@ -277,6 +288,16 @@ page 80826 "PMS Job"
                 SubPageLink = "Job No." = field("Job No.");
                 Visible = (Rec."Job Type" = Rec."Job Type"::External) and (Rec."Purchase Order No." = '');
                 Editable = Rec.Status = Rec.Status::Open;
+            }
+        }
+        area(FactBoxes)
+        {
+            part(DimensionSetEntriesFactBox; "Dimension Set Entries FactBox")
+            {
+                ApplicationArea = All;
+                Caption = 'Expense Line Dimensions';
+                SubPageLink = "Dimension Set ID" = field("Dimension Set ID");
+                Provider = ExpenseLines;
             }
         }
     }

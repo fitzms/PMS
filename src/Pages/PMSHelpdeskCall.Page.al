@@ -247,6 +247,15 @@ page 80825 "PMS Helpdesk Call"
                 RunObject = page "PMS Helpdesk Call List";
                 ToolTip = 'View the list of all helpdesk calls.';
             }
+            action(Dimensions)
+            {
+                ApplicationArea = All;
+                Caption = 'Dimensions';
+                Image = Dimensions;
+                ToolTip = 'View or edit dimension values for this helpdesk call.';
+                RunObject = page "Default Dimensions";
+                RunPageLink = "Table ID" = const(80808), "No." = field("Call No.");
+            }
             action(ViewJob)
             {
                 ApplicationArea = All;
@@ -341,6 +350,7 @@ page 80825 "PMS Helpdesk Call"
             {
                 Caption = 'Navigate';
                 actionref(HelpdeskList_Promoted; HelpdeskList) { }
+                actionref(Dimensions_Promoted; Dimensions) { }
                 actionref(ViewJob_Promoted; ViewJob) { }
             }
         }

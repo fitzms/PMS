@@ -128,6 +128,13 @@ table 80832 "PMS Job Expense Line"
                 ValidateShortcutDimCode(2, "Shortcut Dimension 2 Code");
             end;
         }
+        field(13; "Property ID"; Code[20])
+        {
+            Caption = 'Property ID';
+            FieldClass = FlowField;
+            CalcFormula = lookup("PMS Job"."Property ID" where("Job No." = field("Job No.")));
+            Editable = false;
+        }
     }
 
     keys
@@ -140,6 +147,12 @@ table 80832 "PMS Job Expense Line"
 
     var
         DimMgt: Codeunit DimensionManagement;
+
+    trigger OnInsert()
+    begin
+        // Automatically inherit dimensions from Job when new expense line is inserted
+        CopyDimensionsFromJob();
+    end;
 
     procedure ShowDimensions()
     var
@@ -169,5 +182,39 @@ table 80832 "PMS Job Expense Line"
     begin
         // This will be called when user edits dimensions
         // Future enhancement: inherit from job if needed
+    end;
+
+    local procedure CopyDimensionsFromJob()
+    var
+        DefaultDim: Record "Default Dimension";
+        TempDimSetEntry: Record "Dimension Set Entry" temporary;
+        DimValue: Record "Dimension Value";
+        DimSetID: Integer;
+    begin
+        if "Job No." = '' then
+            exit;
+
+        // Check if job has any default dimensions
+        DefaultDim.SetRange("Table ID", Database::"PMS Job");
+        DefaultDim.SetRange("No.", "Job No.");
+        if not DefaultDim.FindSet() then
+            exit; // No dimensions to copy
+
+        // Build dimension set from Job's Default Dimensions
+        repeat
+            if DimValue.Get(DefaultDim."Dimension Code", DefaultDim."Dimension Value Code") then begin
+                Clear(TempDimSetEntry);
+                TempDimSetEntry."Dimension Code" := DefaultDim."Dimension Code";
+                TempDimSetEntry."Dimension Value Code" := DefaultDim."Dimension Value Code";
+                // Don't set Dimension Value ID - GetDimensionSetID will handle it
+                if TempDimSetEntry.Insert(false) then;
+            end;
+        until DefaultDim.Next() = 0;
+
+        if TempDimSetEntry.FindFirst() then begin
+            DimSetID := DimMgt.GetDimensionSetID(TempDimSetEntry);
+            "Dimension Set ID" := DimSetID;
+            DimMgt.UpdateGlobalDimFromDimSetID(DimSetID, "Shortcut Dimension 1 Code", "Shortcut Dimension 2 Code");
+        end;
     end;
 }

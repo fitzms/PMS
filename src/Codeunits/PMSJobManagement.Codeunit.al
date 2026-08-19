@@ -181,6 +181,10 @@ codeunit 80800 "PMS Job Management"
         PMSJob.Status := PMSJob.Status::Open;
         PMSJob.Insert(false);
 
+        // Copy all dimensions from the Helpdesk Call to the Job
+        if HelpdeskCall."Property ID" <> '' then
+            PMSJob.CopyDimensionsFromPropertyPublic(HelpdeskCall."Property ID");
+
         // Send email notification for internal jobs
         if PMSJob."Job Type" = PMSJob."Job Type"::Internal then
             SendJobAssignmentEmail(PMSJob);
@@ -331,7 +335,7 @@ codeunit 80800 "PMS Job Management"
             PurchLine."PMS Property ID" := PMSJob."Property ID";
             
             // Copy dimensions from expense line and apply property dimension
-            CopyDimensionsFromExpenseLine(PurchLine, JobExpenseLine, PMSJob."Property ID");
+            CopyDimensionsFromExpenseLine(PurchLine, JobExpenseLine);
             
             PurchLine.Modify(true);
             LineNo += 10000;
@@ -348,10 +352,6 @@ codeunit 80800 "PMS Job Management"
     var
         ExpenseLine: Record "PMS Job Expense Line";
         CatPostingGroup: Record "PMS Cat. Posting Group";
-        DefaultDim: Record "Default Dimension";
-        TempDimSetEntry: Record "Dimension Set Entry" temporary;
-        DimMgt: Codeunit DimensionManagement;
-        DimSetID: Integer;
     begin
         ExpenseLine.Init();
         ExpenseLine."Job No." := PMSJob."Job No.";
@@ -364,26 +364,8 @@ codeunit 80800 "PMS Job Management"
         ExpenseLine.Quantity := Quantity;
         ExpenseLine."Direct Unit Cost" := DirectUnitCost;
         ExpenseLine."Line Amount" := Quantity * DirectUnitCost;
+        // Insert(true) triggers OnInsert which automatically copies dimensions from Job
         ExpenseLine.Insert(true);
-        
-        // Copy all dimensions from Job's Default Dimensions to the expense line
-        DefaultDim.SetRange("Table ID", Database::"PMS Job");
-        DefaultDim.SetRange("No.", PMSJob."Job No.");
-        if DefaultDim.FindSet() then begin
-            repeat
-                TempDimSetEntry.Init();
-                TempDimSetEntry."Dimension Set ID" := 0;
-                TempDimSetEntry."Dimension Code" := DefaultDim."Dimension Code";
-                TempDimSetEntry."Dimension Value Code" := DefaultDim."Dimension Value Code";
-                TempDimSetEntry."Dimension Value ID" := 0;
-                if TempDimSetEntry.Insert() then;
-            until DefaultDim.Next() = 0;
-            
-            DimSetID := DimMgt.GetDimensionSetID(TempDimSetEntry);
-            ExpenseLine."Dimension Set ID" := DimSetID;
-            DimMgt.UpdateGlobalDimFromDimSetID(DimSetID, ExpenseLine."Shortcut Dimension 1 Code", ExpenseLine."Shortcut Dimension 2 Code");
-            ExpenseLine.Modify(true);
-        end;
     end;
 
     local procedure ApplyDimensionsToPurchLine(var PurchLine: Record "Purchase Line"; PMSJob: Record "PMS Job")
@@ -444,10 +426,10 @@ codeunit 80800 "PMS Job Management"
             TempDimSetEntry.DeleteAll();
         TempDimSetEntry.Reset();
 
-        TempDimSetEntry.Init();
+        Clear(TempDimSetEntry);
         TempDimSetEntry."Dimension Code" := PMSSetup."Property Dimension Code";
         TempDimSetEntry."Dimension Value Code" := PropertyID;
-        TempDimSetEntry.Insert();
+        TempDimSetEntry.Insert(false);
 
         DimSetID := DimMgt.GetDimensionSetID(TempDimSetEntry);
         PurchLine."Dimension Set ID" := DimSetID;
@@ -464,13 +446,18 @@ codeunit 80800 "PMS Job Management"
         exit('');
     end;
 
-    local procedure CopyDimensionsFromExpenseLine(var PurchLine: Record "Purchase Line"; ExpenseLine: Record "PMS Job Expense Line"; PropertyID: Code[20])
+    local procedure CopyDimensionsFromExpenseLine(var PurchLine: Record "Purchase Line"; ExpenseLine: Record "PMS Job Expense Line")
     var
         TempDimSetEntry: Record "Dimension Set Entry" temporary;
         DimMgt: Codeunit DimensionManagement;
         PMSSetup: Record "PMS Setup";
         DimSetID: Integer;
+        PropertyID: Code[20];
     begin
+        // Get Property ID from expense line
+        ExpenseLine.CalcFields("Property ID");
+        PropertyID := ExpenseLine."Property ID";
+
         // Start with expense line dimensions
         if ExpenseLine."Dimension Set ID" <> 0 then begin
             DimMgt.GetDimensionSet(TempDimSetEntry, ExpenseLine."Dimension Set ID");
@@ -485,10 +472,10 @@ codeunit 80800 "PMS Job Management"
                     TempDimSetEntry.DeleteAll();
                 TempDimSetEntry.Reset();
 
-                TempDimSetEntry.Init();
+                Clear(TempDimSetEntry);
                 TempDimSetEntry."Dimension Code" := PMSSetup."Property Dimension Code";
                 TempDimSetEntry."Dimension Value Code" := PropertyID;
-                TempDimSetEntry.Insert();
+                TempDimSetEntry.Insert(false);
             end;
         end;
 
