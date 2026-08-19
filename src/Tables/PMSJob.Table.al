@@ -60,11 +60,16 @@ table 80824 "PMS Job"
                     "Unit ID" := '';
                     exit;
                 end;
-                if PropertyRec.Get("Property ID") then
+                if PropertyRec.Get("Property ID") then begin
                     if PropertyRec."Single Unit" then begin
                         "Unit ID" := "Property ID";
-                        exit;
                     end;
+                    // Inherit Global Dimension 1 from Property if not already set
+                    if ("Global Dimension 1 Code" = '') and (PropertyRec."Global Dimension 1 Code" <> '') then
+                        "Global Dimension 1 Code" := PropertyRec."Global Dimension 1 Code";
+                    // Copy all default dimensions from Property to Job
+                    CopyDimensionsFromProperty("Property ID");
+                end;
                 // Multi-unit: clear unit if it no longer belongs
                 if "Unit ID" <> '' then
                     if UnitRec.Get("Unit ID") then
@@ -111,7 +116,7 @@ table 80824 "PMS Job"
             var
                 PMSJobMgt: Codeunit "PMS Job Management";
             begin
-                if Status in [Status::Completed, Status::Spawned, Status::Cancelled] then begin
+                if Status in [Status::Completed, Status::Cancelled] then begin
                     if "Completed Date" = 0DT then
                         "Completed Date" := CurrentDateTime;
                     if "Created Date" <> 0DT then
@@ -121,9 +126,9 @@ table 80824 "PMS Job"
 
                     // Check if all jobs for helpdesk call are complete and close if needed
                     if ("Source Type" = "Source Type"::"Helpdesk Call") and ("Source No." <> '') then
-                        PMSJobMgt.CheckAndCloseHelpdeskCall("Source No.");
+                        PMSJobMgt.CheckAndCloseHelpdeskCall("Source No.", "Job No.", Status);
                 end else begin
-                    if xRec.Status in [Status::Completed, Status::Spawned, Status::Cancelled] then begin
+                    if xRec.Status in [Status::Completed, Status::Cancelled] then begin
                         "Completed Date" := 0DT;
                         "Resolution Time" := 0;
                     end;
@@ -298,6 +303,24 @@ table 80824 "PMS Job"
             Caption = 'Resource Name';
             Editable = false;
         }
+        field(35; "Spawned By"; Code[50])
+        {
+            Caption = 'Spawned By';
+            Editable = false;
+            DataClassification = CustomerContent;
+        }
+        field(36; "Spawn Reason"; Text[250])
+        {
+            Caption = 'Spawn Reason';
+            Editable = false;
+            DataClassification = CustomerContent;
+        }
+        field(37; "Suggested Vendor No."; Code[20])
+        {
+            Caption = 'Suggested Vendor No.';
+            TableRelation = Vendor;
+            DataClassification = CustomerContent;
+        }
     }
 
     keys
@@ -332,5 +355,28 @@ table 80824 "PMS Job"
             "Source Type" := "Source Type"::Job;
             "Source No." := "Job No.";
         end;
+    end;
+
+    local procedure CopyDimensionsFromProperty(PropertyID: Code[20])
+    var
+        SourceDefaultDim: Record "Default Dimension";
+        DestDefaultDim: Record "Default Dimension";
+    begin
+        // Copy all default dimensions from the Property to this Job
+        SourceDefaultDim.SetRange("Table ID", Database::"PMS Property");
+        SourceDefaultDim.SetRange("No.", PropertyID);
+        if SourceDefaultDim.FindSet() then
+            repeat
+                // Only copy if the dimension doesn't already exist for this job
+                if not DestDefaultDim.Get(Database::"PMS Job", "Job No.", SourceDefaultDim."Dimension Code") then begin
+                    DestDefaultDim.Init();
+                    DestDefaultDim."Table ID" := Database::"PMS Job";
+                    DestDefaultDim."No." := "Job No.";
+                    DestDefaultDim."Dimension Code" := SourceDefaultDim."Dimension Code";
+                    DestDefaultDim."Dimension Value Code" := SourceDefaultDim."Dimension Value Code";
+                    DestDefaultDim."Value Posting" := SourceDefaultDim."Value Posting";
+                    DestDefaultDim.Insert(true);
+                end;
+            until SourceDefaultDim.Next() = 0;
     end;
 }

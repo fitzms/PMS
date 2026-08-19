@@ -229,6 +229,27 @@ page 80826 "PMS Job"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the related job created when this job was spawned, or the original job this was spawned from.';
                 }
+                field("Spawned By"; Rec."Spawned By")
+                {
+                    ApplicationArea = All;
+                    Visible = Rec."Spawned By" <> '';
+                    Editable = false;
+                    ToolTip = 'Specifies which engineer spawned this job.';
+                }
+                field("Spawn Reason"; Rec."Spawn Reason")
+                {
+                    ApplicationArea = All;
+                    Visible = Rec."Spawned By" <> '';
+                    Editable = false;
+                    MultiLine = true;
+                    ToolTip = 'Specifies why this job was spawned to an external vendor.';
+                }
+                field("Suggested Vendor No."; Rec."Suggested Vendor No.")
+                {
+                    ApplicationArea = All;
+                    Visible = (Rec."Job Type" = Rec."Job Type"::External) and (Rec."Related Job No." <> '');
+                    ToolTip = 'Specifies the vendor suggested by the engineer who spawned this job.';
+                }
                 field("Occurrence No."; Rec."Occurrence No.")
                 {
                     ApplicationArea = All;
@@ -357,27 +378,23 @@ page 80826 "PMS Job"
                     CurrPage.Update(false);
                 end;
             }
-            action(CompleteAndSpawn)
+            action(CloseAndSpawn)
             {
                 ApplicationArea = All;
-                Caption = 'Complete and Spawn';
+                Caption = 'Close & Spawn';
                 Enabled = (Rec.Status = Rec.Status::"In Progress") and (Rec."Job Type" = Rec."Job Type"::Internal) and (Rec."Source Type" = Rec."Source Type"::"Helpdesk Call");
                 Image = CreateDocument;
-                ToolTip = 'Complete this internal job and create a new external (supplier) job linked to the same helpdesk call. The call remains In Progress.';
+                ToolTip = 'Close this internal job and create a new external (supplier) job linked to the same helpdesk call. The call remains In Progress.';
 
                 trigger OnAction()
                 var
                     PMSJobMgt: Codeunit "PMS Job Management";
-                    NewJob: Record "PMS Job";
                     NewJobNo: Code[20];
                 begin
-                    if not Confirm('Are you sure that you want to spawn a new job?', false) then
-                        exit;
                     CurrPage.SaveRecord();
                     NewJobNo := PMSJobMgt.CompleteAndSpawnExternalJob(Rec);
-                    CurrPage.Update(false);
-                    NewJob.Get(NewJobNo);
-                    Page.Run(Page::"PMS Job", NewJob);
+                    if NewJobNo <> '' then
+                        CurrPage.Update(false);
                 end;
             }
             action(CreateSPFolder)
@@ -421,6 +438,15 @@ page 80826 "PMS Job"
                 RunObject = page "PMS Job List";
                 ToolTip = 'View all PMS jobs.';
             }
+            action(Dimensions)
+            {
+                ApplicationArea = All;
+                Caption = 'Dimensions';
+                Image = Dimensions;
+                ToolTip = 'View or edit dimension values for this job.';
+                RunObject = page "Default Dimensions";
+                RunPageLink = "Table ID" = const(80824), "No." = field("Job No.");
+            }
         }
         area(Promoted)
         {
@@ -432,7 +458,7 @@ page 80826 "PMS Job"
                     Caption = 'Complete';
                     ShowAs = SplitButton;
                     actionref(MarkCompleted_Promoted; MarkCompleted) { }
-                    actionref(CompleteAndSpawn_Promoted; CompleteAndSpawn) { }
+                    actionref(CloseAndSpawn_Promoted; CloseAndSpawn) { }
                 }
                 actionref(MarkInProgress_Promoted; MarkInProgress) { }
                 actionref(CreatePurchaseOrder_Promoted; CreatePurchaseOrder) { }
@@ -449,6 +475,7 @@ page 80826 "PMS Job"
                 Caption = 'Navigate';
                 actionref(ViewCall_Promoted; ViewCall) { }
                 actionref(JobList_Promoted; JobList) { }
+                actionref(Dimensions_Promoted; Dimensions) { }
             }
         }
     }
@@ -492,8 +519,6 @@ page 80826 "PMS Job"
         case Rec.Status of
             Rec.Status::Completed:
                 StatusStyle := 'Favorable';
-            Rec.Status::Spawned:
-                StatusStyle := 'Subordinate';
             Rec.Status::Cancelled:
                 StatusStyle := 'Unfavorable';
             Rec.Status::"In Progress":
@@ -519,8 +544,9 @@ page 80826 "PMS Job"
             if PropertyRec.Get(Rec."Property ID") then
                 IsSingleUnit := PropertyRec."Single Unit";
 
-        // Lock fields if job was created from a helpdesk call
-        IsCallFieldsEditable := Rec."Source Type" <> Rec."Source Type"::"Helpdesk Call";
+        // Lock fields if job was created from a helpdesk call, EXCEPT for spawned external jobs that are still Open
+        IsCallFieldsEditable := (Rec."Source Type" <> Rec."Source Type"::"Helpdesk Call") or
+                                ((Rec."Job Type" = Rec."Job Type"::External) and (Rec."Related Job No." <> '') and (Rec.Status = Rec.Status::Open));
 
         UpdateVisibility();
     end;
