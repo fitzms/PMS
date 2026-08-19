@@ -195,11 +195,23 @@ table 80800 "PMS Role Center Cues"
             FieldClass = FlowField;
             CalcFormula = count("PMS Job" where("Scheduled Date" = field("Date Filter"), Status = filter(< Completed)));
         }
-        field(54; "My Jobs"; Integer)
+        field(54; "My Open Jobs"; Integer)
         {
-            Caption = 'My Jobs';
+            Caption = 'My Open Jobs';
             FieldClass = FlowField;
-            CalcFormula = count("PMS Job" where("Job Type" = const(Internal), "Employee No." = field("Employee No. Filter"), Status = filter(< Completed)));
+            CalcFormula = count("PMS Job" where("Job Type" = const(Internal), "Employee No." = field("Employee No. Filter"), Status = const(Open)));
+        }
+        field(58; "My Scheduled Jobs"; Integer)
+        {
+            Caption = 'My Scheduled Jobs';
+            FieldClass = FlowField;
+            CalcFormula = count("PMS Job" where("Job Type" = const(Internal), "Employee No." = field("Employee No. Filter"), Status = const(Scheduled)));
+        }
+        field(59; "My In Progress Jobs"; Integer)
+        {
+            Caption = 'My In Progress Jobs';
+            FieldClass = FlowField;
+            CalcFormula = count("PMS Job" where("Job Type" = const(Internal), "Employee No." = field("Employee No. Filter"), Status = const("In Progress")));
         }
         field(55; "External Jobs Awaiting PO"; Integer)
         {

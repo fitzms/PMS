@@ -263,4 +263,15 @@ table 80808 "PMS Helpdesk Call"
         if Priority = Priority::Low then
             Priority := Priority::Normal;
     end;
+
+    trigger OnDelete()
+    var
+        Job: Record "PMS Job";
+    begin
+        // Prevent deletion if there are associated jobs
+        Job.SetRange("Source Type", Job."Source Type"::"Helpdesk Call");
+        Job.SetRange("Source No.", "Call No.");
+        if not Job.IsEmpty() then
+            Error('Cannot delete helpdesk call %1 because it has associated jobs.', "Call No.");
+    end;
 }

@@ -15,10 +15,6 @@ enum 80811 "PMS Job Status"
     {
         Caption = 'In Progress';
     }
-    value(3; "On Hold")
-    {
-        Caption = 'On Hold';
-    }
     value(4; Completed)
     {
         Caption = 'Completed';

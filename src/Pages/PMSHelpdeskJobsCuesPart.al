@@ -205,11 +205,11 @@ page 80804 "PMS Helpdesk Jobs Cues Part"
             {
                 Caption = 'My Jobs';
 
-                field("My Jobs"; Rec."My Jobs")
+                field("My Open Jobs"; Rec."My Open Jobs")
                 {
                     ApplicationArea = All;
-                    Caption = 'My Jobs';
-                    StyleExpr = MyJobsStyle;
+                    Caption = 'My Open Jobs';
+                    StyleExpr = MyOpenJobsStyle;
                     DrillDownPageId = "PMS Job List";
 
                     trigger OnDrillDown()
@@ -219,7 +219,45 @@ page 80804 "PMS Helpdesk Jobs Cues Part"
                     begin
                         Job.SetRange("Job Type", Job."Job Type"::Internal);
                         Job.SetRange("Employee No.", UserId());
-                        Job.SetFilter(Status, '<%1', Job.Status::Completed);
+                        Job.SetRange(Status, Job.Status::Open);
+                        JobList.SetTableView(Job);
+                        JobList.Run();
+                    end;
+                }
+                field("My Scheduled Jobs"; Rec."My Scheduled Jobs")
+                {
+                    ApplicationArea = All;
+                    Caption = 'My Scheduled Jobs';
+                    StyleExpr = MyScheduledJobsStyle;
+                    DrillDownPageId = "PMS Job List";
+
+                    trigger OnDrillDown()
+                    var
+                        Job: Record "PMS Job";
+                        JobList: Page "PMS Job List";
+                    begin
+                        Job.SetRange("Job Type", Job."Job Type"::Internal);
+                        Job.SetRange("Employee No.", UserId());
+                        Job.SetRange(Status, Job.Status::Scheduled);
+                        JobList.SetTableView(Job);
+                        JobList.Run();
+                    end;
+                }
+                field("My In Progress Jobs"; Rec."My In Progress Jobs")
+                {
+                    ApplicationArea = All;
+                    Caption = 'My In Progress Jobs';
+                    StyleExpr = MyInProgressJobsStyle;
+                    DrillDownPageId = "PMS Job List";
+
+                    trigger OnDrillDown()
+                    var
+                        Job: Record "PMS Job";
+                        JobList: Page "PMS Job List";
+                    begin
+                        Job.SetRange("Job Type", Job."Job Type"::Internal);
+                        Job.SetRange("Employee No.", UserId());
+                        Job.SetRange(Status, Job.Status::"In Progress");
                         JobList.SetTableView(Job);
                         JobList.Run();
                     end;
@@ -239,7 +277,9 @@ page 80804 "PMS Helpdesk Jobs Cues Part"
         DueTodayStyle: Text;
         OverdueJobsStyle: Text;
         AwaitingPOStyle: Text;
-        MyJobsStyle: Text;
+        MyOpenJobsStyle: Text;
+        MyScheduledJobsStyle: Text;
+        MyInProgressJobsStyle: Text;
 
     trigger OnAfterGetRecord()
     begin
@@ -287,7 +327,9 @@ page 80804 "PMS Helpdesk Jobs Cues Part"
             "Jobs Due Today",
             "Overdue Jobs",
             "External Jobs Awaiting PO",
-            "My Jobs");
+            "My Open Jobs",
+            "My Scheduled Jobs",
+            "My In Progress Jobs");
         Rec.SetRange("Date Filter");
         Rec.SetRange("Employee No. Filter");
 
@@ -316,13 +358,20 @@ page 80804 "PMS Helpdesk Jobs Cues Part"
         else
             AwaitingPOStyle := 'Favorable';
 
-        Rec.SetRange("Employee No. Filter", UserId());
-        Rec.CalcFields("My Jobs");
-        Rec.SetRange("Employee No. Filter");
-        if Rec."My Jobs" > 0 then
-            MyJobsStyle := 'Attention'
+        if Rec."My Open Jobs" > 0 then
+            MyOpenJobsStyle := 'Attention'
         else
-            MyJobsStyle := 'Favorable';
+            MyOpenJobsStyle := 'Favorable';
+
+        if Rec."My Scheduled Jobs" > 0 then
+            MyScheduledJobsStyle := 'Ambiguous'
+        else
+            MyScheduledJobsStyle := 'Favorable';
+
+        if Rec."My In Progress Jobs" > 0 then
+            MyInProgressJobsStyle := 'Attention'
+        else
+            MyInProgressJobsStyle := 'Favorable';
     end;
 
     trigger OnOpenPage()
