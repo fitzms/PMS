@@ -198,18 +198,41 @@ codeunit 80800 "PMS Job Management"
         NewJob: Record "PMS Job";
         PMSSetup: Record "PMS Setup";
         NoSeries: Codeunit "No. Series";
+        SpawnDlg: Page "PMS Spawn Job Dlg";
+        UserRec: Record User;
+        SpawnReason: Text[250];
+        SuggestedVendor: Code[20];
+        SpawnedByName: Text[80];
     begin
-        CurrentJob.TestField("Resolution Notes");
         CurrentJob.TestField("Source Type", CurrentJob."Source Type"::"Helpdesk Call");
         CurrentJob.TestField("Source No.");
+
+        // Show spawn dialog to capture details
+        SpawnDlg.SetDefaults(CurrentJob."Estimated Cost", CurrentJob.Priority);
+        SpawnDlg.RunModal();
+
+        if not SpawnDlg.WasConfirmed() then
+            exit('');
+
+        SpawnReason := SpawnDlg.GetSpawnReason();
+        SuggestedVendor := SpawnDlg.GetSuggestedVendor();
+
+        // Get user's full name
+        SpawnedByName := UserId();
+        UserRec.SetRange("User Security ID", UserSecurityId());
+        if UserRec.FindFirst() then
+            if UserRec."Full Name" <> '' then
+                SpawnedByName := UserRec."Full Name";
 
         PMSSetup.GetRecordOnce();
         PMSSetup.TestField("Job Nos.");
 
-        // Mark the current job as Spawned (not Completed)
-        CurrentJob.Validate(Status, CurrentJob.Status::Spawned);
+        // Mark the current job as Completed (engineer's work is done)
+        CurrentJob.Validate(Status, CurrentJob.Status::Completed);
         if CurrentJob."Completed Date" = 0DT then
             CurrentJob."Completed Date" := CurrentDateTime;
+        CurrentJob."Spawned By" := CopyStr(UserId(), 1, 50);
+        CurrentJob."Spawn Reason" := SpawnReason;
         CurrentJob.Modify(true);
 
         // Spawn new External job linked to the same call
@@ -221,20 +244,27 @@ codeunit 80800 "PMS Job Management"
         NewJob."Source No." := CurrentJob."Source No.";
         NewJob."Property ID" := CurrentJob."Property ID";
         NewJob."Unit ID" := CurrentJob."Unit ID";
-        NewJob.Priority := CurrentJob.Priority;
+        NewJob.Priority := SpawnDlg.GetPriority();
         NewJob."Job Type" := NewJob."Job Type"::External;
         NewJob."Scheduled Date" := CurrentJob."Scheduled Date";
-        NewJob."Estimated Cost" := CurrentJob."Estimated Cost";
+        NewJob."Estimated Cost" := SpawnDlg.GetLineAmount();
         NewJob."G/L Account No." := CurrentJob."G/L Account No.";
         NewJob."Global Dimension 1 Code" := CurrentJob."Global Dimension 1 Code";
         NewJob."Created Date" := CurrentJob."Created Date";  // Inherit created date from original job
         NewJob.Status := NewJob.Status::Open;
         NewJob."Related Job No." := CurrentJob."Job No.";
+        NewJob."Suggested Vendor No." := SuggestedVendor;
+        if SuggestedVendor <> '' then
+            NewJob.Validate("Vendor No.", SuggestedVendor);
+        NewJob.Notes := 'Spawned from job ' + CurrentJob."Job No." + ' by ' + SpawnedByName + '. Reason: ' + SpawnReason;
         NewJob.Insert(false);
 
         // Link back from original job to new job
         CurrentJob."Related Job No." := NewJob."Job No.";
         CurrentJob.Modify(true);
+
+        // Send email notification to office team
+        SendSpawnedJobNotification(NewJob, CurrentJob, SpawnReason, SpawnedByName);
 
         exit(NewJob."Job No.");
     end;
@@ -247,6 +277,7 @@ codeunit 80800 "PMS Job Management"
     var
         PurchHeader: Record "Purchase Header";
         PurchLine: Record "Purchase Line";
+        PMSPropertyRec: Record "PMS Property";
     begin
         PMSJob.TestField("Vendor No.");
         PMSJob.TestField("G/L Account No.");
@@ -274,8 +305,14 @@ codeunit 80800 "PMS Job Management"
         PurchLine."Expected Receipt Date" := PMSJob."Scheduled Date";
         PurchLine."PMS Job No." := PMSJob."Job No.";
         PurchLine."PMS Property ID" := PMSJob."Property ID";
-        if PMSJob."Global Dimension 1 Code" <> '' then
-            PurchLine.Validate("Shortcut Dimension 1 Code", PMSJob."Global Dimension 1 Code");
+        // Inherit Global Dimension 1 from Property if Job doesn't have it
+        if (PMSJob."Global Dimension 1 Code" = '') and (PMSJob."Property ID" <> '') then begin
+            if PMSPropertyRec.Get(PMSJob."Property ID") then
+                if PMSPropertyRec."Global Dimension 1 Code" <> '' then
+                    PurchLine.Validate("Shortcut Dimension 1 Code", PMSPropertyRec."Global Dimension 1 Code");
+        end else
+            if PMSJob."Global Dimension 1 Code" <> '' then
+                PurchLine.Validate("Shortcut Dimension 1 Code", PMSJob."Global Dimension 1 Code");
         ApplyPropertyDimension(PurchLine, PMSJob."Property ID");
         PurchLine.Modify(true);
 
@@ -369,8 +406,12 @@ codeunit 80800 "PMS Job Management"
                 '<b>Job No.:</b> ' + PMSJob."Job No." + '<br>' +
                 '<b>Description:</b> ' + PMSJob.Description + '<br>';
 
-        if PMSJob."Property ID" <> '' then
-            Body += '<b>Property:</b> ' + PMSJob."Property ID" + '<br>';
+        if PMSJob."Property ID" <> '' then begin
+            Body += '<b>Property:</b> ' + PMSJob."Property ID";
+            if PMSJob."Property Known As" <> '' then
+                Body += ' (' + PMSJob."Property Known As" + ')';
+            Body += '<br>';
+        end;
 
         Body += '<b>Priority:</b> ' + Format(PMSJob.Priority) + '<br>';
 
@@ -421,11 +462,88 @@ codeunit 80800 "PMS Job Management"
         exit(JobUrl);
     end;
 
+    local procedure SendSpawnedJobNotification(NewJob: Record "PMS Job"; OriginalJob: Record "PMS Job"; SpawnReason: Text[250]; SpawnedByName: Text[80])
+    var
+        EmailMessage: Codeunit "Email Message";
+        Email: Codeunit Email;
+        PMSSetup: Record "PMS Setup";
+        RecipientEmail: Text;
+        Recipients: List of [Text];
+        Subject: Text[250];
+        Body: Text;
+        JobUrl: Text;
+        EmailList: List of [Text];
+        SingleEmail: Text;
+    begin
+        PMSSetup.GetRecordOnce();
+
+        // Get office team email(s) from setup
+        if PMSSetup."Office Team Email" = '' then
+            exit;
+
+        // Parse semicolon-separated email list
+        EmailList := PMSSetup."Office Team Email".Split(';');
+        foreach SingleEmail in EmailList do begin
+            SingleEmail := SingleEmail.Trim();
+            if SingleEmail <> '' then
+                if not Recipients.Contains(SingleEmail) then
+                    Recipients.Add(SingleEmail);
+        end;
+
+        if Recipients.Count = 0 then
+            exit;
+
+        // Generate URL to new job card
+        JobUrl := GetJobUrl(NewJob);
+
+        // Build email content
+        Subject := StrSubstNo('[%1] Spawned Job Requires Action: %2', CompanyName, NewJob."Job No.");
+
+        Body := '<b>A new external job has been spawned and requires office team action:</b><br><br>' +
+                '<b>New Job No.:</b> ' + NewJob."Job No." + '<br>' +
+                '<b>Original Job:</b> ' + OriginalJob."Job No." + ' (marked as Completed)<br>' +
+                '<b>Spawned By:</b> ' + SpawnedByName + '<br>' +
+                '<b>Description:</b> ' + NewJob.Description + '<br>';
+
+        if NewJob."Property ID" <> '' then begin
+            Body += '<b>Property:</b> ' + NewJob."Property ID";
+            if NewJob."Property Known As" <> '' then
+                Body += ' (' + NewJob."Property Known As" + ')';
+            Body += '<br>';
+        end;
+
+        Body += '<b>Priority:</b> ' + Format(NewJob.Priority) + '<br>';
+
+        if NewJob."Estimated Cost" <> 0 then
+            Body += '<b>Estimated Cost:</b> ' + Format(NewJob."Estimated Cost") + '<br>';
+
+        if NewJob."Suggested Vendor No." <> '' then
+            Body += '<b>Suggested Vendor:</b> ' + NewJob."Suggested Vendor No." + '<br>';
+
+        Body += '<br><b>Spawn Reason:</b><br>' + SpawnReason + '<br>';
+
+        Body += '<br><b>Next Steps:</b><br>' +
+                '• Review the spawned job details<br>' +
+                '• Assign a vendor if not already suggested<br>' +
+                '• Create a purchase order for approval<br>';
+
+        // Add clickable link to new job
+        if JobUrl <> '' then
+            Body += '<br><a href="' + JobUrl + '">Open Spawned Job in Business Central</a>';
+
+        // Send to each recipient
+        foreach RecipientEmail in Recipients do begin
+            EmailMessage.Create(RecipientEmail, Subject, Body, true);
+            if not Email.Send(EmailMessage, Enum::"Email Scenario"::Default) then
+                Message(EmailSendFailedMsg, RecipientEmail);
+        end;
+    end;
+
     /// <summary>
     /// Checks if all jobs for a helpdesk call are in a final state (Completed, Cancelled, or Spawned).
     /// If so, automatically closes the call and calculates resolution time.
     /// </summary>
-    procedure CheckAndCloseHelpdeskCall(CallNo: Code[20])
+    procedure CheckAndCloseHelpdeskCall(CallNo: Code[20]; CurrentJobNo: Code[20]; CurrentJobStatus: Enum "PMS Job Status")
     var
         HelpdeskCall: Record "PMS Helpdesk Call";
         PMSJob: Record "PMS Job";
@@ -447,13 +565,24 @@ codeunit 80800 "PMS Job Management"
         PMSJob.SetRange("Source No.", CallNo);
         if PMSJob.FindSet() then
             repeat
-                if not (PMSJob.Status in [PMSJob.Status::Completed, PMSJob.Status::Cancelled, PMSJob.Status::Spawned]) then
-                    AllJobsComplete := false;
+                // Use in-memory status for the current job being modified
+                if PMSJob."Job No." = CurrentJobNo then begin
+                    if not (CurrentJobStatus in [PMSJob.Status::Completed, PMSJob.Status::Cancelled]) then
+                        AllJobsComplete := false;
+                end else begin
+                    if not (PMSJob.Status in [PMSJob.Status::Completed, PMSJob.Status::Cancelled]) then
+                        AllJobsComplete := false;
+                end;
             until (PMSJob.Next() = 0) or (not AllJobsComplete);
 
         // Close the call if all jobs are complete
         if AllJobsComplete then begin
             HelpdeskCall.Validate(Status, HelpdeskCall.Status::Closed);
+            // Ensure fields are recalculated (OnValidate should handle this, but be explicit)
+            if HelpdeskCall."Closed Date" = 0DT then
+                HelpdeskCall."Closed Date" := CurrentDateTime;
+            if (HelpdeskCall."Reported Date" <> 0DT) and (HelpdeskCall."Resolution Time" = 0) then
+                HelpdeskCall."Resolution Time" := HelpdeskCall."Closed Date" - HelpdeskCall."Reported Date";
             HelpdeskCall.Modify(true);
         end;
     end;
