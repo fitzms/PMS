@@ -138,7 +138,7 @@ table 80800 "PMS Role Center Cues"
         {
             Caption = 'Open Calls';
             FieldClass = FlowField;
-            CalcFormula = count("PMS Helpdesk Call" where(Status = filter(<> Closed)));
+            CalcFormula = count("PMS Helpdesk Call" where(Status = const(Open)));
         }
         field(40; "New Helpdesk Calls"; Integer)
         {
@@ -168,6 +168,12 @@ table 80800 "PMS Role Center Cues"
             Caption = 'My New Calls';
             FieldClass = FlowField;
             CalcFormula = count("PMS Helpdesk Call" where(Status = const(Open), "Employee No." = field("Employee No. Filter")));
+        }
+        field(46; "In Progress Calls"; Integer)
+        {
+            Caption = 'In Progress Calls';
+            FieldClass = FlowField;
+            CalcFormula = count("PMS Helpdesk Call" where(Status = const("In Progress")));
         }
 
         // ── Jobs ──────────────────────────────────────────────────────────────

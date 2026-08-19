@@ -76,6 +76,7 @@ page 80828 "PMS Jobs Part"
                 Caption = 'Open Job';
                 Image = Open;
                 ToolTip = 'Open the selected job card.';
+                Enabled = Rec."Job No." <> '';
 
                 trigger OnAction()
                 begin

@@ -7,6 +7,7 @@ codeunit 80800 "PMS Job Management"
         JobCreatedMsg: Label 'Job %1 has been created from helpdesk call %2.', Comment = '%1 = Job No., %2 = Call No.';
         PurchOrderCreatedMsg: Label 'Purchase Order %1 has been created for job %2.', Comment = '%1 = PO No., %2 = Job No.';
         JobAlreadyHasPOErr: Label 'Job %1 is already linked to purchase order %2.', Comment = '%1 = Job No., %2 = PO No.';
+        EmailSendFailedMsg: Label 'Email notification could not be sent to %1.', Comment = '%1 = Email address';
 
     /// <summary>
     /// Creates one PMS Job per contract-line occurrence and one Purchase Order (with
@@ -180,6 +181,10 @@ codeunit 80800 "PMS Job Management"
         PMSJob.Status := PMSJob.Status::Open;
         PMSJob.Insert(false);
 
+        // Send email notification for internal jobs
+        if PMSJob."Job Type" = PMSJob."Job Type"::Internal then
+            SendJobAssignmentEmail(PMSJob);
+
         Message(JobCreatedMsg, PMSJob."Job No.", HelpdeskCall."Call No.");
         exit(PMSJob."Job No.");
     end;
@@ -329,6 +334,91 @@ codeunit 80800 "PMS Job Management"
 
         DimSetID := DimMgt.GetDimensionSetID(TempDimSetEntry);
         PurchLine."Dimension Set ID" := DimSetID;
+    end;
+
+    local procedure SendJobAssignmentEmail(PMSJob: Record "PMS Job")
+    var
+        EmailMessage: Codeunit "Email Message";
+        Email: Codeunit Email;
+        UserRec: Record User;
+        RecipientEmail: Text[250];
+        Subject: Text[250];
+        Body: Text;
+        JobUrl: Text;
+    begin
+        if PMSJob."Employee No." = '' then
+            exit;
+
+        // Get employee email from User table
+        UserRec.SetRange("User Name", PMSJob."Employee No.");
+        if not UserRec.FindFirst() then
+            exit;
+
+        if UserRec."Contact Email" = '' then
+            exit;
+
+        RecipientEmail := UserRec."Contact Email";
+
+        // Generate URL to job card
+        JobUrl := GetJobUrl(PMSJob);
+
+        // Build email content
+        Subject := StrSubstNo('[%1] New Job Assigned: %2 - %3', CompanyName, PMSJob."Job No.", PMSJob.Description);
+
+        Body := 'You have been assigned a new job:' + '<br><br>' +
+                '<b>Job No.:</b> ' + PMSJob."Job No." + '<br>' +
+                '<b>Description:</b> ' + PMSJob.Description + '<br>';
+
+        if PMSJob."Property ID" <> '' then
+            Body += '<b>Property:</b> ' + PMSJob."Property ID" + '<br>';
+
+        Body += '<b>Priority:</b> ' + Format(PMSJob.Priority) + '<br>';
+
+        if PMSJob."Scheduled Date" <> 0D then
+            Body += '<b>Scheduled Date:</b> ' + Format(PMSJob."Scheduled Date") + '<br>';
+
+        if PMSJob."Source Type" = PMSJob."Source Type"::"Helpdesk Call" then
+            Body += '<b>From Helpdesk Call:</b> ' + PMSJob."Source No." + '<br>';
+
+        if PMSJob.Details <> '' then
+            Body += '<br><b>Details:</b><br>' + PMSJob.Details;
+
+        // Add clickable link to job
+        if JobUrl <> '' then
+            Body += '<br><br><a href="' + JobUrl + '">Open Job in Business Central</a>';
+
+        // Create and send email
+        EmailMessage.Create(RecipientEmail, Subject, Body, true); // true = HTML format
+
+        if not Email.Send(EmailMessage, Enum::"Email Scenario"::Default) then
+            Message(EmailSendFailedMsg, RecipientEmail);
+    end;
+
+    local procedure GetJobUrl(PMSJob: Record "PMS Job"): Text
+    var
+        PMSSetup: Record "PMS Setup";
+        BaseUrl: Text;
+        JobUrl: Text;
+    begin
+        // Try to get configured base URL first
+        PMSSetup.GetRecordOnce();
+        if PMSSetup."Web Client Base URL" <> '' then
+            BaseUrl := PMSSetup."Web Client Base URL"
+        else
+            // Fall back to automatic URL detection
+            BaseUrl := GetUrl(ClientType::Web);
+
+        if BaseUrl = '' then
+            exit('');
+
+        // Remove trailing slash if present
+        if BaseUrl.EndsWith('/') then
+            BaseUrl := CopyStr(BaseUrl, 1, StrLen(BaseUrl) - 1);
+
+        // Build URL to job card page (80826 is PMS Job page ID)
+        JobUrl := BaseUrl + '/?page=80826&filter=%27PMS%20Job%27.%27Job%20No.%27%20IS%20%27' + PMSJob."Job No." + '%27';
+
+        exit(JobUrl);
     end;
 
     /// <summary>

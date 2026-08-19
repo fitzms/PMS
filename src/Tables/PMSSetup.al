@@ -107,6 +107,11 @@ table 80807 "PMS Setup"
             Editable = false;
             DataClassification = SystemMetadata;
         }
+        field(60; "Web Client Base URL"; Text[250])
+        {
+            Caption = 'Web Client Base URL';
+            DataClassification = OrganizationIdentifiableInformation;
+        }
 
     }
 

@@ -25,27 +25,30 @@ page 80804 "PMS Helpdesk Jobs Cues Part"
                         HelpdeskCall: Record "PMS Helpdesk Call";
                         HelpdeskList: Page "PMS Helpdesk Call List";
                     begin
-                        HelpdeskCall.SetFilter(Status, '<>%1', HelpdeskCall.Status::Closed);
+                        HelpdeskCall.SetFilter(Status, '%1', HelpdeskCall.Status::Open);
                         HelpdeskList.SetTableView(HelpdeskCall);
                         HelpdeskList.Run();
                     end;
                 }
-                field("New Helpdesk Calls"; Rec."New Helpdesk Calls")
+
+                field("In Progress Calls"; Rec."In Progress Calls")
                 {
                     ApplicationArea = All;
-                    Caption = 'Open Calls';
-                    StyleExpr = NewCallsStyle;
+                    Caption = 'In Progress';
+                    StyleExpr = InProgressCallsStyle;
 
                     trigger OnDrillDown()
                     var
                         HelpdeskCall: Record "PMS Helpdesk Call";
                         HelpdeskList: Page "PMS Helpdesk Call List";
                     begin
-                        HelpdeskCall.SetRange(Status, HelpdeskCall.Status::Open);
+                        HelpdeskCall.SetFilter(Status, '%1', HelpdeskCall.Status::"In Progress");
                         HelpdeskList.SetTableView(HelpdeskCall);
                         HelpdeskList.Run();
                     end;
                 }
+
+
                 field("Critical Calls"; Rec."Critical Calls")
                 {
                     ApplicationArea = All;
@@ -88,7 +91,7 @@ page 80804 "PMS Helpdesk Jobs Cues Part"
                 field("My Calls"; Rec."My Calls")
                 {
                     ApplicationArea = All;
-                    Caption = 'Calls';
+                    Caption = 'MyCalls';
                     StyleExpr = MyCallsStyle;
 
                     trigger OnDrillDown()
@@ -268,6 +271,7 @@ page 80804 "PMS Helpdesk Jobs Cues Part"
 
     var
         OpenCallsStyle: Text;
+        InProgressCallsStyle: Text;
         NewCallsStyle: Text;
         CriticalCallsStyle: Text;
         MyCallsStyle: Text;
@@ -287,6 +291,7 @@ page 80804 "PMS Helpdesk Jobs Cues Part"
         Rec.SetRange("Employee No. Filter", UserId());
         Rec.CalcFields(
             "Open Calls",
+            "In Progress Calls",
             "New Helpdesk Calls",
             "Critical Calls",
             "My Calls",
@@ -297,6 +302,11 @@ page 80804 "PMS Helpdesk Jobs Cues Part"
             OpenCallsStyle := 'Attention'
         else
             OpenCallsStyle := 'Favorable';
+
+        if Rec."In Progress Calls" > 0 then
+            InProgressCallsStyle := 'Ambiguous'
+        else
+            InProgressCallsStyle := 'Favorable';
 
         if Rec."New Helpdesk Calls" > 0 then
             NewCallsStyle := 'Unfavorable'

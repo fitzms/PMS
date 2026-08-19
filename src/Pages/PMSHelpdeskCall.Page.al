@@ -270,7 +270,7 @@ page 80825 "PMS Helpdesk Call"
             {
                 ApplicationArea = All;
                 Caption = 'Create Job';
-                Enabled = (Rec.Status = Rec.Status::Open) and (Rec."Call Type" = Rec."Call Type"::Internal);
+                Enabled = (Rec.Status = Rec.Status::Open);
                 Image = Approve;
                 ToolTip = 'Mark this call as In Progress and create a job.';
 
@@ -327,26 +327,6 @@ page 80825 "PMS Helpdesk Call"
                     CurrPage.Update(false);
                 end;
             }
-            action(CreateJob)
-            {
-                ApplicationArea = All;
-                Caption = 'Create Job';
-                Enabled = (not HasJob) and not ((Rec.Status = Rec.Status::Open) and (Rec."Call Type" = Rec."Call Type"::Internal));
-                Image = NewDocument;
-                ToolTip = 'Create a PMS job from this helpdesk call. The job defaults to Internal type; change it on the job card and use Create Purchase Order if a supplier is involved.';
-
-                trigger OnAction()
-                var
-                    PMSJobMgt: Codeunit "PMS Job Management";
-                    PMSJob: Record "PMS Job";
-                    JobNo: Code[20];
-                begin
-                    CurrPage.SaveRecord();
-                    JobNo := PMSJobMgt.CreateJobFromCall(Rec);
-                    PMSJob.Get(JobNo);
-                    Page.Run(Page::"PMS Job", PMSJob);
-                end;
-            }
         }
         area(Promoted)
         {
@@ -356,7 +336,6 @@ page 80825 "PMS Helpdesk Call"
                 actionref(AcknowledgeCall_Promoted; AcknowledgeCall) { }
                 actionref(CloseCall_Promoted; CloseCall) { }
                 actionref(ReopenCall_Promoted; ReopenCall) { }
-                actionref(CreateJob_Promoted; CreateJob) { }
             }
             group(Category_Navigate)
             {

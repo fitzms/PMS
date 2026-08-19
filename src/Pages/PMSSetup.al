@@ -41,6 +41,11 @@ page 80808 "PMS Setup"
                     ApplicationArea = All;
                     ToolTip = 'Specifies the default job frequency for contracts.';
                 }
+                field("Web Client Base URL"; Rec."Web Client Base URL")
+                {
+                    ApplicationArea = All;
+                    ToolTip = 'Optional: Specify the base URL for email links. Leave blank to use automatic URL detection.';
+                }
             }
             group(Numbering)
             {
