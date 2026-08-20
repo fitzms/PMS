@@ -186,35 +186,15 @@ table 80832 "PMS Job Expense Line"
 
     local procedure CopyDimensionsFromJob()
     var
-        DefaultDim: Record "Default Dimension";
-        TempDimSetEntry: Record "Dimension Set Entry" temporary;
-        DimValue: Record "Dimension Value";
-        DimSetID: Integer;
+        JobRec: Record "PMS Job";
     begin
         if "Job No." = '' then
             exit;
 
-        // Check if job has any default dimensions
-        DefaultDim.SetRange("Table ID", Database::"PMS Job");
-        DefaultDim.SetRange("No.", "Job No.");
-        if not DefaultDim.FindSet() then
-            exit; // No dimensions to copy
-
-        // Build dimension set from Job's Default Dimensions
-        repeat
-            if DimValue.Get(DefaultDim."Dimension Code", DefaultDim."Dimension Value Code") then begin
-                Clear(TempDimSetEntry);
-                TempDimSetEntry."Dimension Code" := DefaultDim."Dimension Code";
-                TempDimSetEntry."Dimension Value Code" := DefaultDim."Dimension Value Code";
-                // Don't set Dimension Value ID - GetDimensionSetID will handle it
-                if TempDimSetEntry.Insert(false) then;
-            end;
-        until DefaultDim.Next() = 0;
-
-        if TempDimSetEntry.FindFirst() then begin
-            DimSetID := DimMgt.GetDimensionSetID(TempDimSetEntry);
-            "Dimension Set ID" := DimSetID;
-            DimMgt.UpdateGlobalDimFromDimSetID(DimSetID, "Shortcut Dimension 1 Code", "Shortcut Dimension 2 Code");
+        // Copy Dimension Set ID from Job (Job inherits from Property)
+        if JobRec.Get("Job No.") then begin
+            "Dimension Set ID" := JobRec."Dimension Set ID";
+            DimMgt.UpdateGlobalDimFromDimSetID("Dimension Set ID", "Shortcut Dimension 1 Code", "Shortcut Dimension 2 Code");
         end;
     end;
 }

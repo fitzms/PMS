@@ -280,6 +280,21 @@ page 80826 "PMS Job"
                     }
                 }
 
+                group(DimensionsGroup)
+                {
+                    Caption = 'Dimensions';
+                    field("Shortcut Dimension 1 Code"; Rec."Shortcut Dimension 1 Code")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the first shortcut dimension code.';
+                    }
+                    field("Shortcut Dimension 2 Code"; Rec."Shortcut Dimension 2 Code")
+                    {
+                        ApplicationArea = All;
+                        ToolTip = 'Specifies the second shortcut dimension code.';
+                    }
+                }
+
             }
             part(ExpenseLines; "PMS Job Expense Lines")
             {
@@ -455,6 +470,19 @@ page 80826 "PMS Job"
                 Caption = 'Dimensions';
                 Image = Dimensions;
                 ToolTip = 'View or edit dimension values for this job.';
+                
+                trigger OnAction()
+                begin
+                    Rec.ShowDimensions();
+                    CurrPage.Update(true);
+                end;
+            }
+            action(DefaultDimensions)
+            {
+                ApplicationArea = All;
+                Caption = 'Default Dimensions';
+                Image = DefaultDimension;
+                ToolTip = 'View or edit default dimension templates for this job.';
                 RunObject = page "Default Dimensions";
                 RunPageLink = "Table ID" = const(80824), "No." = field("Job No.");
             }

@@ -134,20 +134,20 @@ table 80808 "PMS Helpdesk Call"
                     Validate("Unit ID", '');
                     exit;
                 end;
-                if PropertyRec.Get("Property ID") then
-                    if PropertyRec."Single Unit" then begin
-                        "Unit ID" := "Property ID";
-                        exit;
+                if PropertyRec.Get("Property ID") then begin
+                    if PropertyRec."Single Unit" then
+                        "Unit ID" := "Property ID"
+                    else begin
+                        // Multi-unit: clear unit if it no longer belongs
+                        if "Unit ID" <> '' then
+                            if Unit.Get("Unit ID") then
+                                if Unit."Property ID" <> "Property ID" then
+                                    Validate("Unit ID", '');
                     end;
-                // Multi-unit: clear unit if it no longer belongs
-                if "Unit ID" <> '' then
-                    if Unit.Get("Unit ID") then
-                        if Unit."Property ID" <> "Property ID" then
-                            Validate("Unit ID", '');
+                end;
 
-                // Copy dimensions from Property
-                if "Call No." <> '' then
-                    CopyDimensionsFromProperty("Property ID");
+                // Copy dimensions from Property when Call No. exists
+                CopyDimensionsFromProperty("Property ID");
             end;
         }
         field(18; "Unit ID"; Code[20])
@@ -305,43 +305,29 @@ table 80808 "PMS Helpdesk Call"
     var
         SourceDefaultDim: Record "Default Dimension";
         DestDefaultDim: Record "Default Dimension";
-        TempDimSetEntry: Record "Dimension Set Entry" temporary;
-        DimMgt: Codeunit DimensionManagement;
-        DimSetID: Integer;
     begin
         if PropertyID = '' then
+            exit;
+
+        // Must have Call No. to create default dimensions
+        if "Call No." = '' then
             exit;
 
         // Copy all default dimensions from the Property to this Call
         SourceDefaultDim.SetRange("Table ID", Database::"PMS Property");
         SourceDefaultDim.SetRange("No.", PropertyID);
-        if SourceDefaultDim.FindSet() then begin
-            // Delete existing default dimensions for this call
-            DestDefaultDim.SetRange("Table ID", Database::"PMS Helpdesk Call");
-            DestDefaultDim.SetRange("No.", "Call No.");
-            DestDefaultDim.DeleteAll();
-
-            // Copy dimensions from Property
+        if SourceDefaultDim.FindSet() then
             repeat
-                DestDefaultDim.Init();
-                DestDefaultDim."Table ID" := Database::"PMS Helpdesk Call";
-                DestDefaultDim."No." := "Call No.";
-                DestDefaultDim."Dimension Code" := SourceDefaultDim."Dimension Code";
-                DestDefaultDim."Dimension Value Code" := SourceDefaultDim."Dimension Value Code";
-                DestDefaultDim."Value Posting" := SourceDefaultDim."Value Posting";
-                DestDefaultDim.Insert(true);
-
-                // Build dimension set
-                Clear(TempDimSetEntry);
-                TempDimSetEntry."Dimension Code" := SourceDefaultDim."Dimension Code";
-                TempDimSetEntry."Dimension Value Code" := SourceDefaultDim."Dimension Value Code";
-                TempDimSetEntry.Insert(false);
+                // Only copy if the dimension doesn't already exist for this call
+                if not DestDefaultDim.Get(Database::"PMS Helpdesk Call", "Call No.", SourceDefaultDim."Dimension Code") then begin
+                    DestDefaultDim.Init();
+                    DestDefaultDim."Table ID" := Database::"PMS Helpdesk Call";
+                    DestDefaultDim."No." := "Call No.";
+                    DestDefaultDim."Dimension Code" := SourceDefaultDim."Dimension Code";
+                    DestDefaultDim."Dimension Value Code" := SourceDefaultDim."Dimension Value Code";
+                    DestDefaultDim."Value Posting" := SourceDefaultDim."Value Posting";
+                    DestDefaultDim.Insert(true);
+                end;
             until SourceDefaultDim.Next() = 0;
-
-            // Update dimension set ID and global dimensions
-            DimSetID := DimMgt.GetDimensionSetID(TempDimSetEntry);
-            "Dimension Set ID" := DimSetID;
-            DimMgt.UpdateGlobalDimFromDimSetID(DimSetID, "Global Dimension 1 Code", "Global Dimension 2 Code");
-        end;
     end;
 }

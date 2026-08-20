@@ -149,6 +149,22 @@ page 80848 "PMS Spawn Job Dlg"
                     CurrPage.Close();
                 end;
             }
+            action(Save)
+            {
+                ApplicationArea = All;
+                Caption = 'Save';
+                Image = Save;
+                ToolTip = 'Save and spawn the external job.';
+                Enabled = ConfirmEnabled;
+
+                trigger OnAction()
+                begin
+                    if SpawnReason = '' then
+                        Error('Please provide a reason for spawning this job.');
+                    Confirmed := true;
+                    CurrPage.Close();
+                end;
+            }
             action(Cancel)
             {
                 ApplicationArea = All;
@@ -169,6 +185,7 @@ page 80848 "PMS Spawn Job Dlg"
             {
                 Caption = 'Process';
                 actionref(Confirm_Promoted; Confirm) { }
+                actionref(Save_Promoted; Save) { }
                 actionref(Cancel_Promoted; Cancel) { }
             }
         }

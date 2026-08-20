@@ -347,6 +347,42 @@ table 80824 "PMS Job"
                     "Estimated Cost" := "Estimated Quantity" * "Estimated Unit Cost";
             end;
         }
+        field(40; "Dimension Set ID"; Integer)
+        {
+            Caption = 'Dimension Set ID';
+            Editable = false;
+            TableRelation = "Dimension Set Entry"."Dimension Set ID";
+            DataClassification = CustomerContent;
+
+            trigger OnValidate()
+            begin
+                DimMgt.UpdateGlobalDimFromDimSetID("Dimension Set ID", "Shortcut Dimension 1 Code", "Shortcut Dimension 2 Code");
+            end;
+        }
+        field(41; "Shortcut Dimension 1 Code"; Code[20])
+        {
+            CaptionClass = '1,2,1';
+            Caption = 'Shortcut Dimension 1 Code';
+            TableRelation = "Dimension Value".Code where("Global Dimension No." = const(1), Blocked = const(false));
+            DataClassification = CustomerContent;
+
+            trigger OnValidate()
+            begin
+                ValidateShortcutDimCode(1, "Shortcut Dimension 1 Code");
+            end;
+        }
+        field(42; "Shortcut Dimension 2 Code"; Code[20])
+        {
+            CaptionClass = '1,2,2';
+            Caption = 'Shortcut Dimension 2 Code';
+            TableRelation = "Dimension Value".Code where("Global Dimension No." = const(2), Blocked = const(false));
+            DataClassification = CustomerContent;
+
+            trigger OnValidate()
+            begin
+                ValidateShortcutDimCode(2, "Shortcut Dimension 2 Code");
+            end;
+        }
     }
 
     keys
@@ -362,6 +398,7 @@ table 80824 "PMS Job"
     var
         PMSSetup: Record "PMS Setup";
         NoSeries: Codeunit "No. Series";
+        DimMgt: Codeunit DimensionManagement;
 
     trigger OnInsert()
     begin
@@ -387,6 +424,8 @@ table 80824 "PMS Job"
     var
         SourceDefaultDim: Record "Default Dimension";
         DestDefaultDim: Record "Default Dimension";
+        TempDimSetEntry: Record "Dimension Set Entry" temporary;
+        DimValue: Record "Dimension Value";
     begin
         // Copy all default dimensions from the Property to this Job
         SourceDefaultDim.SetRange("Table ID", Database::"PMS Property");
@@ -403,11 +442,37 @@ table 80824 "PMS Job"
                     DestDefaultDim."Value Posting" := SourceDefaultDim."Value Posting";
                     DestDefaultDim.Insert(true);
                 end;
+                
+                // Also build dimension set for the Job header
+                if DimValue.Get(SourceDefaultDim."Dimension Code", SourceDefaultDim."Dimension Value Code") then begin
+                    TempDimSetEntry.Init();
+                    TempDimSetEntry."Dimension Code" := SourceDefaultDim."Dimension Code";
+                    TempDimSetEntry."Dimension Value Code" := SourceDefaultDim."Dimension Value Code";
+                    TempDimSetEntry."Dimension Value ID" := DimValue."Dimension Value ID";
+                    if TempDimSetEntry.Insert() then;
+                end;
             until SourceDefaultDim.Next() = 0;
+        
+        // Set Job's Dimension Set ID from the built set
+        if TempDimSetEntry.FindFirst() then begin
+            "Dimension Set ID" := DimMgt.GetDimensionSetID(TempDimSetEntry);
+            DimMgt.UpdateGlobalDimFromDimSetID("Dimension Set ID", "Shortcut Dimension 1 Code", "Shortcut Dimension 2 Code");
+        end;
     end;
 
     procedure CopyDimensionsFromPropertyPublic(PropertyID: Code[20])
     begin
         CopyDimensionsFromProperty(PropertyID);
+    end;
+
+    procedure ValidateShortcutDimCode(FieldNumber: Integer; var ShortcutDimCode: Code[20])
+    begin
+        DimMgt.ValidateShortcutDimValues(FieldNumber, ShortcutDimCode, "Dimension Set ID");
+    end;
+
+    procedure ShowDimensions()
+    begin
+        "Dimension Set ID" := DimMgt.EditDimensionSet("Dimension Set ID", "Job No.");
+        DimMgt.UpdateGlobalDimFromDimSetID("Dimension Set ID", "Shortcut Dimension 1 Code", "Shortcut Dimension 2 Code");
     end;
 }
