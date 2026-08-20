@@ -116,7 +116,7 @@ table 80824 "PMS Job"
             var
                 PMSJobMgt: Codeunit "PMS Job Management";
             begin
-                if Status in [Status::Completed, Status::Cancelled] then begin
+                if Status in [Status::Completed, Status::Cancelled, Status::Spawned] then begin
                     if "Completed Date" = 0DT then
                         "Completed Date" := CurrentDateTime;
                     if "Created Date" <> 0DT then
@@ -128,7 +128,7 @@ table 80824 "PMS Job"
                     if ("Source Type" = "Source Type"::"Helpdesk Call") and ("Source No." <> '') then
                         PMSJobMgt.CheckAndCloseHelpdeskCall("Source No.", "Job No.", Status);
                 end else begin
-                    if xRec.Status in [Status::Completed, Status::Cancelled] then begin
+                    if xRec.Status in [Status::Completed, Status::Cancelled, Status::Spawned] then begin
                         "Completed Date" := 0DT;
                         "Resolution Time" := 0;
                     end;

@@ -301,8 +301,13 @@ page 80825 "PMS Helpdesk Call"
                     PMSJob.Get(JobNo);
                     PMSJob.Validate(Status, PMSJob.Status::Open);
                     PMSJob.Modify(true);
-                    CurrPage.Update(false);
-                    Page.Run(Page::"PMS Job", PMSJob);
+
+                    // External calls: Office continues workflow - show job page
+                    // Internal calls: Office interaction ends - close call page
+                    if Rec."Call Type" = Rec."Call Type"::External then
+                        Page.Run(Page::"PMS Job", PMSJob)
+                    else
+                        CurrPage.Close();
                 end;
             }
 

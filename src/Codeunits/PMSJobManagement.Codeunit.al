@@ -171,19 +171,23 @@ codeunit 80800 "PMS Job Management"
         PMSJob."Property ID" := HelpdeskCall."Property ID";
         PMSJob."Unit ID" := HelpdeskCall."Unit ID";
         PMSJob.Priority := HelpdeskCall.Priority;
-        PMSJob."Job Type" := PMSJob."Job Type"::Internal;
+        PMSJob."Job Type" := HelpdeskCall."Call Type";  // Transfer Call Type to Job Type
         PMSJob."Employee No." := HelpdeskCall."Employee No.";
         PMSJob."Employee Name" := HelpdeskCall."Employee Name";
         PMSJob."Resource No." := HelpdeskCall."Resource No.";
         PMSJob."Resource Name" := HelpdeskCall."Resource Name";
+        PMSJob."Vendor No." := HelpdeskCall."Vendor No.";
+        PMSJob."Vendor Name" := HelpdeskCall."Vendor Name";
         PMSJob."Scheduled Date" := HelpdeskCall."Target Resolution Date";
         PMSJob."Created Date" := HelpdeskCall."Reported Date";  // Use call's reported date
         PMSJob.Status := PMSJob.Status::Open;
         PMSJob.Insert(false);
 
         // Copy all dimensions from the Helpdesk Call to the Job
-        if HelpdeskCall."Property ID" <> '' then
+        if HelpdeskCall."Property ID" <> '' then begin
             PMSJob.CopyDimensionsFromPropertyPublic(HelpdeskCall."Property ID");
+            PMSJob.Modify(true);
+        end;
 
         // Send email notification for internal jobs
         if PMSJob."Job Type" = PMSJob."Job Type"::Internal then
@@ -231,8 +235,8 @@ codeunit 80800 "PMS Job Management"
         PMSSetup.GetRecordOnce();
         PMSSetup.TestField("Job Nos.");
 
-        // Mark the current job as Completed (engineer's work is done)
-        CurrentJob.Validate(Status, CurrentJob.Status::Completed);
+        // Spawned is a distinct terminal status - engineer handed off to external vendor
+        CurrentJob.Validate(Status, CurrentJob.Status::Spawned);
         if CurrentJob."Completed Date" = 0DT then
             CurrentJob."Completed Date" := CurrentDateTime;
         CurrentJob."Spawned By" := CopyStr(UserId(), 1, 50);
@@ -272,8 +276,10 @@ codeunit 80800 "PMS Job Management"
         NewJob.Insert(false);
 
         // Copy all dimensions from Property to Job
-        if NewJob."Property ID" <> '' then
+        if NewJob."Property ID" <> '' then begin
             NewJob.CopyDimensionsFromPropertyPublic(NewJob."Property ID");
+            NewJob.Modify(true);
+        end;
 
         // Create initial expense line from spawn dialog values
         CreateInitialExpenseLine(NewJob, SpawnDlg.GetCategoryPostingGroup(), NewJob.Description, SpawnDlg.GetQuantity(), SpawnDlg.GetDirectUnitCost());
@@ -681,10 +687,10 @@ codeunit 80800 "PMS Job Management"
             repeat
                 // Use in-memory status for the current job being modified
                 if PMSJob."Job No." = CurrentJobNo then begin
-                    if not (CurrentJobStatus in [PMSJob.Status::Completed, PMSJob.Status::Cancelled]) then
+                    if not (CurrentJobStatus in [PMSJob.Status::Completed, PMSJob.Status::Cancelled, PMSJob.Status::Spawned]) then
                         AllJobsComplete := false;
                 end else begin
-                    if not (PMSJob.Status in [PMSJob.Status::Completed, PMSJob.Status::Cancelled]) then
+                    if not (PMSJob.Status in [PMSJob.Status::Completed, PMSJob.Status::Cancelled, PMSJob.Status::Spawned]) then
                         AllJobsComplete := false;
                 end;
             until (PMSJob.Next() = 0) or (not AllJobsComplete);
