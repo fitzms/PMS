@@ -132,11 +132,12 @@ page 80826 "PMS Job"
                         Editable = false;
                         ToolTip = 'Specifies the name of the vendor.';
                     }
-                    field("Purchase Order No."; Rec."Purchase Order No.")
+                    field(PurchaseOrderDisplay; GetPurchaseOrderDisplay())
                     {
                         ApplicationArea = All;
+                        Caption = 'Purchase Order No.';
                         Editable = false;
-                        ToolTip = 'Specifies the purchase order number linked to this job.';
+                        ToolTip = 'Specifies the purchase order number. Shows ******* until the order is fully approved.';
                     }
                 }
 
@@ -351,7 +352,7 @@ page 80826 "PMS Job"
                     PurchHeader: Record "Purchase Header";
                 begin
                     PurchHeader.Get(PurchHeader."Document Type"::Order, Rec."Purchase Order No.");
-                    Page.Run(Page::"Purchase Order", PurchHeader);
+                    Page.Run(50014, PurchHeader);
                 end;
             }
             action(ViewCall)
@@ -594,5 +595,17 @@ page 80826 "PMS Job"
     begin
         ShowEmployeeFields := Rec."Job Type" = Rec."Job Type"::Internal;
         ShowVendorFields := Rec."Job Type" = Rec."Job Type"::External;
+    end;
+
+    local procedure GetPurchaseOrderDisplay(): Text
+    var
+        PurchHeader: Record "Purchase Header";
+    begin
+        if Rec."Purchase Order No." = '' then
+            exit('');
+        if PurchHeader.Get(PurchHeader."Document Type"::Order, Rec."Purchase Order No.") then
+            if PurchHeader.Status = PurchHeader.Status::Released then
+                exit(Rec."Purchase Order No.");
+        exit('*******');
     end;
 }
