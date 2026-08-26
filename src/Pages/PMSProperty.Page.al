@@ -425,7 +425,43 @@ page 80813 "PMS Property"
                 ToolTip = 'View ledger entries for this property.';
 
                 trigger OnAction()
+                var
+                    PropLedgEntry: Record "PMS Property Ledger Entry";
                 begin
+                    PropLedgEntry.SetRange("Property ID", Rec."Property ID");
+                    Page.Run(Page::"PMS Property Ledger Entries", PropLedgEntry);
+                end;
+            }
+            action(BackfillPropertyLedger)
+            {
+                ApplicationArea = All;
+                Caption = 'Backfill Ledger Entries';
+                Image = RefreshLines;
+                ToolTip = 'Backfill property ledger entries from G/L history for a selected property.';
+
+                trigger OnAction()
+                var
+                    BackfillDlg: Page "PMS Prop Ledger Backfill Dlg";
+                    Backfill: Codeunit "PMS Prop Ledger Backfill";
+                begin
+                    BackfillDlg.SetPropertyID(Rec."Property ID");
+                    BackfillDlg.RunModal();
+                    if BackfillDlg.WasConfirmed() then
+                        Backfill.RunBackfill(BackfillDlg.GetPropertyID());
+                end;
+            }
+            action(DeletePropertyLedger)
+            {
+                ApplicationArea = All;
+                Caption = 'Delete Ledger Entries';
+                Image = Delete;
+                ToolTip = 'Delete all property ledger entries for this property. Use during testing only.';
+
+                trigger OnAction()
+                var
+                    Backfill: Codeunit "PMS Prop Ledger Backfill";
+                begin
+                    Backfill.DeletePropertyEntries(Rec."Property ID");
                 end;
             }
             action(ViewTenantMovements)
@@ -707,6 +743,7 @@ page 80813 "PMS Property"
 
                 actionref(Dimensions_Promoted; Dimensions) { }
                 actionref(PropertyLedgerEntries_Promoted; PropertyLedgerEntries) { }
+                actionref(BackfillPropertyLedger_Promoted; BackfillPropertyLedger) { }
                 actionref(StatusLog_Promoted; StatusLog) { }
                 actionref(ViewTenantMovements_Promoted; ViewTenantMovements) { }
                 actionref(HazardEntries_Promoted; HazardEntries) { }

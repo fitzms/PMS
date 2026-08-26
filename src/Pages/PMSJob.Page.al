@@ -280,20 +280,20 @@ page 80826 "PMS Job"
                     }
                 }
 
-                group(DimensionsGroup)
-                {
-                    Caption = 'Dimensions';
-                    field("Shortcut Dimension 1 Code"; Rec."Shortcut Dimension 1 Code")
-                    {
-                        ApplicationArea = All;
-                        ToolTip = 'Specifies the first shortcut dimension code.';
-                    }
-                    field("Shortcut Dimension 2 Code"; Rec."Shortcut Dimension 2 Code")
-                    {
-                        ApplicationArea = All;
-                        ToolTip = 'Specifies the second shortcut dimension code.';
-                    }
-                }
+                // group(DimensionsGroup)
+                // {
+                //     Caption = 'Dimensions';
+                //     field("Shortcut Dimension 1 Code"; Rec."Shortcut Dimension 1 Code")
+                //     {
+                //         ApplicationArea = All;
+                //         ToolTip = 'Specifies the first shortcut dimension code.';
+                //     }
+                //     field("Shortcut Dimension 2 Code"; Rec."Shortcut Dimension 2 Code")
+                //     {
+                //         ApplicationArea = All;
+                //         ToolTip = 'Specifies the second shortcut dimension code.';
+                //     }
+                // }
 
             }
             part(ExpenseLines; "PMS Job Expense Lines")
@@ -374,7 +374,7 @@ page 80826 "PMS Job"
             {
                 ApplicationArea = All;
                 Caption = 'Mark In Progress';
-                Enabled = Rec.Status = Rec.Status::Open;
+                Enabled = (Rec.Status = Rec.Status::Open) and (Rec."Job Type" = Rec."Job Type"::Internal);
                 Image = Process;
                 ToolTip = 'Mark this job as in progress.';
 
@@ -470,7 +470,7 @@ page 80826 "PMS Job"
                 Caption = 'Dimensions';
                 Image = Dimensions;
                 ToolTip = 'View or edit dimension values for this job.';
-                
+
                 trigger OnAction()
                 begin
                     Rec.ShowDimensions();

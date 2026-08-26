@@ -259,13 +259,13 @@ codeunit 80800 "PMS Job Management"
         NewJob."Estimated Unit Cost" := SpawnDlg.GetDirectUnitCost();
         NewJob."Estimated Cost" := SpawnDlg.GetLineAmount();
         NewJob."G/L Account No." := CurrentJob."G/L Account No.";
-        
+
         // Inherit Global Dimension 1 from current job, or from Property if not set
         if CurrentJob."Global Dimension 1 Code" <> '' then
             NewJob."Global Dimension 1 Code" := CurrentJob."Global Dimension 1 Code"
         else
             NewJob."Global Dimension 1 Code" := GetPropertyGlobalDimension1(CurrentJob."Property ID");
-            
+
         NewJob."Created Date" := CurrentJob."Created Date";  // Inherit created date from original job
         NewJob.Status := NewJob.Status::Open;
         NewJob."Related Job No." := CurrentJob."Job No.";
@@ -339,10 +339,10 @@ codeunit 80800 "PMS Job Management"
             PurchLine."Expected Receipt Date" := PMSJob."Scheduled Date";
             PurchLine."PMS Job No." := PMSJob."Job No.";
             PurchLine."PMS Property ID" := PMSJob."Property ID";
-            
+
             // Copy dimensions from expense line and apply property dimension
             CopyDimensionsFromExpenseLine(PurchLine, JobExpenseLine);
-            
+
             PurchLine.Modify(true);
             LineNo += 10000;
         until JobExpenseLine.Next() = 0;
@@ -515,6 +515,8 @@ codeunit 80800 "PMS Job Management"
             exit;
 
         RecipientEmail := UserRec."Contact Email";
+
+        PMSJob.CalcFields("Property Known As");
 
         // Generate URL to job card
         JobUrl := GetJobUrl(PMSJob);
